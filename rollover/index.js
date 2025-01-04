@@ -69,9 +69,26 @@ async function rolloverGoals(chatId) {
 	}
 }
 
-exports.handler = async (event) => {
+const getChatIds = async () => {
+	const params = {
+		TableName: userTable,
+		ProjectionExpression: 'ChatId',
+	};
+
+	try {
+		const data = await dynamoDb.scan(params).promise();
+		console.log("chatIds:", data.Items.map(item => item.chatId));
+		console.log("ChatIds:", data.Items.map(item => item.ChatId));
+		return data.Items.map(item => item.ChatId);
+	} catch (err) {
+		console.error('Error fetching chat ids:', err);
+		throw err;
+	}
+}
+
+exports.handler = async () => {
 	console.log('Rollover triggered');
-	const chatIds = event.chatIds || [];
+	const chatIds = getChatIds();
 
 	for (const chatId of chatIds) {
 		await rolloverGoals(chatId);
