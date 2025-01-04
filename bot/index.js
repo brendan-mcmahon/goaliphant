@@ -116,14 +116,17 @@ exports.handler = async (event) => {
 			await bot.sendMessage(chatId, 'Welcome to Goaliphant! Use /add to set goals, /list to view them, /delete {index} to remove, and /complete {index} to mark complete.');
 		} else if (text.startsWith('/add')) {
 			const goalsText = text.replace('/add', '').trim();
-			const goals = goalsText.split(',').map((goal) => goal.trim());
+			const newGoals = goalsText.split(',').map((goal) => goal.trim());
 			try {
-				await saveGoals(chatId, goals);
+				const existingGoals = await getGoals(chatId);
+				const updatedGoals = [...existingGoals, ...newGoals.map(goal => ({ text: goal, completed: false }))];
+				await updateGoals(chatId, updatedGoals);
 				await bot.sendMessage(chatId, 'Goals added successfully!');
 			} catch (error) {
 				await bot.sendMessage(chatId, 'Error saving goals.');
 			}
-		} else if (text === '/list') {
+		}
+		else if (text === '/list') {
 			try {
 				const goals = await getGoals(chatId);
 				const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
