@@ -88,7 +88,7 @@ const getChatIds = async () => {
 
 exports.handler = async () => {
 	console.log('Rollover triggered');
-	const chatIds = getChatIds();
+	const chatIds = await getChatIds();
 
 	for (const chatId of chatIds) {
 		await rolloverGoals(chatId);
