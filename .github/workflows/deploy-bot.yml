@@ -25,11 +25,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd goaliphant/bot
+        cd bot
         npm install
 
     - name: Deploy to Lambda
       run: |
-        cd goaliphant/bot
+        cd bot
         zip -r function.zip .
         aws lambda update-function-code --function-name goaliphant-bot --zip-file fileb://function.zip

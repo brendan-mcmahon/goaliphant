@@ -25,11 +25,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd goaliphant/notifier
+        cd notifier
         npm install
 
     - name: Deploy to Lambda
       run: |
-        cd goaliphant/notifier
+        cd notifier
         zip -r function.zip .
         aws lambda update-function-code --function-name goaliphant-notifier --zip-file fileb://function.zip
