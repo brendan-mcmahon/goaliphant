@@ -1,6 +1,7 @@
 name: Deploy Notifier Function
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'goaliphant/notifier/**'
