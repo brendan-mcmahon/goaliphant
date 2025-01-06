@@ -1,20 +1,9 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const AWS = require('aws-sdk');
-const { saveUser, getGoals, updateGoals } = require('./repository');
-
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
-exports.dynamoDb = dynamoDb;
-const goalsTable = 'GoaliphantGoals';
-exports.goalsTable = goalsTable;
-const userTable = 'GoaliphantUsers';
-exports.userTable = userTable;
+const { saveUser, getGoals, updateGoals } = require('./repository.js');
 
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token);
-
-const TIME_ZONE = 'America/Indiana/Indianapolis';
-exports.TIME_ZONE = TIME_ZONE;
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
