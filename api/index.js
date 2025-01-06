@@ -7,8 +7,6 @@ const bot = new TelegramBot(token);
 
 exports.handler = async (event) => {
 	console.log("Handling event", event.requestContext.http.method, event.rawPath, event.queryStringParameters);
-	const body = JSON.parse(event.body);
-	console.log('Incoming update:', body);
 
 	if (event.rawPath === '/getAllGoals') {
 		const goals = await getGoals(chatId);
