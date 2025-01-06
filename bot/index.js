@@ -93,6 +93,7 @@ async function completeGoal(text, chatId) {
 			await bot.sendMessage(chatId, 'Invalid goal number.');
 		}
 	} catch (error) {
+		console.error('Error marking goal as completed:', error);
 		await bot.sendMessage(chatId, 'Error marking goal as completed.');
 		await bot.sendMessage(chatId, error);
 	}
