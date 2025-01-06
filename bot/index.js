@@ -85,7 +85,7 @@ async function completeGoal(text, chatId) {
 		const goals = await getGoals(chatId);
 		if (index >= 0 && index < goals.length) {
 			console.log('Completing goal:', goals[index]);
-			goals[index + 1].completed = true;
+			goals[index].completed = true;
 			await updateGoals(chatId, goals);
 			await bot.sendMessage(chatId, 'Goal marked as completed.');
 			await listGoals(chatId);
