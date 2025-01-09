@@ -34,7 +34,7 @@ exports.handler = async (event) => {
 		} else if (text === '/list') {
 			await listGoals(chatId);
 		} else if (text.startsWith('/delete')) {
-			await deleteGoal(text, chatId);
+			await deleteGoals(text, chatId);
 		} else if (text.startsWith('/complete')) {
 			await completeGoals(text, chatId);
 		} else if (text.startsWith('/uncomplete')) {
@@ -85,20 +85,39 @@ async function listGoals(chatId) {
 	}
 }
 
-async function deleteGoal(text, chatId) {
-	const index = parseInt(text.replace('/delete', '').trim()) - 1;
+async function deleteGoals(text, chatId) {
+	const indexText = text.replace('/delete', '').trim();
+	if (!indexText) {
+		await bot.sendMessage(chatId, 'Send the goal numbers to delete (separated by spaces).');
+		bot.once('message', async (msg) => {
+			const indexes = msg.text.split(' ').map(n => parseInt(n.trim()) - 1);
+			await removeGoals(indexes, chatId);
+		});
+	} else {
+		const indexes = indexText.split(' ').map(n => parseInt(n.trim()) - 1);
+		await removeGoals(indexes, chatId);
+	}
+}
+
+async function removeGoals(indexes, chatId) {
 	try {
 		const goals = await getGoals(chatId);
-		if (index >= 0 && index < goals.length) {
-			goals.splice(index, 1);
+		let updated = false;
+		indexes.sort((a, b) => b - a).forEach(index => {
+			if (index >= 0 && index < goals.length) {
+				goals.splice(index, 1);
+				updated = true;
+			}
+		});
+		if (updated) {
 			await updateGoals(chatId, goals);
-			await bot.sendMessage(chatId, 'Goal deleted successfully.');
+			await bot.sendMessage(chatId, 'Goals deleted successfully.');
 			await listGoals(chatId);
 		} else {
-			await bot.sendMessage(chatId, 'Invalid goal number.');
+			await bot.sendMessage(chatId, 'No valid goals to delete.');
 		}
 	} catch (error) {
-		await bot.sendMessage(chatId, 'Error deleting goal.');
+		await bot.sendMessage(chatId, 'Error deleting goals.');
 	}
 }
 
