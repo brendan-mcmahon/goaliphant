@@ -109,17 +109,6 @@ async function setChatState(chatId, chatState) {
 exports.setChatState = setChatState;
 
 async function clearChatState(chatId) {
-	const params = {
-		TableName: userTable,
-		Key: { ChatId: chatId.toString() },
-		UpdateExpression: 'REMOVE ChatState',
-	};
-	try {
-		await dynamoDb.update(params).promise();
-		console.log('Chat state cleared successfully');
-	} catch (err) {
-		console.error('Error clearing chat state:', err);
-		throw err;
-	}
+	await setChatState(chatId, null);
 }
 exports.clearChatState = clearChatState;
