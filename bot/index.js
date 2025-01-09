@@ -1,6 +1,6 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const { saveUser, getGoals, updateGoals, getUserState, setUserState, clearUserState } = require('./repository.js');
+const { saveUser, getGoals, updateGoals, getUserMode, setUserMode, clearUserMode } = require('./repository.js');
 
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token);
@@ -15,10 +15,10 @@ exports.handler = async (event) => {
 
 		console.log("message from", chatId, ":", text);
 
-		const state = await getUserState(chatId);
-		if (state === 'addGoals') {
+		const mode = await getUserMode(chatId);
+		if (mode === 'addGoals') {
 			await saveGoalsAndList(text.split(','), chatId);
-			await clearUserState(chatId);
+			await clearUserMode(chatId);
 			return { statusCode: 200, body: 'OK' };
 		}
 
@@ -50,7 +50,7 @@ async function start(chatId) {
 async function addGoals(text, chatId) {
 	const goalsText = text.replace('/add', '').trim();
 	if (!goalsText) {
-		await setUserState(chatId, 'addGoals');
+		await setUserMode(chatId, 'addGoals');
 		await bot.sendMessage(chatId, 'Send your goals as comma-separated text.');
 	} else {
 		const newGoals = goalsText.split(',').map((goal) => goal.trim());

@@ -62,7 +62,7 @@ async function saveUser(chatId) {
 		TableName: userTable,
 		Item: {
 			ChatId: chatId.toString(),
-			State: null,
+			Mode: null,
 		},
 	};
 
@@ -76,50 +76,50 @@ async function saveUser(chatId) {
 }
 exports.saveUser = saveUser;
 
-async function getUserState(chatId) {
+async function getUserMode(chatId) {
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
 	};
 	try {
 		const result = await dynamoDb.get(params).promise();
-		return result.Item && result.Item.State ? result.Item.State : null;
+		return result.Item && result.Item.Mode ? result.Item.Mode : null;
 	} catch (err) {
-		console.error('Error fetching user state:', err);
+		console.error('Error fetching user mode:', err);
 		throw err;
 	}
 }
-exports.getUserState = getUserState;
+exports.getUserMode = getUserMode;
 
-async function setUserState(chatId, state) {
+async function setUserMode(chatId, mode) {
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
-		UpdateExpression: 'SET State = :state',
-		ExpressionAttributeValues: { ':state': state },
+		UpdateExpression: 'SET Mode = :mode',
+		ExpressionAttributeValues: { ':mode': mode },
 	};
 	try {
 		await dynamoDb.update(params).promise();
-		console.log('User state updated successfully');
+		console.log('User mode updated successfully');
 	} catch (err) {
-		console.error('Error updating user state:', err);
+		console.error('Error updating user mode:', err);
 		throw err;
 	}
 }
-exports.setUserState = setUserState;
+exports.setUserMode = setUserMode;
 
-async function clearUserState(chatId) {
+async function clearUserMode(chatId) {
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
-		UpdateExpression: 'REMOVE State',
+		UpdateExpression: 'REMOVE Mode',
 	};
 	try {
 		await dynamoDb.update(params).promise();
-		console.log('User state cleared successfully');
+		console.log('User mode cleared successfully');
 	} catch (err) {
-		console.error('Error clearing user state:', err);
+		console.error('Error clearing user mode:', err);
 		throw err;
 	}
 }
-exports.clearUserState = clearUserState;
+exports.clearUserMode = clearUserMode;
