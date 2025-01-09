@@ -17,6 +17,11 @@ exports.handler = async (event) => {
 
 		const chatState = await getChatState(chatId);
 		if (chatState === 'addGoals') {
+			if (text === 'cancel') {
+				await clearChatState(chatId);
+				await bot.sendMessage(chatId, 'Goal addition cancelled.');
+				return { statusCode: 200, body: 'OK' };
+			}
 			await saveGoalsAndList(text.split(','), chatId);
 			await clearChatState(chatId);
 			return { statusCode: 200, body: 'OK' };
