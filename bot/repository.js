@@ -62,7 +62,7 @@ async function saveUser(chatId) {
 		TableName: userTable,
 		Item: {
 			ChatId: chatId.toString(),
-			Mode: null,
+			ChatState: null,
 		},
 	};
 
@@ -76,50 +76,50 @@ async function saveUser(chatId) {
 }
 exports.saveUser = saveUser;
 
-async function getUserMode(chatId) {
+async function getChatState(chatId) {
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
 	};
 	try {
 		const result = await dynamoDb.get(params).promise();
-		return result.Item && result.Item.Mode ? result.Item.Mode : null;
+		return result.Item && result.Item.ChatState ? result.Item.ChatState : null;
 	} catch (err) {
-		console.error('Error fetching user mode:', err);
+		console.error('Error fetching chat state:', err);
 		throw err;
 	}
 }
-exports.getUserMode = getUserMode;
+exports.getChatState = getChatState;
 
-async function setUserMode(chatId, mode) {
+async function setChatState(chatId, chatState) {
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
-		UpdateExpression: 'SET Mode = :mode',
-		ExpressionAttributeValues: { ':mode': mode },
+		UpdateExpression: 'SET ChatState = :chatState',
+		ExpressionAttributeValues: { ':chatState': chatState },
 	};
 	try {
 		await dynamoDb.update(params).promise();
-		console.log('User mode updated successfully');
+		console.log('Chat state updated successfully');
 	} catch (err) {
-		console.error('Error updating user mode:', err);
+		console.error('Error updating chat state:', err);
 		throw err;
 	}
 }
-exports.setUserMode = setUserMode;
+exports.setChatState = setChatState;
 
-async function clearUserMode(chatId) {
+async function clearChatState(chatId) {
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
-		UpdateExpression: 'REMOVE Mode',
+		UpdateExpression: 'REMOVE chat state',
 	};
 	try {
 		await dynamoDb.update(params).promise();
-		console.log('User mode cleared successfully');
+		console.log('Chat state cleared successfully');
 	} catch (err) {
-		console.error('Error clearing user mode:', err);
+		console.error('Error clearing chat state:', err);
 		throw err;
 	}
 }
-exports.clearUserMode = clearUserMode;
+exports.clearChatState = clearChatState;
