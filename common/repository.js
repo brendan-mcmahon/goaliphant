@@ -15,6 +15,8 @@ function getLocalDate() {
 async function getGoals(chatId, date = null) {
 	date = date ?? getLocalDate();
 
+	console.log('Fetching goals for', chatId, 'on', date);
+
 	const params = {
 		TableName: goalsTable,
 		Key: {
