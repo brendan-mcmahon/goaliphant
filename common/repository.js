@@ -13,7 +13,7 @@ function getLocalDate() {
 }
 
 async function getGoals(chatId, date = null) {
-	const date = date ?? getLocalDate();
+	date = date ?? getLocalDate();
 
 	const params = {
 		TableName: goalsTable,
@@ -73,7 +73,7 @@ async function updateGoals(chatId, goals) {
 exports.updateGoals = updateGoals;
 
 async function createNewDayWithGoals(chatId, goals, date = null) {
-	const date = date ?? getLocalDate();
+	date = date ?? getLocalDate();
 	const formattedGoals = goals.map(goal => ({ text: goal.text, completed: false }));
 
 	const params = {
