@@ -1,6 +1,6 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const { saveUser, getGoals, updateGoals, getChatState, setChatState, clearChatState } = require('./repository.js');
+const { saveUser, getGoals, updateGoals, getChatState, setChatState, clearChatState } = require('./common/repository.js');
 
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token);

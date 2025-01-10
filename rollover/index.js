@@ -1,5 +1,5 @@
 const TIME_ZONE = 'America/Indiana/Indianapolis';
-const { getChatIds, getGoals, createNewDayWithGoals } = require('./repository');
+const { getChatIds, getGoals, createNewDayWithGoals } = require('./common/repository');
 
 function getLocalDate(offsetDays = 0) {
 	const date = new Date();
