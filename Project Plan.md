@@ -68,9 +68,9 @@ This project is a Telegram bot called "Goaliphant" designed to help the user's w
 
 ### **Phase 4: Enhancements**
 1. **Roll over incomplete tasks to the next day**
-    - [ ] Create new Lambda function (rollover)
-    - [ ] Logic to find incomplete tasks from the previous day and duplicate them into today's goals
-    - [ ] Add a new EventBridge schedule to trigger the new lambda
+    - [x] Create new Lambda function (rollover)
+    - [x] Logic to find incomplete tasks from the previous day and duplicate them into today's goals
+    - [x] Add a new EventBridge schedule to trigger the new lambda
 ---
 
 ## Technical Requirements
@@ -92,3 +92,71 @@ This project is a Telegram bot called "Goaliphant" designed to help the user's w
    - GitHub repository for code management.
 3. **CI/CD**
    - Github Actions
+
+---
+
+This is the current structure:
+
+├── .github
+│   └── workflows
+│       ├── deploy-api.yml
+│       ├── deploy-bot.yml
+│       ├── deploy-notifier.yml
+│       └── deploy-rollover.yml
+├── .gitignore
+├── Project Plan.md
+├── api
+│   ├── index.js
+│   ├── package-lock.json
+│   ├── package.json
+│   └── repository.js
+├── bot
+│   ├── .env
+│   ├── index.js
+│   ├── package-lock.json
+│   ├── package.json
+│   └── repository.js
+├── common
+│   └── constants.js
+├── logo.svg
+├── notifier
+│   ├── .env
+│   ├── deploy.ps1
+│   ├── index.js
+│   ├── package-lock.json
+│   ├── package.json
+│   └── repository.js
+├── rollover
+│   ├── .env
+│   ├── deploy.ps1
+│   ├── index.js
+│   └── package.json
+└── ui
+    └── goliphant-ui
+        ├── .gitignore
+        ├── .vscode
+        │   └── extensions.json
+        ├── README.md
+        ├── components.json
+        ├── index.html
+        ├── jsconfig.json
+        ├── package-lock.json
+        ├── package.json
+        ├── postcss.config.js
+        ├── public
+        │   └── vite.svg
+        ├── src
+        │   ├── App.svelte
+        │   ├── app.css
+        │   ├── assets
+        │   │   └── svelte.svg
+        │   ├── lib
+        │   │   ├── Counter.svelte
+        │   │   └── utils.ts
+        │   ├── main.js
+        │   └── vite-env.d.ts
+        ├── svelte.config.js
+        ├── tailwind.config.js
+        ├── tsconfig.app.json
+        ├── tsconfig.json
+        └── vite.config.js

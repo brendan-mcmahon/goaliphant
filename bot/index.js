@@ -27,6 +27,17 @@ exports.handler = async (event) => {
 			return { statusCode: 200, body: 'OK' };
 		}
 
+		if (chatState === 'tomorrow') {
+			if (text === 'cancel') {
+				await clearChatState(chatId);
+				await bot.sendMessage(chatId, 'Goal addition cancelled.');
+				return { statusCode: 200, body: 'OK' };
+			}
+			await saveGoalsAndList(text.split(','), chatId);
+			await clearChatState(chatId);
+			return { statusCode: 200, body: 'OK' };
+		}
+
 		if (text === '/start') {
 			await start(chatId);
 		} else if (text.startsWith('/add')) {

@@ -12,8 +12,8 @@ function getLocalDate() {
 	return new Date(localDate).toISOString().split('T')[0];
 }
 
-async function getGoals(chatId) {
-	const date = getLocalDate();
+async function getGoals(chatId, date = null) {
+	const date = date ?? getLocalDate();
 
 	const params = {
 		TableName: goalsTable,
@@ -32,6 +32,21 @@ async function getGoals(chatId) {
 	}
 }
 exports.getGoals = getGoals;
+
+async function getAllGoals() {
+	const params = {
+		TableName: goalsTable,
+	};
+
+	try {
+		const result = await dynamoDb.scan(params).promise();
+		return result.Items;
+	} catch (err) {
+		console.error('Error fetching goals:', err);
+		throw err;
+	}
+}
+exports.getAllGoals = getAllGoals;
 
 async function updateGoals(chatId, goals) {
 	const date = getLocalDate();
@@ -56,6 +71,30 @@ async function updateGoals(chatId, goals) {
 	}
 }
 exports.updateGoals = updateGoals;
+
+async function createNewDayWithGoals(chatId, goals, date = null) {
+	const date = date ?? getLocalDate();
+	const formattedGoals = goals.map(goal => ({ text: goal.text, completed: false }));
+
+	const params = {
+		TableName: goalsTable,
+		Item: {
+			chatId: chatId.toString(),
+			date: date,
+			goals: formattedGoals,
+		},
+	};
+
+	try {
+		await dynamoDb.put(params).promise();
+		console.log('Goals rolled over successfully');
+	} catch (err) {
+		console.error('Error saving goals:', err);
+		throw err;
+	}
+}
+exports.createNewDayWithGoals = createNewDayWithGoals;
+
 
 async function saveUser(chatId) {
 	const params = {
@@ -112,3 +151,22 @@ async function clearChatState(chatId) {
 	await setChatState(chatId, null);
 }
 exports.clearChatState = clearChatState;
+
+
+const getChatIds = async () => {
+	const params = {
+		TableName: userTable,
+		ProjectionExpression: 'ChatId',
+	};
+
+	try {
+		const data = await dynamoDb.scan(params).promise();
+		console.log("chatIds:", data.Items.map(item => item.chatId));
+		console.log("ChatIds:", data.Items.map(item => item.ChatId));
+		return data.Items.map(item => item.ChatId);
+	} catch (err) {
+		console.error('Error fetching chat ids:', err);
+		throw err;
+	}
+}
+exports.getChatIds = getChatIds;

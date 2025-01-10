@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'bot/**'
+      - 'common/**'
     branches:
       - main
 
@@ -21,7 +22,11 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2 # Change to your region
+        aws-region: us-east-2
+
+    - name: Copy common folder
+      run: |
+        cp -r common bot/common
 
     - name: Install dependencies
       run: |
@@ -33,3 +38,7 @@ jobs:
         cd bot
         zip -r function.zip .
         aws lambda update-function-code --function-name goaliphant-bot --zip-file fileb://function.zip
+
+    - name: Clean up
+      run: |
+        rm -rf bot/common
