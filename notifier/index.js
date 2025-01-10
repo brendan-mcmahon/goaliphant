@@ -31,7 +31,8 @@ exports.handler = async (event) => {
 	console.log('Received event:', event);
 	const type = event.type;
 	console.log('Event type:', type);
-	const chatIds = await getChatIds();
+	const chatIds = event.chatIds ?? await getChatIds();
+
 	for (const chatId of chatIds) {
 
 		if (type === 'morning') {
