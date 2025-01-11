@@ -124,7 +124,9 @@ async function getChatState(chatId) {
 	};
 	try {
 		const result = await dynamoDb.get(params).promise();
-		return result.Item && result.Item.ChatState ? result.Item.ChatState : null;
+		return result.Item && result.Item.ChatState
+			? { state: result.Item.ChatState, date: result.Item.ChatStateDateTime }
+			: null;
 	} catch (err) {
 		console.error('Error fetching chat state:', err);
 		throw err;
@@ -133,20 +135,25 @@ async function getChatState(chatId) {
 exports.getChatState = getChatState;
 
 async function setChatState(chatId, chatState) {
+	const currentDateTime = new Date().toISOString();
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
-		UpdateExpression: 'SET ChatState = :chatState',
-		ExpressionAttributeValues: { ':chatState': chatState },
+		UpdateExpression: 'SET ChatState = :chatState, ChatStateDateTime = :chatStateDateTime',
+		ExpressionAttributeValues: {
+			':chatState': chatState,
+			':chatStateDateTime': currentDateTime
+		},
 	};
 	try {
 		await dynamoDb.update(params).promise();
-		console.log('Chat state updated successfully');
+		console.log('Chat state and date-time updated successfully');
 	} catch (err) {
-		console.error('Error updating chat state:', err);
+		console.error('Error updating chat state and date-time:', err);
 		throw err;
 	}
 }
+
 exports.setChatState = setChatState;
 
 async function clearChatState(chatId) {

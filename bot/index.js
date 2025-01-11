@@ -23,7 +23,10 @@ exports.handler = async (event) => {
 		console.log("message from", chatId, ":", text);
 
 		const chatState = await getChatState(chatId);
-		if (chatState === 'addGoals') {
+		if (chatState.state === 'addGoals') {
+			if (chatState.date && new Date(chatState.date) < new Date(Date.now() - 300000)) {
+				await clearChatState(chatId);
+			}
 			if (cancelWords.includes(text.toLowerCase())) {
 				await clearChatState(chatId);
 				await bot.sendMessage(chatId, 'Goal addition cancelled.');
@@ -34,7 +37,10 @@ exports.handler = async (event) => {
 			return { statusCode: 200, body: 'OK' };
 		}
 
-		if (chatState === 'tomorrow') {
+		if (chatState.state === 'tomorrow') {
+			if (chatState.date && new Date(chatState.date) < new Date(Date.now() - 300000)) {
+				await clearChatState(chatId);
+			}
 			if (cancelWords.includes(text.toLowerCase())) {
 				await clearChatState(chatId);
 				await bot.sendMessage(chatId, 'Goal addition cancelled.');
