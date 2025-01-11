@@ -23,6 +23,8 @@ exports.handler = async (event) => {
 		console.log("message from", chatId, ":", text);
 
 		const chatState = await getChatState(chatId);
+		console.log("chat state:", chatState);
+
 		if (chatState.state === 'addGoals') {
 			if (chatState.date && new Date(chatState.date) < new Date(Date.now() - 300000)) {
 				await clearChatState(chatId);
