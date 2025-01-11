@@ -118,12 +118,14 @@ async function saveUser(chatId) {
 exports.saveUser = saveUser;
 
 async function getChatState(chatId) {
+	console.log("getting chat state for chatId:", chatId);
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
 	};
 	try {
 		const result = await dynamoDb.get(params).promise();
+		console.log("result:", result);
 		return result.Item && result.Item.ChatState
 			? { state: result.Item.ChatState, date: result.Item.ChatStateDateTime }
 			: null;
