@@ -5,6 +5,13 @@ const { saveUser, getGoals, updateGoals, getChatState, setChatState, clearChatSt
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token);
 
+const cancelWords = [
+	'cancel',
+	'nevermind',
+	'no thanks',
+	'no thank you',
+]
+
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
 	console.log('Incoming update:', body);
@@ -17,7 +24,7 @@ exports.handler = async (event) => {
 
 		const chatState = await getChatState(chatId);
 		if (chatState === 'addGoals') {
-			if (text === 'cancel') {
+			if (cancelWords.includes(text.toLowerCase())) {
 				await clearChatState(chatId);
 				await bot.sendMessage(chatId, 'Goal addition cancelled.');
 				return { statusCode: 200, body: 'OK' };
@@ -28,7 +35,7 @@ exports.handler = async (event) => {
 		}
 
 		if (chatState === 'tomorrow') {
-			if (text === 'cancel') {
+			if (cancelWords.includes(text.toLowerCase())) {
 				await clearChatState(chatId);
 				await bot.sendMessage(chatId, 'Goal addition cancelled.');
 				return { statusCode: 200, body: 'OK' };
