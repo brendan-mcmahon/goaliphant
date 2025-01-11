@@ -22,11 +22,11 @@ exports.handler = async (event) => {
 
 		console.log("message from", chatId, ":", text);
 
-		const chatState = await getChatState(chatId);
-		console.log("chat state:", chatState);
+		const { state, date } = await getChatState(chatId);
+		console.log("chat state:", state, date);
 
-		if (chatState.state === 'addGoals') {
-			if (chatState.date && new Date(chatState.date) < new Date(Date.now() - 300000)) {
+		if (state && state === 'addGoals') {
+			if (date && new Date(date) < new Date(Date.now() - 300000)) {
 				await clearChatState(chatId);
 			}
 			if (cancelWords.includes(text.toLowerCase())) {
@@ -39,8 +39,8 @@ exports.handler = async (event) => {
 			return { statusCode: 200, body: 'OK' };
 		}
 
-		if (chatState.state === 'tomorrow') {
-			if (chatState.date && new Date(chatState.date) < new Date(Date.now() - 300000)) {
+		if (state && state === 'tomorrow') {
+			if (date && new Date(date) < new Date(Date.now() - 300000)) {
 				await clearChatState(chatId);
 			}
 			if (cancelWords.includes(text.toLowerCase())) {
