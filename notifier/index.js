@@ -8,7 +8,7 @@ async function sendNightlyPrompt(chatId) {
 	try {
 		const goals = await getGoals(chatId);
 		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
-		const message = `Good evening! Here's what you accomplished today:\n${goalsList || 'No goals set for today.'}\n\nReady to set your goals for tomorrow? Send them as a comma-separated list.`;
+		const message = `Good evening! Here's what you accomplished today:\n${goalsList || 'No goals set for today.'}\n\nReady to set your goals for tomorrow? Send them as a comma-separated list. Otherwise, just say "no thanks"`;
 		await setChatState(chatId, 'tomorrow');
 		await bot.sendMessage(chatId, message);
 	} catch (error) {
