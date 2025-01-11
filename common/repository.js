@@ -125,7 +125,7 @@ async function getChatState(chatId) {
 	};
 	try {
 		const result = await dynamoDb.get(params).promise();
-		console.log("result:", result);
+		console.log("result:", result.Item, result.Item.ChatState);
 		return result.Item && result.Item.ChatState
 			? { state: result.Item.ChatState, date: result.Item.ChatStateDateTime }
 			: null;
