@@ -1,6 +1,6 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const { saveUser, getGoals, updateGoals, getChatState, setChatState, clearChatState } = require('./common/repository.js');
+const { saveUser, getGoals, updateGoals, getChatState, setChatState, clearChatState, addTicket } = require('./common/repository.js');
 
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token);
@@ -173,6 +173,7 @@ async function markGoalsAsComplete(indexes, chatId) {
 		});
 		if (updated) {
 			await updateGoals(chatId, goals);
+			await addTicket(chatId);
 			await bot.sendMessage(chatId, 'Goals marked as completed.');
 			await listGoals(chatId);
 		} else {

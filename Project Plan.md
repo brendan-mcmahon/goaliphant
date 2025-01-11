@@ -1,39 +1,7 @@
 # Project Plan: Goaliphant - Daily Goals Telegram Bot
 
 ## Overview
-This project is a Telegram bot called "Goaliphant" designed to help the user's wife set and track daily goals. The bot will send reminders and prompts to record goals for the next day and track completion of the previous day's goals. Data will be stored using DynamoDB.
-
----
-
-## Features
-### **Core Features**
-1. **Nightly Goal Prompt**
-   - Prompt the user every evening to input 5 goals for the next day.
-   - Ask whether the goals from the previous day were accomplished.
-
-2. **Data Storage**
-   - Store goals and completion status in DynamoDB.
-
-3. **Morning Reminder**
-   - Send a morning reminder with the day's goals.
-
-4. **Goal Tracking**
-   - Allow the user to send messages to the bot to mark goals as completed.
-
----
-
-## Architecture
-1. **Frontend**
-   - Telegram bot using Node.js and the `node-telegram-bot-api` library.
-
-2. **Backend**
-   - AWS Lambda functions to handle bot interactions and schedule reminders.
-   - Data storage:
-     - DynamoDB: NoSQL database for structured storage.
-
-3. **Notifications**
-   - Use Telegram Bot API to send reminders and prompts.
-   - AWS EventBridge or Lambda triggers for scheduling.
+This project is a Telegram bot called "Goaliphant" designed to help my wife Jamie and I set and track daily goals. The bot will send reminders and prompts to record goals for the next day and track completion of the previous day's goals. Data will be stored using DynamoDB.
 
 ---
 
@@ -61,7 +29,7 @@ This project is a Telegram bot called "Goaliphant" designed to help the user's w
 1. **Add Morning Reminder**
    - [x] Schedule reminder using AWS EventBridge or Lambda triggers.
 
-### **Phase 3: Goal Tracking (Stretch Goal)**
+### **Phase 3: Goal Tracking**
 1. **Enable Goal Updates**
    - [x] Implement commands to mark goals as completed.
    - [x] Update database with changes.
@@ -71,6 +39,20 @@ This project is a Telegram bot called "Goaliphant" designed to help the user's w
     - [x] Create new Lambda function (rollover)
     - [x] Logic to find incomplete tasks from the previous day and duplicate them into today's goals
     - [x] Add a new EventBridge schedule to trigger the new lambda
+2. **Tickets and Rewards**
+    - [ ] Add a `TicketCount` data point to Users
+    - [ ] Add a `Partner` data point to Users that refers to another User in the system
+    - [ ] When a user completes a goal, increment their `TicketCount`
+    - [ ] New DynamoDB table called `GoaliphantRewards` that basically just tracks a list of rewards each player can earn with tickets
+    - [ ] New Bot command: `/rewards` that lists those rewards
+    - [ ] New Bot command: `/redeem {#}` that sends a message to the partner with the reward name, and deducts the predefined number of tickets from the user
+    - [ ] New Bot command: `/wallet` that sends a message to the user with their current ticket count.
+3. **Honey-Do**
+   -[ ] As in #2, add a `Partner` data point to Users that refers to another User in the system
+   -[ ] New Bot command: `/honey {1, 2, 3}` that operates the same as the `/add {1, 2, 3}` but adds it to the partner's honey-do list instead of their regular list.
+   * Optional ideas:
+		- [ ] Only apply tickets to items on the honey-do list
+		- [ ] Allow the users to assign a ticket bounty to each individual item
 ---
 
 ## Technical Requirements
@@ -81,22 +63,20 @@ This project is a Telegram bot called "Goaliphant" designed to help the user's w
 2. **AWS Services**
    - Lambda
    - DynamoDB
-   - EventBridge for scheduling
+   - EventBridge
 
 ---
 
 ## Deployment Plan
-1. **Infrastructure as Code**
-   - Use AWS CDK or Serverless Framework to deploy Lambda functions and DynamoDB.
-2. **Version Control**
+1. **Version Control**
    - GitHub repository for code management.
-3. **CI/CD**
+2. **CI/CD**
    - Github Actions
 
 ---
 
 This is the current structure:
-
+```
 ├── .github
 │   └── workflows
 │       ├── deploy-api.yml
@@ -106,57 +86,31 @@ This is the current structure:
 ├── .gitignore
 ├── Project Plan.md
 ├── api
+│   ├── api.js
 │   ├── index.js
 │   ├── package-lock.json
-│   ├── package.json
-│   └── repository.js
+│   └── package.json
 ├── bot
 │   ├── .env
 │   ├── index.js
 │   ├── package-lock.json
-│   ├── package.json
-│   └── repository.js
+│   └── package.json
 ├── common
-│   └── constants.js
+│   └── repository.js
 ├── logo.svg
 ├── notifier
 │   ├── .env
-│   ├── deploy.ps1
 │   ├── index.js
 │   ├── package-lock.json
-│   ├── package.json
-│   └── repository.js
+│   └── package.json
 ├── rollover
 │   ├── .env
-│   ├── deploy.ps1
 │   ├── index.js
 │   └── package.json
 └── ui
-    └── goliphant-ui
-        ├── .gitignore
-        ├── .vscode
-        │   └── extensions.json
-        ├── README.md
-        ├── components.json
-        ├── index.html
-        ├── jsconfig.json
-        ├── package-lock.json
-        ├── package.json
-        ├── postcss.config.js
-        ├── public
-        │   └── vite.svg
-        ├── src
-        │   ├── App.svelte
-        │   ├── app.css
-        │   ├── assets
-        │   │   └── svelte.svg
-        │   ├── lib
-        │   │   ├── Counter.svelte
-        │   │   └── utils.ts
-        │   ├── main.js
-        │   └── vite-env.d.ts
-        ├── svelte.config.js
-        ├── tailwind.config.js
-        ├── tsconfig.app.json
-        ├── tsconfig.json
-        └── vite.config.js
+    ├── App.svelte
+    ├── app.css
+    ├── app.js
+    ├── goliphant-ui
+    └── index.html
+```

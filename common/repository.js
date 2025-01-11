@@ -179,3 +179,25 @@ const getChatIds = async () => {
 	}
 }
 exports.getChatIds = getChatIds;
+
+const addTicket = async (chatId, ticket = 1) => {
+	const params = {
+		TableName: userTable,
+		Key: { ChatId: chatId.toString() },
+		UpdateExpression: 'ADD TicketWallet :ticket',
+		ExpressionAttributeValues: {
+			':ticket': ticket,
+		},
+		ReturnValues: 'UPDATED_NEW',
+	};
+
+	try {
+		const result = await dynamoDb.update(params).promise();
+		console.log('Tickets updated successfully');
+		return result.Attributes.Tickets;
+	} catch (err) {
+		console.error('Error updating tickets:', err);
+		throw err;
+	}
+}
+exports.addTicket = addTicket;
