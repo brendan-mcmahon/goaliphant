@@ -6,7 +6,7 @@ const { sendMessage, sendError } = require('../bot.js');
 async function addHoney(text, chatId) {
 	const user = await getUser(chatId);
 	const partner = await getUser(user.PartnerId);
-	const goalsText = text.replace('/add', '').trim();
+	const goalsText = text.replace('/addhoney', '').trim();
 	if (!goalsText) {
 		await setChatState(chatId, 'addGoals');
 		await sendMessage(chatId, 'Send your honey-do items as comma-separated text.');
