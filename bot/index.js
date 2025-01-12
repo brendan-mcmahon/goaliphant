@@ -2,8 +2,8 @@
 const { sendMessage } = require('./bot.js');
 const { start } = require('./handlers/startHandler.js');
 const { deleteGoals } = require('./handlers/deleteGoalsHandler.js');
-const { addGoals } = require('./handlers/addGoalsHandler.js');
-const { listGoals, listHoney } = require('./handlers/listHandler.js');
+const { addGoals, addHoney } = require('./handlers/addGoalsHandler.js');
+const { listGoals } = require('./handlers/listHandler.js');
 const { handleChatState } = require('./handlers/chatStateHandler.js');
 const { completeGoals } = require('./handlers/completeGoalsHandler.js');
 const { uncompleteGoals } = require('./handlers/uncompleteGoalsHandler.js');
@@ -11,7 +11,6 @@ const { getTickets } = require('./handlers/walletHandler.js');
 const { listRewards } = require('./handlers/rewardsHandler.js');
 const { handleCreateRewardStep } = require('./handlers/createRewardHandler.js');
 const { redeemReward } = require('./handlers/redeemRewardHandler.js');
-const { addHoney } = require('./handlers/addHoneyHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
@@ -77,10 +76,6 @@ exports.handler = async (event) => {
 				break;
 			case '/honey':
 			case 'honey':
-				await listHoney(chatId, false);
-				break;
-			case '/addhoney':
-			case 'addhoney':
 				await addHoney(text, chatId);
 				break;
 			default:
