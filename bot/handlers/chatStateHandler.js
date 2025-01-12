@@ -47,6 +47,7 @@ async function handleChatState(text, chatId) {
 
 	if (state.startsWith('creatingReward')) {
 		const step = parseInt(state.split('-')[1]);
+		console.log("passing args", args);
 		await handleCreateRewardStep(chatId, step, args[0], args[1], text);
 	}
 

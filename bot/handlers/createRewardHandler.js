@@ -15,7 +15,6 @@ async function handleCreateRewardStep(chatId, step, rewardId, partnerId, text) {
 }
 exports.handleCreateRewardStep = handleCreateRewardStep;
 
-// TODO: This needs to use the partner's chatId, not the user's chatId
 async function createReward(chatId) {
 	try {
 		await sendMessage(chatId, `Great! Let's make a new reward for your partner. I'll ask you a few questions to get the details. If you want to stop at any point, just say "cancel" or "nevermind"!`);
@@ -33,7 +32,7 @@ async function createReward(chatId) {
 async function getRewardTitleFromUser(chatId, rewardId, partnerId, text) {
 	try {
 		await updateReward(partnerId, { rewardId, title: text });
-		await setChatState(chatId, 'creatingReward-2', [rewardId]);
+		await setChatState(chatId, 'creatingReward-2', [rewardId, partnerId]);
 		await sendMessage(chatId, `Great! What is the description of the reward?`);
 	} catch (error) {
 		console.error('Error getting reward title from user:', error);
@@ -44,7 +43,7 @@ async function getRewardTitleFromUser(chatId, rewardId, partnerId, text) {
 async function getRewardDescriptionFromUser(chatId, rewardId, partnerId, text) {
 	try {
 		await updateReward(partnerId, { rewardId, description: text });
-		await setChatState(chatId, 'creatingReward-3', [rewardId]);
+		await setChatState(chatId, 'creatingReward-3', [rewardId, partnerId]);
 		await sendMessage(chatId, `Awesome! How many tickets should this reward cost?`);
 	} catch (error) {
 		console.error('Error getting reward description from user:', error);
@@ -55,7 +54,7 @@ async function getRewardDescriptionFromUser(chatId, rewardId, partnerId, text) {
 async function getRewardCostFromUser(chatId, rewardId, partnerId, text) {
 	try {
 		await updateReward(partnerId, { rewardId, cost: parseInt(text) });
-		await setChatState(chatId, 'creatingReward-4', [rewardId]);
+		await setChatState(chatId, 'creatingReward-4', [rewardId, partnerId]);
 		const newReward = await getReward(chatId, rewardId);
 		await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
 	} catch (error) {

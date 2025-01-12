@@ -25,7 +25,7 @@ async function saveUser(chatId) {
 		TableName: userTable,
 		Item: {
 			ChatId: chatId.toString(),
-			ChatState: null,
+			ChatState: 'chat',
 		},
 	};
 
