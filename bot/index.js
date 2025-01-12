@@ -20,9 +20,9 @@ exports.handler = async (event) => {
 
 		console.log("message from", chatId, body.message.from.first_name, ":", text);
 
-		const chatStateResponse = await handleChatState(text, chatId);
-		console.log("chatStateResponse:", chatStateResponse);
-		if (chatStateResponse) { return chatStateResponse; }
+		const chatStateResponseInvoked = await handleChatState(text, chatId);
+		console.log("chatStateResponse:", chatStateResponseInvoked);
+		if (!chatStateResponseInvoked) { return { statusCode: 200, body: 'OK' }; }
 
 		const command = text.split(' ')[0];
 

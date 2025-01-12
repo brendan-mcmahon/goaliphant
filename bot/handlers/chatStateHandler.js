@@ -10,42 +10,48 @@ const cancelWords = [
 	'no thank you',
 ]
 
-const response = { statusCode: 200, body: 'OK' };
-const fiveMinutes = 300000;
+const isExpired = (date) => {
+	const fiveMinutes = 300000;
+	!date || new Date(date) < new Date(Date.now() - fiveMinutes);
+}
+
 
 async function handleChatState(text, chatId) {
 	const { state, date, args } = await getChatState(chatId);
 	console.log('state:', state);
 
 	if (await shouldCancel(chatId, text)) {
-		return response;
+		console.log('user cancelled state');
+		return true;
+	}
+	if (!state || state === 'chat') {
+		console.log('no state');
+		return false;
 	}
 
-	if (state && date && new Date(date) < new Date(Date.now() - fiveMinutes)) {
+	if (isExpired(date)) {
+		console.log('state expired');
 		await clearChatState(chatId);
-		return response;
+		return false;
 	}
 
-	if (state && state === 'addGoals') {
+	if (state === 'addGoals') {
 		await saveGoalsAndList(text.split(','), chatId);
 		await clearChatState(chatId);
 	}
 
-	if (state && state === 'tomorrow') {
+	if (state === 'tomorrow') {
 		await saveGoalsAndList(text.split(','), chatId);
 		await clearChatState(chatId);
 	}
 
-	if (state && state.startsWith('creatingReward')) {
+	if (state.startsWith('creatingReward')) {
 		const step = parseInt(state.split('-')[1]);
 		await handleCreateRewardStep(chatId, step, args[0], text);
-		return null;
 	}
 
-	if (state && state === 'chat') {
-		console.log('no state');
-	}
-	return null;
+	return true;
+
 }
 exports.handleChatState = handleChatState;
 
