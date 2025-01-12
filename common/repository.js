@@ -276,3 +276,4 @@ const addReward = async (chatId, reward) => {
 		throw err;
 	}
 }
+exports.addReward = addReward;
