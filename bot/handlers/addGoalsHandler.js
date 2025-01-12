@@ -1,6 +1,6 @@
 const { getGoals, updateGoals, setChatState } = require('../common/repository.js');
 const { listGoals } = require('./listHandler.js');
-const { bot } = require('../bot.js');
+const bot = require('../bot.js');
 
 async function addGoals(text, chatId) {
 	const goalsText = text.replace('/add', '').trim();
