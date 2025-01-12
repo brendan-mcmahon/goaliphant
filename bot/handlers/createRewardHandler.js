@@ -61,10 +61,10 @@ async function confirmReward(chatId, rewardId, text) {
 		if (text.toLowerCase() === 'yes' || text.toLowerCase() === 'y') {
 			await upsertReward(chatId, { rewardId, confirmed: true });
 			await sendMessage(chatId, `Reward created!`);
+			await clearChatState(chatId);
 		} else {
 			await sendMessage(chatId, `Okay, let's start over.`);
 			await createReward(chatId);
-			await clearChatState(chatId);
 		}
 	} catch (error) {
 		await sendError(chatId, `Error confirming reward.\n${error.message}`);
