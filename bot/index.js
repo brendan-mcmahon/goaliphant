@@ -9,7 +9,7 @@ const { completeGoals } = require('./handlers/completeGoalsHandler.js');
 const { uncompleteGoals } = require('./handlers/uncompleteGoalsHandler.js');
 const { getTickets } = require('./handlers/walletHandler.js');
 const { listRewards } = require('./handlers/rewardsHandler.js');
-const { createReward } = require('./handlers/createRewardHandler.js');
+const { handleCreateRewardStep } = require('./handlers/createRewardHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
@@ -41,7 +41,7 @@ exports.handler = async (event) => {
 		} else if (text === '/rewards') {
 			await listRewards(chatId);
 		} else if (text === '/createreward') {
-			await createReward(chatId);
+			await handleCreateRewardStep(chatId, 0);
 		}
 		else {
 			await sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
