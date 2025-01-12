@@ -1,5 +1,6 @@
 require('dotenv').config();
 const AWS = require('aws-sdk');
+const { v4: uuidv4 } = require('uuid');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const goalsTable = 'GoaliphantGoals';
@@ -234,37 +235,32 @@ const getTicketCount = async (chatId) => {
 exports.getTicketCount = getTicketCount;
 
 const getRewards = async (chatId) => {
-	// the chatId is the sort key in the rewards table
 	const params = {
 		TableName: rewardsTable,
 		KeyConditionExpression: 'ChatId = :chatId',
 		ExpressionAttributeValues: {
-			':chatId': chatId.toString(),
+			':chatId': chatId,
 		},
 	};
 
-	try {
-		const result = await dynamoDb.query(params).promise();
-		console.log('Rewards fetched successfully');
-		return result.Items;
-	} catch (err) {
-		console.error('Error fetching rewards:', err);
-		throw err;
-	}
+	const result = await dynamoDb.query(params).promise();
+	return result.Items;
+};
 
-}
 exports.getRewards = getRewards;
 
 const addReward = async (chatId, reward) => {
+	const rewardId = uuidv4();
 	const params = {
 		TableName: rewardsTable,
 		Item: {
-			ChatId: chatId.toString(),
+			ChatId: chatId,
+			RewardId: rewardId,
 			Title: reward.title,
 			Description: reward.description,
 			Cost: reward.cost,
 			Type: reward.type,
-			IsAvailable: reward.isAvailable,
+			IsAvailable: true,
 		},
 	};
 
@@ -275,5 +271,6 @@ const addReward = async (chatId, reward) => {
 		console.error('Error adding reward:', err);
 		throw err;
 	}
-}
+};
+
 exports.addReward = addReward;
