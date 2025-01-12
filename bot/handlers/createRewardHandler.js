@@ -55,7 +55,7 @@ async function getRewardCostFromUser(chatId, rewardId, partnerId, text) {
 	try {
 		await updateReward(partnerId, { rewardId, cost: parseInt(text) });
 		await setChatState(chatId, 'creatingReward-4', [rewardId, partnerId]);
-		const newReward = await getReward(chatId, rewardId);
+		const newReward = await getReward(partnerId, rewardId);
 		await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
 	} catch (error) {
 		console.error('Error getting reward cost from user:', error);
