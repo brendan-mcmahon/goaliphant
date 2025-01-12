@@ -280,27 +280,43 @@ const upsertReward = async (chatId, reward) => {
 	const rewardId = reward.rewardId ?? uuidv4();
 	const params = {
 		TableName: rewardsTable,
-		Item: {
+		Key: {
 			ChatId: chatId.toString(),
 			RewardId: rewardId,
-			Title: reward.title,
-			Description: reward.description,
-			Cost: reward.cost,
-			Type: reward.type,
-			IsAvailable: true,
 		},
+		UpdateExpression: `
+            SET #title = :title,
+                #description = :description,
+                #cost = :cost,
+                #type = :type,
+                #isAvailable = :isAvailable
+        `,
+		ExpressionAttributeNames: {
+			'#title': 'Title',
+			'#description': 'Description',
+			'#cost': 'Cost',
+			'#type': 'Type',
+			'#isAvailable': 'IsAvailable',
+		},
+		ExpressionAttributeValues: {
+			':title': reward.title ?? null,
+			':description': reward.description ?? null,
+			':cost': reward.cost ?? null,
+			':type': reward.type ?? null,
+			':isAvailable': reward.isAvailable ?? true,
+		},
+		ReturnValues: 'ALL_NEW', // Return the updated item
 	};
 
 	try {
-		await dynamoDb.put(params).promise();
-		console.log('Reward added successfully');
+		const result = await dynamoDb.update(params).promise();
+		console.log('Reward upserted successfully:', result.Attributes);
 		return rewardId;
 	} catch (err) {
-		console.error('Error adding reward:', err);
+		console.error('Error upserting reward:', err);
 		throw err;
 	}
 };
-
 exports.upsertReward = upsertReward;
 
 const deleteReward = async (chatId, rewardId) => {
