@@ -277,35 +277,46 @@ const getRewards = async (chatId) => {
 exports.getRewards = getRewards;
 
 const upsertReward = async (chatId, reward) => {
+	console.log("updating reward", reward);
 	const rewardId = reward.rewardId ?? uuidv4();
+
+	let updateExpression = 'SET ';
+
+	const attributeNames = {}
+	const attributeValues = {}
+
+	if (reward.title) {
+		attributeNames['#title'] = 'Title';
+		attributeValues[':title'] = reward.title;
+		updateExpression += '#title = :title';
+	}
+	if (reward.description) {
+		attributeNames['#description'] = 'Description';
+		attributeValues[':description'] = reward.description;
+		if (updateExpression !== 'SET ') {
+			updateExpression += ', ';
+		}
+		updateExpression += '#description = :description';
+	}
+	if (reward.cost) {
+		attributeNames['#cost'] = 'Cost';
+		attributeValues[':cost'] = reward.cost;
+		if (updateExpression !== 'SET ') {
+			updateExpression += ', ';
+		}
+		updateExpression += '#cost = :cost';
+	}
+
 	const params = {
 		TableName: rewardsTable,
 		Key: {
 			ChatId: chatId.toString(),
 			RewardId: rewardId,
 		},
-		UpdateExpression: `
-            SET #title = :title,
-                #description = :description,
-                #cost = :cost,
-                #type = :type,
-                #isAvailable = :isAvailable
-        `,
-		ExpressionAttributeNames: {
-			'#title': 'Title',
-			'#description': 'Description',
-			'#cost': 'Cost',
-			'#type': 'Type',
-			'#isAvailable': 'IsAvailable',
-		},
-		ExpressionAttributeValues: {
-			':title': reward.title ?? null,
-			':description': reward.description ?? null,
-			':cost': reward.cost ?? null,
-			':type': reward.type ?? null,
-			':isAvailable': reward.isAvailable ?? true,
-		},
-		ReturnValues: 'ALL_NEW', // Return the updated item
+		UpdateExpression: updateExpression,
+		ExpressionAttributeNames: attributeNames,
+		ExpressionAttributeValues: attributeValues,
+		ReturnValues: 'ALL_NEW',
 	};
 
 	try {
