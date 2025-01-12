@@ -22,6 +22,7 @@ async function saveGoalsAndList(newGoals, chatId) {
 		await sendMessage(chatId, 'Goals added successfully!');
 		await listGoals(chatId);
 	} catch (error) {
+		console.error('Error adding goals:', error);
 		await sendError(chatId, error);
 	}
 }
