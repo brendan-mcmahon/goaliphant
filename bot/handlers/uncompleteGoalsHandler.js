@@ -1,5 +1,5 @@
 const { getGoals, updateGoals, addTicket } = require('../common/repository.js');
-const bot = require('../bot.js');
+const { sendMessage, sendError } = require('./bot.js');
 const { listGoals } = require('./listHandler.js');
 
 async function uncompleteGoals(text, chatId) {
@@ -17,14 +17,14 @@ async function uncompleteGoals(text, chatId) {
 		if (updated) {
 			await updateGoals(chatId, goals);
 			await addTicket(chatId, -1 * indexes.length);
-			await bot.sendMessage(chatId, 'Goals marked as incomplete.');
+			await sendMessage(chatId, 'Goals marked as incomplete.');
 			await listGoals(chatId);
 		} else {
-			await bot.sendMessage(chatId, 'No valid goals to mark as incomplete.');
+			await sendMessage(chatId, 'No valid goals to mark as incomplete.');
 		}
 	} catch (error) {
 		console.error('Error marking goals as incomplete:', error);
-		await bot.sendMessage(chatId, 'Error marking goals as incomplete.');
+		await sendError(chatId, `Error marking goals as incomplete.\n${error.message}`);
 	}
 }
 exports.uncompleteGoals = uncompleteGoals;

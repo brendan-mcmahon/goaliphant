@@ -1,11 +1,11 @@
-const bot = require('../bot.js');
+const { sendMessage, sendError } = require('./bot.js');
 const { getGoals, updateGoals } = require('../common/repository.js');
 const { listGoals } = require('./listHandler.js');
 
 async function deleteGoals(text, chatId) {
 	const indexText = text.replace('/delete', '').trim();
 	if (!indexText) {
-		await bot.sendMessage(chatId, 'Send the goal numbers to delete (separated by spaces).');
+		await sendMessage(chatId, 'Send the goal numbers to delete (separated by spaces).');
 	} else {
 		const indexes = indexText.split(' ').map(n => parseInt(n.trim()) - 1);
 		await removeGoals(indexes, chatId);
@@ -25,12 +25,12 @@ async function removeGoals(indexes, chatId) {
 		});
 		if (updated) {
 			await updateGoals(chatId, goals);
-			await bot.sendMessage(chatId, 'Goals deleted successfully.');
+			await sendMessage(chatId, 'Goals deleted successfully.');
 			await listGoals(chatId);
 		} else {
-			await bot.sendMessage(chatId, 'No valid goals to delete.');
+			await sendMessage(chatId, 'No valid goals to delete.');
 		}
 	} catch (error) {
-		await bot.sendMessage(chatId, 'Error deleting goals.');
+		await sendError(chatId, 'Error deleting goals.');
 	}
 }

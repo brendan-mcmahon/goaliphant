@@ -4,4 +4,12 @@ const token = process.env.BOT_TOKEN;
 
 const bot = new TelegramBot(token);
 
-module.exports = bot;
+async function sendMessage(chatId, message, options) {
+	return bot.sendMessage(chatId, message, options);
+}
+
+async function sendError(chatId, message) {
+	return bot.sendMessage(chatId, `❌ ${message}`);
+}
+
+module.exports = { sendMessage, sendError };

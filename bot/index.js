@@ -1,5 +1,5 @@
 
-const { bot } = require('./bot.js');
+const { sendMessage } = require('./bot.js');
 const { start } = require('./handlers/startHandler.js');
 const { deleteGoals } = require('./handlers/deleteGoalsHandler.js');
 const { addGoals } = require('./handlers/addGoalsHandler.js');
@@ -43,7 +43,7 @@ exports.handler = async (event) => {
 			await createReward(chatId);
 		}
 		else {
-			await bot.sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
+			await sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
 		}
 	}
 

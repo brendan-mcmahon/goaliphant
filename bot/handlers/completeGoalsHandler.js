@@ -1,11 +1,11 @@
 const { getGoals, updateGoals, addTicket } = require('../common/repository.js');
-const bot = require('../bot.js');
+const { sendMessage, sendError } = require('./bot.js');
 const { listGoals } = require('./listHandler.js');
 
 async function completeGoals(text, chatId) {
 	const indexText = text.replace('/complete', '').trim();
 	if (!indexText) {
-		await bot.sendMessage(chatId, 'Send the goal numbers to mark as complete (separated by spaces).');
+		await sendMessage(chatId, 'Send the goal numbers to mark as complete (separated by spaces).');
 		bot.once('message', async (msg) => {
 			const indexes = msg.text.split(' ').map(n => parseInt(n.trim()) - 1);
 			await markGoalsAsComplete(indexes, chatId);
@@ -30,13 +30,13 @@ async function markGoalsAsComplete(indexes, chatId) {
 		if (updated) {
 			await updateGoals(chatId, goals);
 			await addTicket(chatId);
-			await bot.sendMessage(chatId, 'Goals marked as completed.');
+			await sendMessage(chatId, 'Goals marked as completed.');
 			await listGoals(chatId);
 		} else {
-			await bot.sendMessage(chatId, 'No valid goals to mark as completed.');
+			await sendMessage(chatId, 'No valid goals to mark as completed.');
 		}
 	} catch (error) {
 		console.error('Error marking goals as completed:', error);
-		await bot.sendMessage(chatId, 'Error marking goals as completed.');
+		await sendError(chatId, `Error saving goals.\n${error.message}`);
 	}
 }
