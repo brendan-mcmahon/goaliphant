@@ -56,8 +56,7 @@ async function getRewardCostFromUser(chatId, rewardId, text) {
 		await updateReward(chatId, { rewardId, cost: parseInt(text) });
 		await setChatState(chatId, 'creatingReward-4', [rewardId]);
 		const newReward = await getReward(chatId, rewardId);
-		// await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
-		await sendMessage(chatId, JSON.stringify(newReward));
+		await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
 	} catch (error) {
 		console.error('Error getting reward cost from user:', error);
 		await sendError(chatId, error);
@@ -67,8 +66,7 @@ async function getRewardCostFromUser(chatId, rewardId, text) {
 async function confirmReward(chatId, rewardId, text) {
 	try {
 		if (text.toLowerCase() === 'yes' || text.toLowerCase() === 'y') {
-			await updateReward(chatId, { rewardId, confirmed: true });
-			await sendMessage(chatId, `Reward created!`);
+			await sendMessage(chatId, `Your reward has been created!`);
 			await clearChatState(chatId);
 		} else {
 			await sendMessage(chatId, `Okay, let's start over.`);
