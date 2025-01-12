@@ -1,4 +1,5 @@
 const { getGoals } = require('../common/goalRepository.js');
+const { getHoney } = require('../common/honeyRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 
 async function listGoals(chatId) {
@@ -17,7 +18,7 @@ exports.listGoals = listGoals;
 async function listHoney(chatId) {
 	try {
 		console.log("listing...");
-		const goals = await getGoals(chatId);
+		const goals = await getHoney(chatId);
 		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
 		await sendMessage(chatId, goalsList || 'No honey-do list for today.');
 	} catch (error) {
