@@ -5,12 +5,13 @@ const banner = `
  .+"+.+"+.+"+.+"+.+"+.+"+.+"+. 
 (      _   _  ___ __  _       )
  )    |_) |_)  |   / |_      ( 
-(     |   | \ _|_ /_ |_       )
+(     |   | \\ _|_ /_ |_       )
  )     _   _   _ ___         ( 
-(     |_) / \ / \ | |_|       )
- )    |_) \_/ \_/ | | |      ( 
+(     |_) / \\ / \\ | |_|       )
+ )    |_) \\_/ \\_/ | | |      ( 
 (                             )
- "+.+"+.+"+.+"+.+"+.+"+.+"+.+" `;
+ "+.+"+.+"+.+"+.+"+.+"+.+"+.+"`;
+
 
 async function listRewards(chatId) {
 	try {
@@ -25,7 +26,7 @@ async function listRewards(chatId) {
 				return `<b>${index + 1}. ${reward.Title}</b> | ${reward.Cost} 🎟\n<i>${reward.Description}</i>`;
 			}).join('\n');
 		}
-		await sendMessage(chatId, banner);
+		await sendMessage(chatId, `<pre>${banner}</pre>`, { parse_mode: 'HTML' });
 		await sendMessage(chatId, rewardsMessage, { parse_mode: 'HTML' });
 		console.log("Rewards listed");
 	} catch (error) {
