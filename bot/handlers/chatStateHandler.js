@@ -14,6 +14,7 @@ const fiveMinutes = 300000;
 
 async function handleChatState(text, chatId) {
 	const { state, date, args } = await getChatState(chatId);
+	console.log('state:', state);
 
 	if (await shouldCancel(chatId, text)) {
 		return response;
@@ -39,6 +40,7 @@ async function handleChatState(text, chatId) {
 
 		return null;
 	}
+	console.log('no state');
 	return response;
 }
 exports.handleChatState = handleChatState;
