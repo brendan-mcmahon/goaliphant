@@ -11,8 +11,7 @@ async function listRewards(chatId) {
 	} else {
 		rewardsMessage = `<b>Available Rewards:</b>\n\n`;
 		rewardsMessage += rewards.map((reward, index) => {
-			const availability = reward.IsAvailable ? "Available" : "Unavailable";
-			return `<b>${index + 1}. ${reward.Title}</b>\n<i>${reward.Description}</i>\nCost: <b>🎟${reward.Cost}</b>\nType: <b>${reward.Type}</b>\nStatus: ${availability}\n`;
+			return `<b>${index + 1}. 🎟${reward.Cost} ${reward.Title}</b>\n<i>${reward.Description}</i>`;
 		}).join('\n');
 	}
 
