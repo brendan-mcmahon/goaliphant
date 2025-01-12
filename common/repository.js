@@ -234,6 +234,26 @@ const getTicketCount = async (chatId) => {
 }
 exports.getTicketCount = getTicketCount;
 
+const getReward = async (chatId, rewardId) => {
+	const params = {
+		TableName: rewardsTable,
+		Key: {
+			ChatId: chatId.toString(),
+			RewardId: rewardId,
+		},
+	};
+
+	try {
+		const result = await dynamoDb.get(params).promise();
+		console.log('Reward fetched successfully');
+		return result.Item;
+	} catch (err) {
+		console.error('Error fetching reward:', err);
+		throw err;
+	}
+}
+exports.getReward = getReward;
+
 const getRewards = async (chatId) => {
 	console.log('Fetching rewards for', chatId);
 	const params = {

@@ -1,5 +1,5 @@
 const { sendMessage, sendError } = require('../bot.js');
-const { upsertReward, setChatState, clearChatState, deleteReward } = require('../common/repository.js');
+const { upsertReward, setChatState, clearChatState, deleteReward, getReward } = require('../common/repository.js');
 
 const steps = [
 	createReward,
@@ -50,7 +50,8 @@ async function getRewardCostFromUser(chatId, rewardId, text) {
 	try {
 		await upsertReward(chatId, { rewardId, cost: parseInt(text) });
 		await setChatState(chatId, 'creatingReward-4', [rewardId]);
-		await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${text}\nDescription: ${text}\nCost: ${text}🎟\n\nIs this correct?`);
+		const newReward = await getReward(chatId, rewardId);
+		await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
 	} catch (error) {
 		await sendError(chatId, `Error setting reward cost.\n${error.message}`);
 	}
