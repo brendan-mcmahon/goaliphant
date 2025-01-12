@@ -118,7 +118,7 @@ const updateReward = async (chatId, reward) => {
 		console.log('Reward upserted successfully:', result.Attributes);
 		return reward.rewardId;
 	} catch (err) {
-		console.error('Error upserting reward:', err);
+		console.error('Error updating reward:', err);
 		throw err;
 	}
 };

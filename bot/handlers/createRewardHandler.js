@@ -10,8 +10,8 @@ const steps = [
 	confirmReward
 ]
 
-async function handleCreateRewardStep(chatId, step, rewardId, text) {
-	await steps[step](chatId, rewardId, text);
+async function handleCreateRewardStep(chatId, step, rewardId, partnerId, text) {
+	await steps[step](chatId, rewardId, partnerId, text);
 }
 exports.handleCreateRewardStep = handleCreateRewardStep;
 
