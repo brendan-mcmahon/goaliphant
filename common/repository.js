@@ -235,11 +235,12 @@ const getTicketCount = async (chatId) => {
 exports.getTicketCount = getTicketCount;
 
 const getRewards = async (chatId) => {
+	console.log('Fetching rewards for', chatId);
 	const params = {
 		TableName: rewardsTable,
 		KeyConditionExpression: 'ChatId = :chatId',
 		ExpressionAttributeValues: {
-			':chatId': chatId,
+			':chatId': chatId.toString(),
 		},
 	};
 
