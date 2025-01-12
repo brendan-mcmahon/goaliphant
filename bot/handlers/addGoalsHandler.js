@@ -1,5 +1,5 @@
 const { getGoals, updateGoals } = require('../common/goalRepository.js');
-const { setChatState } = require('../common/userRepository.js');
+const { setChatState, getUser } = require('../common/userRepository.js');
 const { listGoals } = require('./listHandler.js');
 const { sendMessage, sendError } = require('../bot.js');
 
