@@ -63,6 +63,10 @@ exports.handler = async (event) => {
 			case 'createreward':
 				await handleCreateRewardStep(chatId, 0);
 				break;
+			case '/redeem':
+			case 'redeem':
+				await redeemReward(chatId, text);
+				break;
 			default:
 				await sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
 		}

@@ -56,7 +56,7 @@ async function handleChatState(text, chatId) {
 exports.handleChatState = handleChatState;
 
 async function shouldCancel(chatId, text) {
-	if (cancelWords.includes(text.toLowerCase())) {
+	if (cancelWords.includes(text?.toLowerCase())) {
 		await clearChatState(chatId);
 		await sendMessage(chatId, 'Reward creation cancelled.');
 		return true;
