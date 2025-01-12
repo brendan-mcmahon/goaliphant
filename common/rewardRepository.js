@@ -72,7 +72,7 @@ const insertReward = async (chatId) => {
 exports.insertReward = insertReward;
 
 const updateReward = async (chatId, reward) => {
-	console.log("updating reward", reward);
+	console.log("updating reward", chatId, reward);
 
 	let updateExpression = 'SET ';
 

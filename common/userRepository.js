@@ -56,6 +56,7 @@ async function getChatState(chatId) {
 exports.getChatState = getChatState;
 
 async function setChatState(chatId, chatState, chatStateArgs = null) {
+	console.log("setting chat state for chatId:", chatId, "state:", chatState, "args:", chatStateArgs);
 	const currentDateTime = new Date().toISOString();
 
 	const updateExpression = chatStateArgs
