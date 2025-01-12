@@ -301,39 +301,40 @@ const insertReward = async (chatId) => {
 exports.insertReward = insertReward;
 
 const updateReward = async (chatId, reward) => {
-	console.log("Upserting reward", reward);
+	console.log("updating reward", reward);
 
-	const rewardId = reward.rewardId ?? uuidv4();
+	let updateExpression = 'SET ';
 
-	let updateExpression = 'SET #placeholder = :placeholder'; // Ensure item is created
-	const attributeNames = {
-		'#placeholder': 'Placeholder', // Dummy attribute
-	};
-	const attributeValues = {
-		':placeholder': true, // Dummy value
-	};
+	const attributeNames = {}
+	const attributeValues = {}
 
 	if (reward.title) {
 		attributeNames['#title'] = 'Title';
 		attributeValues[':title'] = reward.title;
-		updateExpression += ', #title = :title';
+		updateExpression += '#title = :title';
 	}
 	if (reward.description) {
 		attributeNames['#description'] = 'Description';
 		attributeValues[':description'] = reward.description;
-		updateExpression += ', #description = :description';
+		if (updateExpression !== 'SET ') {
+			updateExpression += ', ';
+		}
+		updateExpression += '#description = :description';
 	}
 	if (reward.cost) {
 		attributeNames['#cost'] = 'Cost';
 		attributeValues[':cost'] = reward.cost;
-		updateExpression += ', #cost = :cost';
+		if (updateExpression !== 'SET ') {
+			updateExpression += ', ';
+		}
+		updateExpression += '#cost = :cost';
 	}
 
 	const params = {
 		TableName: rewardsTable,
 		Key: {
 			ChatId: chatId.toString(),
-			RewardId: rewardId,
+			RewardId: reward.rewardId,
 		},
 		UpdateExpression: updateExpression,
 		ExpressionAttributeNames: attributeNames,
@@ -344,7 +345,7 @@ const updateReward = async (chatId, reward) => {
 	try {
 		const result = await dynamoDb.update(params).promise();
 		console.log('Reward upserted successfully:', result.Attributes);
-		return rewardId;
+		return reward.rewardId;
 	} catch (err) {
 		console.error('Error upserting reward:', err);
 		throw err;
