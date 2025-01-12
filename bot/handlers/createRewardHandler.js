@@ -1,5 +1,5 @@
 const { sendMessage, sendError } = require('../bot.js');
-const { upsertReward, setChatState, clearChatState } = require('../common/repository.js');
+const { upsertReward, setChatState, clearChatState, deleteReward } = require('../common/repository.js');
 
 const steps = [
 	createReward,
@@ -64,6 +64,7 @@ async function confirmReward(chatId, rewardId, text) {
 			await clearChatState(chatId);
 		} else {
 			await sendMessage(chatId, `Okay, let's start over.`);
+			await deleteReward(chatId, rewardId);
 			await createReward(chatId);
 		}
 	} catch (error) {

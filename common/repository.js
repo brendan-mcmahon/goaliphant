@@ -282,3 +282,22 @@ const upsertReward = async (chatId, reward) => {
 };
 
 exports.upsertReward = upsertReward;
+
+const deleteReward = async (chatId, rewardId) => {
+	const params = {
+		TableName: rewardsTable,
+		Key: {
+			ChatId: chatId.toString(),
+			RewardId: rewardId,
+		},
+	};
+
+	try {
+		await dynamoDb.delete(params).promise();
+		console.log('Reward deleted successfully');
+	} catch (err) {
+		console.error('Error deleting reward:', err);
+		throw err;
+	}
+};
+exports.deleteReward = deleteReward;
