@@ -12,7 +12,7 @@ async function listRewards(chatId) {
 		} else {
 			rewardsMessage = `<b>Available Rewards:</b>\n\n`;
 			rewardsMessage += rewards.map((reward, index) => {
-				return `<b>${index + 1}. 🎟${reward.Cost} ${reward.Title}</b>\n<i>${reward.Description}</i>`;
+				return `<b>${index + 1}. ${reward.Title}</b>\n<i>${reward.Description}</i> | ${reward.Cost}🎟`;
 			}).join('\n');
 		}
 
