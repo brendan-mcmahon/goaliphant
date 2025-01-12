@@ -20,8 +20,6 @@ exports.handler = async (event) => {
 
 		console.log("message from", chatId, body.message.from.first_name, ":", text);
 
-		await sendMessage(chatId, "I got your text.");
-
 		const chatStateResponse = await handleChatState(text, chatId);
 		console.log("chatStateResponse:", chatStateResponse);
 		if (chatStateResponse) { return chatStateResponse; }
