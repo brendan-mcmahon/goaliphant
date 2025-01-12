@@ -28,7 +28,7 @@ async function createReward(chatId) {
 
 async function getRewardTitleFromUser(chatId, rewardId, text) {
 	try {
-		await upsertReward(chatId, { rewardId, Title: text });
+		await upsertReward(chatId, { rewardId, title: text });
 		await setChatState(chatId, 'creatingReward-2', [rewardId]);
 		await sendMessage(chatId, `Great! What is the description of the reward?`);
 	} catch (error) {
@@ -38,7 +38,7 @@ async function getRewardTitleFromUser(chatId, rewardId, text) {
 
 async function getRewardDescriptionFromUser(chatId, rewardId, text) {
 	try {
-		await upsertReward(chatId, { rewardId, Description: text });
+		await upsertReward(chatId, { rewardId, description: text });
 		await setChatState(chatId, 'creatingReward-3', [rewardId]);
 		await sendMessage(chatId, `Awesome! How many tickets should this reward cost?`);
 	} catch (error) {
@@ -48,7 +48,7 @@ async function getRewardDescriptionFromUser(chatId, rewardId, text) {
 
 async function getRewardCostFromUser(chatId, rewardId, text) {
 	try {
-		await upsertReward(chatId, { rewardId, Cost: parseInt(text) });
+		await upsertReward(chatId, { rewardId, cost: parseInt(text) });
 		await setChatState(chatId, 'creatingReward-4', [rewardId]);
 		await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${text}\nDescription: ${text}\nCost: ${text}🎟\n\nIs this correct?`);
 	} catch (error) {
