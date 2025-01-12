@@ -13,6 +13,7 @@ const { handleCreateRewardStep } = require('./handlers/createRewardHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
+	console.log("body:", body);
 
 	if (body.message) {
 		const chatId = body.message.chat.id;
