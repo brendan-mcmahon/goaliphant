@@ -4,6 +4,7 @@ const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const goalsTable = 'GoaliphantGoals';
 const userTable = 'GoaliphantUsers';
+const rewardsTable = 'GoaliphantRewards';
 const TIME_ZONE = 'America/Indiana/Indianapolis';
 
 function getLocalDate() {
@@ -125,8 +126,7 @@ async function getChatState(chatId) {
 	};
 	try {
 		const result = await dynamoDb.get(params).promise();
-		console.log("result:", result.Item, result.Item.ChatState);
-		return { state: result.Item?.ChatState, date: result.Item?.ChatStateDateTime }
+		return { state: result.Item?.ChatState, date: result.Item?.ChatStateDateTime, args: result.Item?.ChatStateArgs };
 	} catch (err) {
 		console.error('Error fetching chat state:', err);
 		throw err;
@@ -134,16 +134,29 @@ async function getChatState(chatId) {
 }
 exports.getChatState = getChatState;
 
-async function setChatState(chatId, chatState) {
+async function setChatState(chatId, chatState, chatStateArgs = null) {
 	const currentDateTime = new Date().toISOString();
+
+	const updateExpression = chatStateArgs
+		? 'SET ChatState = :chatState, ChatStateDateTime = :chatStateDateTime, ChatStateArgs = :chatStateArgs'
+		: 'SET ChatState = :chatState, ChatStateDateTime = :chatStateDateTime';
+
+	const expressionAttributeValues = chatStateArgs
+		? {
+			':chatState': chatState,
+			':chatStateDateTime': currentDateTime,
+			':chatStateArgs': chatStateArgs,
+		}
+		: {
+			':chatState': chatState,
+			':chatStateDateTime': currentDateTime,
+		};
+
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
-		UpdateExpression: 'SET ChatState = :chatState, ChatStateDateTime = :chatStateDateTime',
-		ExpressionAttributeValues: {
-			':chatState': chatState,
-			':chatStateDateTime': currentDateTime
-		},
+		UpdateExpression: updateExpression,
+		ExpressionAttributeValues: expressionAttributeValues,
 	};
 	try {
 		await dynamoDb.update(params).promise();
@@ -219,3 +232,47 @@ const getTicketCount = async (chatId) => {
 	}
 }
 exports.getTicketCount = getTicketCount;
+
+const getRewards = async (chatId) => {
+	// the chatId is the sort key in the rewards table
+	const params = {
+		TableName: rewardsTable,
+		KeyConditionExpression: 'ChatId = :chatId',
+		ExpressionAttributeValues: {
+			':chatId': chatId.toString(),
+		},
+	};
+
+	try {
+		const result = await dynamoDb.query(params).promise();
+		console.log('Rewards fetched successfully');
+		return result.Items;
+	} catch (err) {
+		console.error('Error fetching rewards:', err);
+		throw err;
+	}
+
+}
+exports.getRewards = getRewards;
+
+const addReward = async (chatId, reward) => {
+	const params = {
+		TableName: rewardsTable,
+		Item: {
+			ChatId: chatId.toString(),
+			Title: reward.title,
+			Description: reward.description,
+			Cost: reward.cost,
+			Type: reward.type,
+			IsAvailable: reward.isAvailable,
+		},
+	};
+
+	try {
+		await dynamoDb.put(params).promise();
+		console.log('Reward added successfully');
+	} catch (err) {
+		console.error('Error adding reward:', err);
+		throw err;
+	}
+}
