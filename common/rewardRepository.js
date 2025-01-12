@@ -16,7 +16,7 @@ const getReward = async (chatId, rewardId) => {
 
 	try {
 		const result = await dynamoDb.get(params).promise();
-		console.log('Reward fetched successfully');
+		console.log('Reward fetched successfully', result.Item);
 		return result.Item;
 	} catch (err) {
 		console.error('Error fetching reward:', err);

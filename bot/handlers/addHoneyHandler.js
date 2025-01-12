@@ -1,30 +1,33 @@
-const { getGoals, updateGoals } = require('../common/goalRepository.js');
-const { setChatState } = require('../common/userRepository.js');
-const { listGoals } = require('./listHandler.js');
+const { getHoney, updateHoney } = require('../common/honeyRepository.js');
+const { setChatState, getUser } = require('../common/userRepository.js');
+const { listHoney } = require('./listHandler.js');
 const { sendMessage, sendError } = require('../bot.js');
 
-async function addGoals(text, chatId) {
+async function addHoney(text, chatId) {
+	const user = await getUser(chatId);
+	const partner = await getUser(user.PartnerId);
 	const goalsText = text.replace('/add', '').trim();
 	if (!goalsText) {
 		await setChatState(chatId, 'addGoals');
-		await sendMessage(chatId, 'Send your goals as comma-separated text.');
+		await sendMessage(chatId, 'Send your honey-do items as comma-separated text.');
 	} else {
 		const newGoals = goalsText.split(',').map((goal) => goal.trim());
-		await saveGoalsAndList(newGoals, chatId);
+		await sendMessage(partner.ChatId, `Your partner added the following honey-do items: ${newGoals.join(', ')}`);
+		await saveHoneyAndList(newGoals, partner.ChatId);
 	}
 }
-exports.addGoals = addGoals;
+exports.addHoney = addHoney;
 
-async function saveGoalsAndList(newGoals, chatId) {
+async function saveHoneyAndList(newGoals, chatId) {
 	try {
-		const existingGoals = await getGoals(chatId);
+		const existingGoals = await getHoney(chatId);
 		const updatedGoals = [...existingGoals, ...newGoals.map(goal => ({ text: goal, completed: false }))];
-		await updateGoals(chatId, updatedGoals);
+		await updateHoney(chatId, updatedGoals);
 		await sendMessage(chatId, 'Goals added successfully!');
-		await listGoals(chatId);
+		await listHoney(chatId);
 	} catch (error) {
 		console.error('Error adding goals:', error);
 		await sendError(chatId, error);
 	}
 }
-exports.saveGoalsAndList = saveGoalsAndList;
+exports.saveHoneyAndList = saveHoneyAndList;
