@@ -261,7 +261,7 @@ const upsertReward = async (chatId, reward) => {
 	const params = {
 		TableName: rewardsTable,
 		Item: {
-			ChatId: chatId,
+			ChatId: chatId.toString(),
 			RewardId: rewardId,
 			Title: reward.title,
 			Description: reward.description,
