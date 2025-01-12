@@ -41,7 +41,10 @@ async function handleChatState(text, chatId) {
 		await handleCreateRewardStep(chatId, step, args[0], text);
 		return null;
 	}
-	console.log('no state');
+
+	if (state && state === 'chat') {
+		console.log('no state');
+	}
 	return null;
 }
 exports.handleChatState = handleChatState;
