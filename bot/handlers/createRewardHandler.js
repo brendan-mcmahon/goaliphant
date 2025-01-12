@@ -10,8 +10,7 @@ const steps = [
 ]
 
 async function handleCreateRewardStep(chatId, step, rewardId, text) {
-	const handler = steps.find(s => s.step === step).handler;
-	await handler(chatId, rewardId, text);
+	await steps[step](chatId, rewardId, text);
 }
 exports.handleCreateRewardStep = handleCreateRewardStep;
 
