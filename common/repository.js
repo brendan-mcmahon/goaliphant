@@ -243,8 +243,14 @@ const getRewards = async (chatId) => {
 		},
 	};
 
-	const result = await dynamoDb.query(params).promise();
-	return result.Items;
+	try {
+		const result = await dynamoDb.query(params).promise();
+		console.log('Got rewards:', result.Items);
+		return result.Items;
+	} catch (err) {
+		console.error('Error adding reward:', err);
+		throw err;
+	}
 };
 
 exports.getRewards = getRewards;
