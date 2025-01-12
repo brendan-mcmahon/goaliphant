@@ -1,5 +1,5 @@
 const { sendMessage, sendError } = require('../bot.js');
-const { upsertReward, setChatState, clearChatState, deleteReward, getReward } = require('../common/repository.js');
+const { updateReward, setChatState, clearChatState, deleteReward, getReward, insertReward } = require('../common/repository.js');
 
 const steps = [
 	createReward,
@@ -18,7 +18,7 @@ exports.handleCreateRewardStep = handleCreateRewardStep;
 async function createReward(chatId) {
 	try {
 		await sendMessage(chatId, `Great! Let's make a new reward for your partner. I'll ask you a few questions to get the details. If you want to stop at any point, just say "cancel" or "nevermind"!`);
-		var rewardId = await upsertReward(chatId, {});
+		var rewardId = await insertReward(chatId);
 		await setChatState(chatId, 'creatingReward-1', [rewardId]);
 		await sendMessage(chatId, `What is the title of the reward?`);
 	} catch (error) {
@@ -28,7 +28,7 @@ async function createReward(chatId) {
 
 async function getRewardTitleFromUser(chatId, rewardId, text) {
 	try {
-		await upsertReward(chatId, { rewardId, title: text });
+		await updateReward(chatId, { rewardId, title: text });
 		await setChatState(chatId, 'creatingReward-2', [rewardId]);
 		await sendMessage(chatId, `Great! What is the description of the reward?`);
 	} catch (error) {
@@ -38,7 +38,7 @@ async function getRewardTitleFromUser(chatId, rewardId, text) {
 
 async function getRewardDescriptionFromUser(chatId, rewardId, text) {
 	try {
-		await upsertReward(chatId, { rewardId, description: text });
+		await updateReward(chatId, { rewardId, description: text });
 		await setChatState(chatId, 'creatingReward-3', [rewardId]);
 		await sendMessage(chatId, `Awesome! How many tickets should this reward cost?`);
 	} catch (error) {
@@ -48,7 +48,7 @@ async function getRewardDescriptionFromUser(chatId, rewardId, text) {
 
 async function getRewardCostFromUser(chatId, rewardId, text) {
 	try {
-		await upsertReward(chatId, { rewardId, cost: parseInt(text) });
+		await updateReward(chatId, { rewardId, cost: parseInt(text) });
 		await setChatState(chatId, 'creatingReward-4', [rewardId]);
 		const newReward = await getReward(chatId, rewardId);
 		// await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
@@ -61,7 +61,7 @@ async function getRewardCostFromUser(chatId, rewardId, text) {
 async function confirmReward(chatId, rewardId, text) {
 	try {
 		if (text.toLowerCase() === 'yes' || text.toLowerCase() === 'y') {
-			await upsertReward(chatId, { rewardId, confirmed: true });
+			await updateReward(chatId, { rewardId, confirmed: true });
 			await sendMessage(chatId, `Reward created!`);
 			await clearChatState(chatId);
 		} else {

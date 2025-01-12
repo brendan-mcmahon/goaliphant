@@ -276,35 +276,57 @@ const getRewards = async (chatId) => {
 
 exports.getRewards = getRewards;
 
+const insertReward = async (chatId) => {
+	const rewardId = uuidv4();
+	const params = {
+		TableName: rewardsTable,
+		Item: {
+			ChatId: chatId.toString(),
+			RewardId: rewardId,
+			Title: 'New Reward',
+			Description: 'Description',
+			Cost: 1,
+		},
+	};
+
+	try {
+		await dynamoDb.put(params).promise();
+		console.log('Reward inserted successfully');
+		return rewardId;
+	} catch (err) {
+		console.error('Error inserting reward:', err);
+		throw err;
+	}
+}
+exports.insertReward = insertReward;
+
 const upsertReward = async (chatId, reward) => {
-	console.log("updating reward", reward);
+	console.log("Upserting reward", reward);
+
 	const rewardId = reward.rewardId ?? uuidv4();
 
-	let updateExpression = 'SET ';
-
-	const attributeNames = {}
-	const attributeValues = {}
+	let updateExpression = 'SET #placeholder = :placeholder'; // Ensure item is created
+	const attributeNames = {
+		'#placeholder': 'Placeholder', // Dummy attribute
+	};
+	const attributeValues = {
+		':placeholder': true, // Dummy value
+	};
 
 	if (reward.title) {
 		attributeNames['#title'] = 'Title';
 		attributeValues[':title'] = reward.title;
-		updateExpression += '#title = :title';
+		updateExpression += ', #title = :title';
 	}
 	if (reward.description) {
 		attributeNames['#description'] = 'Description';
 		attributeValues[':description'] = reward.description;
-		if (updateExpression !== 'SET ') {
-			updateExpression += ', ';
-		}
-		updateExpression += '#description = :description';
+		updateExpression += ', #description = :description';
 	}
 	if (reward.cost) {
 		attributeNames['#cost'] = 'Cost';
 		attributeValues[':cost'] = reward.cost;
-		if (updateExpression !== 'SET ') {
-			updateExpression += ', ';
-		}
-		updateExpression += '#cost = :cost';
+		updateExpression += ', #cost = :cost';
 	}
 
 	const params = {
@@ -328,6 +350,7 @@ const upsertReward = async (chatId, reward) => {
 		throw err;
 	}
 };
+
 exports.upsertReward = upsertReward;
 
 const deleteReward = async (chatId, rewardId) => {
