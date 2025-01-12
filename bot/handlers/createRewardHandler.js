@@ -1,5 +1,5 @@
 const { sendMessage, sendError } = require('../bot.js');
-const { setChatState, clearChatState } = require('../common/userRepository.js');
+const { setChatState, clearChatState, getUser } = require('../common/userRepository.js');
 const { updateReward, deleteReward, getReward, insertReward } = require('../common/rewardRepository.js');
 
 const steps = [
