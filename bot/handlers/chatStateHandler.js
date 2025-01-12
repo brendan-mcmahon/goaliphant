@@ -9,37 +9,44 @@ const cancelWords = [
 	'no thank you',
 ]
 
+const response = { statusCode: 200, body: 'OK' };
+const fiveMinutes = 300000;
+
 async function handleChatState(text, chatId) {
 	const { state, date, args } = await getChatState(chatId);
 
+	if (await shouldCancel(chatId, text)) {
+		return response;
+	}
+
+	if (state && date && new Date(date) < new Date(Date.now() - fiveMinutes)) {
+		await clearChatState(chatId);
+		return response;
+	}
+
 	if (state && state === 'addGoals') {
-		if (date && new Date(date) < new Date(Date.now() - 300000)) {
-			await clearChatState(chatId);
-		}
-		if (cancelWords.includes(text.toLowerCase())) {
-			await clearChatState(chatId);
-			await bot.sendMessage(chatId, 'Goal addition cancelled.');
-			return { statusCode: 200, body: 'OK' };
-		}
 		await saveGoalsAndList(text.split(','), chatId);
 		await clearChatState(chatId);
-		return { statusCode: 200, body: 'OK' };
 	}
 
 	if (state && state === 'tomorrow') {
-		if (date && new Date(date) < new Date(Date.now() - 300000)) {
-			await clearChatState(chatId);
-		}
-		if (cancelWords.includes(text.toLowerCase())) {
-			await clearChatState(chatId);
-			await bot.sendMessage(chatId, 'Goal addition cancelled.');
-			return { statusCode: 200, body: 'OK' };
-		}
 		await saveGoalsAndList(text.split(','), chatId);
 		await clearChatState(chatId);
-		return { statusCode: 200, body: 'OK' };
 	}
 
-	return null;
+	if (state && state.startsWith('creatingReward')) {
+		const step = parseInt(state.split('-')[1]);
+
+		return null;
+	}
+	return response;
 }
 exports.handleChatState = handleChatState;
+
+async function shouldCancel(chatId, text) {
+	if (cancelWords.includes(text.toLowerCase())) {
+		await clearChatState(chatId);
+		await bot.sendMessage(chatId, 'Reward creation cancelled.');
+		return true;
+	}
+}

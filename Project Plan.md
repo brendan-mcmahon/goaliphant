@@ -44,10 +44,11 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
     - [x] Add a `Partner` data point to Users that refers to another User in the system
     - [x] When a user completes a goal, increment their `TicketCount`
     - [x] When a user uncompletes a goal, decrement their `TicketCount`
-    - [ ] New DynamoDB table called `GoaliphantRewards` that basically just tracks a list of rewards each player can earn with tickets
-    - [ ] New Bot command: `/rewards` that lists those rewards
+    - [x] New DynamoDB table called `GoaliphantRewards` that basically just tracks a list of rewards each player can earn with tickets
+    - [x] New Bot command: `/rewards` that lists those rewards
     - [ ] New Bot command: `/redeem {#}` that sends a message to the partner with the reward name, and deducts the predefined number of tickets from the user
-    - [ ] New Bot command: `/wallet` that sends a message to the user with their current ticket count.
+    - [x] New Bot command: `/wallet` that sends a message to the user with their current ticket count.
+    - [ ] New Bot command: `/add-reward` that kicks off a short process to create a new reward for your partner.
 3. **Honey-Do**
    -[ ] As in #2, add a `Partner` data point to Users that refers to another User in the system
    -[ ] New Bot command: `/honey {1, 2, 3}` that operates the same as the `/add {1, 2, 3}` but adds it to the partner's honey-do list instead of their regular list.

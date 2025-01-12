@@ -1,5 +1,5 @@
 const bot = require('../bot.js');
-const { addReward, getRewards } = require('../common/repository.js');
+const { getRewards } = require('../common/repository.js');
 
 async function listRewards(chatId) {
 	const rewards = await getRewards(chatId);
@@ -18,9 +18,3 @@ async function listRewards(chatId) {
 	await bot.sendMessage(chatId, rewardsMessage, { parse_mode: 'HTML' });
 }
 exports.listRewards = listRewards;
-
-async function createReward(chatId, reward) {
-	await addReward(chatId, reward);
-	await bot.sendMessage(chatId, 'Reward added.');
-}
-exports.createReward = createReward;

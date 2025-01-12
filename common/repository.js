@@ -256,8 +256,8 @@ const getRewards = async (chatId) => {
 
 exports.getRewards = getRewards;
 
-const addReward = async (chatId, reward) => {
-	const rewardId = uuidv4();
+const upsertReward = async (chatId, reward) => {
+	const rewardId = reward.rewardId ?? uuidv4();
 	const params = {
 		TableName: rewardsTable,
 		Item: {
@@ -274,10 +274,11 @@ const addReward = async (chatId, reward) => {
 	try {
 		await dynamoDb.put(params).promise();
 		console.log('Reward added successfully');
+		return rewardId;
 	} catch (err) {
 		console.error('Error adding reward:', err);
 		throw err;
 	}
 };
 
-exports.addReward = addReward;
+exports.upsertReward = upsertReward;
