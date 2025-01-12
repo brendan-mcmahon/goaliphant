@@ -41,7 +41,7 @@ async function handleChatState(text, chatId) {
 		return null;
 	}
 	console.log('no state');
-	return response;
+	return null;
 }
 exports.handleChatState = handleChatState;
 
