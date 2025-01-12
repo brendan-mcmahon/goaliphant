@@ -16,5 +16,6 @@ async function listRewards(chatId) {
 	}
 
 	await bot.sendMessage(chatId, rewardsMessage, { parse_mode: 'HTML' });
+	console.log("Rewards listed");
 }
 exports.listRewards = listRewards;
