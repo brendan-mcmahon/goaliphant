@@ -37,6 +37,6 @@ async function markGoalsAsComplete(indexes, chatId) {
 		}
 	} catch (error) {
 		console.error('Error marking goals as completed:', error);
-		await sendError(chatId, `Error saving goals.\n${error.message}`);
+		await sendError(chatId, error);
 	}
 }

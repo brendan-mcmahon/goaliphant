@@ -24,7 +24,7 @@ async function uncompleteGoals(text, chatId) {
 		}
 	} catch (error) {
 		console.error('Error marking goals as incomplete:', error);
-		await sendError(chatId, `Error marking goals as incomplete.\n${error.message}`);
+		await sendError(chatId, error);
 	}
 }
 exports.uncompleteGoals = uncompleteGoals;

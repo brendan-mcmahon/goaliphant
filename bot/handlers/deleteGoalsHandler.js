@@ -31,6 +31,6 @@ async function removeGoals(indexes, chatId) {
 			await sendMessage(chatId, 'No valid goals to delete.');
 		}
 	} catch (error) {
-		await sendError(chatId, 'Error deleting goals.');
+		await sendError(chatId, error);
 	}
 }

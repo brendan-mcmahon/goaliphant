@@ -22,7 +22,7 @@ async function createReward(chatId) {
 		await setChatState(chatId, 'creatingReward-1', [rewardId]);
 		await sendMessage(chatId, `What is the title of the reward?`);
 	} catch (error) {
-		await sendError(chatId, `Error creating reward.\n${error.message}`);
+		await sendError(chatId, error);
 	}
 }
 
@@ -32,7 +32,7 @@ async function getRewardTitleFromUser(chatId, rewardId, text) {
 		await setChatState(chatId, 'creatingReward-2', [rewardId]);
 		await sendMessage(chatId, `Great! What is the description of the reward?`);
 	} catch (error) {
-		await sendError(chatId, `Error setting reward title.\n${error.message}`);
+		await sendError(chatId, error);
 	}
 }
 
@@ -42,7 +42,7 @@ async function getRewardDescriptionFromUser(chatId, rewardId, text) {
 		await setChatState(chatId, 'creatingReward-3', [rewardId]);
 		await sendMessage(chatId, `Awesome! How many tickets should this reward cost?`);
 	} catch (error) {
-		await sendError(chatId, `Error setting reward description.\n${error.message}`);
+		await sendError(chatId, error);
 	}
 }
 
@@ -54,7 +54,7 @@ async function getRewardCostFromUser(chatId, rewardId, text) {
 		// await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
 		await sendMessage(chatId, JSON.stringify(newReward));
 	} catch (error) {
-		await sendError(chatId, `Error setting reward cost.\n${error.message}`);
+		await sendError(chatId, error);
 	}
 }
 
@@ -70,6 +70,6 @@ async function confirmReward(chatId, rewardId, text) {
 			await createReward(chatId);
 		}
 	} catch (error) {
-		await sendError(chatId, `Error confirming reward.\n${error.message}`);
+		await sendError(chatId, error);
 	}
 }

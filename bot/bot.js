@@ -8,8 +8,8 @@ async function sendMessage(chatId, message, options) {
 	await bot.sendMessage(chatId, message, options);
 }
 
-async function sendError(chatId, message) {
-	await bot.sendMessage(chatId, `❌ ${message}`);
+async function sendError(chatId, error) {
+	await bot.sendMessage(chatId, `❌ ${JSON.stringify(error)}`);
 }
 
 module.exports = { sendMessage, sendError };

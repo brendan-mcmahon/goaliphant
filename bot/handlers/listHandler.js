@@ -8,7 +8,7 @@ async function listGoals(chatId) {
 		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
 		await sendMessage(chatId, goalsList || 'No goals set for today.');
 	} catch (error) {
-		await sendError(chatId, `Error fetching goals.\n${error.message}`);
+		await sendError(chatId, error);
 	}
 }
 exports.listGoals = listGoals;

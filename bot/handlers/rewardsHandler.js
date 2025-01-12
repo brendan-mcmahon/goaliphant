@@ -20,7 +20,7 @@ async function listRewards(chatId) {
 		console.log("Rewards listed");
 	} catch (error) {
 		console.error('Error listing rewards:', error);
-		await sendError(chatId, 'Error listing rewards.');
+		await sendError(chatId, error);
 	}
 }
 exports.listRewards = listRewards;
