@@ -18,6 +18,7 @@ async function getUser(chatId) {
 		throw err;
 	}
 }
+exports.getUser = getUser;
 
 async function saveUser(chatId) {
 	const params = {
