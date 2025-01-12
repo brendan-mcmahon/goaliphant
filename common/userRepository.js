@@ -4,6 +4,21 @@ const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'GoaliphantUsers';
 
+async function getUser(chatId) {
+	const params = {
+		TableName: userTable,
+		Key: { ChatId: chatId.toString() },
+	};
+
+	try {
+		const result = await dynamoDb.get(params).promise();
+		return result.Item;
+	} catch (err) {
+		console.error('Error fetching user:', err);
+		throw err;
+	}
+}
+
 async function saveUser(chatId) {
 	const params = {
 		TableName: userTable,
