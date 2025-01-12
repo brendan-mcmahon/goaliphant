@@ -21,6 +21,13 @@ exports.handler = async (event) => {
 
 		console.log("message from", chatId, body.message.from.first_name, ":", text);
 
+		sendMessage(chatId, "Hello! I'm your goal tracker bot. Use /start to begin.");
+
+		if (!text) {
+			console.log("no text");
+			return { statusCode: 200, body: 'OK' };
+		}
+
 		const chatStateResponseInvoked = await handleChatState(text, chatId);
 		console.log("chatStateResponse:", chatStateResponseInvoked);
 		if (chatStateResponseInvoked) { return { statusCode: 200, body: 'OK' }; }
