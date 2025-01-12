@@ -1,4 +1,4 @@
-const { saveUser } = require('../common/repository.js');
+const { saveUser } = require('../common/userRepository.js');
 const { sendMessage } = require('../bot.js');
 
 

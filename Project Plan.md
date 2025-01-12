@@ -48,7 +48,7 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
     - [x] New Bot command: `/rewards` that lists those rewards
     - [ ] New Bot command: `/redeem {#}` that sends a message to the partner with the reward name, and deducts the predefined number of tickets from the user
     - [x] New Bot command: `/wallet` that sends a message to the user with their current ticket count.
-    - [ ] New Bot command: `/add-reward` that kicks off a short process to create a new reward for your partner.
+    - [x] New Bot command: `/add-reward` that kicks off a short process to create a new reward for your partner.
 3. **Honey-Do**
    -[ ] As in #2, add a `Partner` data point to Users that refers to another User in the system
    -[ ] New Bot command: `/honey {1, 2, 3}` that operates the same as the `/add {1, 2, 3}` but adds it to the partner's honey-do list instead of their regular list.

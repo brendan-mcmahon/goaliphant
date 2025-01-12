@@ -1,4 +1,4 @@
-const { getChatState, clearChatState } = require('../common/repository.js');
+const { getChatState, clearChatState } = require('../common/userRepository.js');
 const { saveGoalsAndList } = require('./addGoalsHandler.js');
 const { sendMessage } = require('../bot.js');
 const { handleCreateRewardStep } = require('./createRewardHandler.js');

@@ -1,5 +1,5 @@
 const { sendMessage, sendError } = require('../bot.js');
-const { getRewards } = require('../common/repository.js');
+const { getRewards } = require('../common/rewardRepository.js');
 
 const banner = `
  .+"+.+"+.+"+.+"+.+"+.+"+.+"+. 
