@@ -10,7 +10,7 @@ const { uncompleteGoals } = require('./handlers/uncompleteGoalsHandler.js');
 const { getTickets } = require('./handlers/walletHandler.js');
 const { listRewards } = require('./handlers/rewardsHandler.js');
 const { handleCreateRewardStep } = require('./handlers/createRewardHandler.js');
-const { redeemReward } = require('./handlers/redeemHandler.js');
+const { redeemReward } = require('./handlers/redeemRewardHandler.js');
 const { addHoney } = require('./handlers/addHoneyHandler.js');
 
 exports.handler = async (event) => {
