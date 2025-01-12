@@ -201,3 +201,21 @@ const addTicket = async (chatId, ticket = 1) => {
 	}
 }
 exports.addTicket = addTicket;
+
+const getTicketCount = async (chatId) => {
+	const params = {
+		TableName: userTable,
+		Key: { ChatId: chatId.toString() },
+		ProjectionExpression: 'TicketWallet',
+	};
+
+	try {
+		const result = await dynamoDb.get(params).promise();
+		console.log('Tickets fetched successfully');
+		return result.Item.TicketWallet;
+	} catch (err) {
+		console.error('Error fetching tickets:', err);
+		throw err;
+	}
+}
+exports.getTicketCount = getTicketCount;

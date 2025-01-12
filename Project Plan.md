@@ -40,9 +40,10 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
     - [x] Logic to find incomplete tasks from the previous day and duplicate them into today's goals
     - [x] Add a new EventBridge schedule to trigger the new lambda
 2. **Tickets and Rewards**
-    - [ ] Add a `TicketCount` data point to Users
-    - [ ] Add a `Partner` data point to Users that refers to another User in the system
-    - [ ] When a user completes a goal, increment their `TicketCount`
+    - [x] Add a `TicketCount` data point to Users
+    - [x] Add a `Partner` data point to Users that refers to another User in the system
+    - [x] When a user completes a goal, increment their `TicketCount`
+    - [x] When a user uncompletes a goal, decrement their `TicketCount`
     - [ ] New DynamoDB table called `GoaliphantRewards` that basically just tracks a list of rewards each player can earn with tickets
     - [ ] New Bot command: `/rewards` that lists those rewards
     - [ ] New Bot command: `/redeem {#}` that sends a message to the partner with the reward name, and deducts the predefined number of tickets from the user

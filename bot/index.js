@@ -1,6 +1,6 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const { saveUser, getGoals, updateGoals, getChatState, setChatState, clearChatState, addTicket } = require('./common/repository.js');
+const { saveUser, getGoals, updateGoals, getChatState, setChatState, clearChatState, addTicket, getTicketCount } = require('./common/repository.js');
 
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token);
@@ -65,7 +65,11 @@ exports.handler = async (event) => {
 			await completeGoals(text, chatId);
 		} else if (text.startsWith('/uncomplete')) {
 			await uncompleteGoals(text, chatId);
-		} else {
+		} else if (text === '/wallet') {
+			const tickets = await getTicketCount(chatId);
+			await bot.sendMessage(chatId, `You have ${tickets} ticket${tickets === 1 ? '' : 's'} in your wallet.`);
+		}
+		else {
 			await bot.sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
 		}
 	}
@@ -199,6 +203,7 @@ async function uncompleteGoals(text, chatId) {
 		});
 		if (updated) {
 			await updateGoals(chatId, goals);
+			await addTicket(chatId, -1 * indexes.length);
 			await bot.sendMessage(chatId, 'Goals marked as incomplete.');
 			await listGoals(chatId);
 		} else {
