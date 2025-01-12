@@ -51,7 +51,8 @@ async function getRewardCostFromUser(chatId, rewardId, text) {
 		await upsertReward(chatId, { rewardId, cost: parseInt(text) });
 		await setChatState(chatId, 'creatingReward-4', [rewardId]);
 		const newReward = await getReward(chatId, rewardId);
-		await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
+		// await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
+		await sendMessage(chatId, JSON.stringify(newReward));
 	} catch (error) {
 		await sendError(chatId, `Error setting reward cost.\n${error.message}`);
 	}
