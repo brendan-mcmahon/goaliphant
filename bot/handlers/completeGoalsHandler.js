@@ -1,4 +1,4 @@
-const { getGoals, updateGoals, addTicket } = require('./common/repository.js');
+const { getGoals, updateGoals, addTicket } = require('../common/repository.js');
 const { bot } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
 

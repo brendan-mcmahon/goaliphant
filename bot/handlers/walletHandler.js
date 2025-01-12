@@ -1,5 +1,5 @@
 const { bot } = require('../bot.js');
-const { getTicketCount } = require('./common/repository.js');
+const { getTicketCount } = require('../common/repository.js');
 
 async function getTickets(chatId) {
 	const tickets = await getTicketCount(chatId);

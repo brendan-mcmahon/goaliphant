@@ -1,4 +1,4 @@
-const { getGoals, updateGoals, setChatState } = require('./common/repository.js');
+const { getGoals, updateGoals, setChatState } = require('../common/repository.js');
 const { listGoals } = require('./listHandler.js');
 const { bot } = require('../bot.js');
 
