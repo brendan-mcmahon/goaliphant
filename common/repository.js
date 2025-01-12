@@ -300,7 +300,7 @@ const insertReward = async (chatId) => {
 }
 exports.insertReward = insertReward;
 
-const upsertReward = async (chatId, reward) => {
+const updateReward = async (chatId, reward) => {
 	console.log("Upserting reward", reward);
 
 	const rewardId = reward.rewardId ?? uuidv4();
@@ -351,7 +351,7 @@ const upsertReward = async (chatId, reward) => {
 	}
 };
 
-exports.upsertReward = upsertReward;
+exports.updateReward = updateReward;
 
 const deleteReward = async (chatId, rewardId) => {
 	const params = {
