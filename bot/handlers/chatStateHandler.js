@@ -1,6 +1,6 @@
 const { getChatState, clearChatState } = require('../common/repository.js');
 const { saveGoalsAndList } = require('./addGoalsHandler.js');
-const { sendMessage } = require('./bot.js');
+const { sendMessage } = require('../bot.js');
 
 const cancelWords = [
 	'cancel',

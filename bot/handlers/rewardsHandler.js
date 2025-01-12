@@ -1,4 +1,4 @@
-const { sendMessage, sendError } = require('./bot.js');
+const { sendMessage, sendError } = require('../bot.js');
 const { getRewards } = require('../common/repository.js');
 
 async function listRewards(chatId) {

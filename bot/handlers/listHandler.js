@@ -1,5 +1,5 @@
 const { getGoals } = require('../common/repository.js');
-const { sendMessage, sendError } = require('./bot.js');
+const { sendMessage, sendError } = require('../bot.js');
 
 async function listGoals(chatId) {
 	try {

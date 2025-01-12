@@ -1,5 +1,5 @@
 const { getGoals, updateGoals, addTicket } = require('../common/repository.js');
-const { sendMessage, sendError } = require('./bot.js');
+const { sendMessage, sendError } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
 
 async function uncompleteGoals(text, chatId) {

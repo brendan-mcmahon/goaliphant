@@ -1,4 +1,4 @@
-const { sendMessage, sendError } = require('./bot.js');
+const { sendMessage, sendError } = require('../bot.js');
 const { getGoals, updateGoals } = require('../common/repository.js');
 const { listGoals } = require('./listHandler.js');
 

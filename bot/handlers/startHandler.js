@@ -1,5 +1,5 @@
 const { saveUser } = require('../common/repository.js');
-const { sendMessage } = require('./bot.js');
+const { sendMessage } = require('../bot.js');
 
 
 async function start(chatId) {

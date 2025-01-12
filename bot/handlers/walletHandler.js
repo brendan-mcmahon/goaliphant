@@ -1,4 +1,4 @@
-const { sendMessage } = require('./bot.js');
+const { sendMessage } = require('../bot.js');
 const { getTicketCount } = require('../common/repository.js');
 
 async function getTickets(chatId) {

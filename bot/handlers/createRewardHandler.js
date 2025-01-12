@@ -1,4 +1,4 @@
-const { sendMessage, sendError } = require('./bot.js');
+const { sendMessage, sendError } = require('../bot.js');
 const { upsertReward, setChatState } = require('../common/repository.js');
 
 // TODO: This needs to use the partner's chatId, not the user's chatId
