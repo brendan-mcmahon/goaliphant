@@ -40,7 +40,7 @@ exports.handler = async (event) => {
 			await getTickets(chatId);
 		} else if (text === '/rewards') {
 			await listRewards(chatId);
-		} else if (text === '/add-reward') {
+		} else if (text === '/createreward') {
 			await createReward(chatId);
 		}
 		else {
