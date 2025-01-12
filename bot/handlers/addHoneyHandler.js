@@ -18,12 +18,12 @@ async function addHoney(text, chatId) {
 }
 exports.addHoney = addHoney;
 
-async function saveHoneyAndList(newGoals, chatId) {
+async function saveHoneyAndList(newGoals, chatId, isPartner = true) {
 	try {
+		chatId = isPartner ? chatId : (await getUser(chatId)).PartnerId;
 		const existingGoals = await getHoney(chatId);
 		const updatedGoals = [...existingGoals, ...newGoals.map(goal => ({ text: goal, completed: false }))];
 		await updateHoney(chatId, updatedGoals);
-		await sendMessage(chatId, 'Goals added successfully!');
 		await listHoney(chatId);
 	} catch (error) {
 		console.error('Error adding goals:', error);

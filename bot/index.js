@@ -77,7 +77,7 @@ exports.handler = async (event) => {
 				break;
 			case '/honey':
 			case 'honey':
-				await listHoney(chatId);
+				await listHoney(chatId, false);
 				break;
 			case '/addhoney':
 			case 'addhoney':
