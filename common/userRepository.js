@@ -75,7 +75,7 @@ async function setChatState(chatId, chatState, chatStateArgs = null) {
 exports.setChatState = setChatState;
 
 async function clearChatState(chatId) {
-	await setChatState(chatId, 'chat');
+	await setChatState(chatId, 'chat', []);
 }
 exports.clearChatState = clearChatState;
 

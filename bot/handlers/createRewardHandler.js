@@ -19,8 +19,10 @@ exports.handleCreateRewardStep = handleCreateRewardStep;
 async function createReward(chatId) {
 	try {
 		await sendMessage(chatId, `Great! Let's make a new reward for your partner. I'll ask you a few questions to get the details. If you want to stop at any point, just say "cancel" or "nevermind"!`);
-		var rewardId = await insertReward(chatId);
-		await setChatState(chatId, 'creatingReward-1', [rewardId]);
+		const user = await getUser(chatId);
+		const partner = await getUser(user.PartnerId);
+		var rewardId = await insertReward(partner.ChatId);
+		await setChatState(chatId, 'creatingReward-1', [rewardId, partner.ChatId]);
 		await sendMessage(chatId, `What is the title of the reward?`);
 	} catch (error) {
 		console.error('Error creating reward:', error);
@@ -28,9 +30,9 @@ async function createReward(chatId) {
 	}
 }
 
-async function getRewardTitleFromUser(chatId, rewardId, text) {
+async function getRewardTitleFromUser(chatId, rewardId, partnerId, text) {
 	try {
-		await updateReward(chatId, { rewardId, title: text });
+		await updateReward(partnerId, { rewardId, title: text });
 		await setChatState(chatId, 'creatingReward-2', [rewardId]);
 		await sendMessage(chatId, `Great! What is the description of the reward?`);
 	} catch (error) {
@@ -39,9 +41,9 @@ async function getRewardTitleFromUser(chatId, rewardId, text) {
 	}
 }
 
-async function getRewardDescriptionFromUser(chatId, rewardId, text) {
+async function getRewardDescriptionFromUser(chatId, rewardId, partnerId, text) {
 	try {
-		await updateReward(chatId, { rewardId, description: text });
+		await updateReward(partnerId, { rewardId, description: text });
 		await setChatState(chatId, 'creatingReward-3', [rewardId]);
 		await sendMessage(chatId, `Awesome! How many tickets should this reward cost?`);
 	} catch (error) {
@@ -50,9 +52,9 @@ async function getRewardDescriptionFromUser(chatId, rewardId, text) {
 	}
 }
 
-async function getRewardCostFromUser(chatId, rewardId, text) {
+async function getRewardCostFromUser(chatId, rewardId, partnerId, text) {
 	try {
-		await updateReward(chatId, { rewardId, cost: parseInt(text) });
+		await updateReward(partnerId, { rewardId, cost: parseInt(text) });
 		await setChatState(chatId, 'creatingReward-4', [rewardId]);
 		const newReward = await getReward(chatId, rewardId);
 		await sendMessage(chatId, `Got it! Here's what I have for the new reward:\n\nTitle: ${newReward.Title}\nDescription: ${newReward.Description}\nCost: ${newReward.Cost}🎟\n\nIs this correct?`);
@@ -62,10 +64,11 @@ async function getRewardCostFromUser(chatId, rewardId, text) {
 	}
 }
 
-async function confirmReward(chatId, rewardId, text) {
+async function confirmReward(chatId, rewardId, partnerId, text) {
 	try {
 		if (text.toLowerCase() === 'yes' || text.toLowerCase() === 'y') {
 			await sendMessage(chatId, `Your reward has been created!`);
+			await sendMessage(partnerId, `You have a new reward from your partner!`);
 			await clearChatState(chatId);
 		} else {
 			await sendMessage(chatId, `Okay, let's start over.`);
