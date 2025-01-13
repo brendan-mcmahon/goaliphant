@@ -1,5 +1,6 @@
 const { getGoals } = require('../common/goalRepository.js');
 const { getHoney } = require('../common/honeyRepository.js');
+const { getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 
 async function listGoals(chatId) {
@@ -28,3 +29,17 @@ async function listHoney(chatId) {
 	}
 }
 exports.listHoney = listHoney;
+
+async function listPartner(chatId) {
+	try {
+		const user = await getUser(chatId);
+		const partnerId = user.partnerId;
+		const goals = await getGoals(partnerId);
+		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
+		await sendMessage(chatId, goalsList || 'No goals set for partner today.');
+	} catch (error) {
+		console.error('Error listing partner goals:', error);
+		await sendError(chatId, error);
+	}
+}
+exports.listPartner = listPartner;

@@ -78,6 +78,8 @@ exports.handler = async (event) => {
 			case 'honey':
 				await addHoney(text, chatId);
 				break;
+			case '/partner':
+				await listPartner(chatId);
 			default:
 				await sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
 		}
