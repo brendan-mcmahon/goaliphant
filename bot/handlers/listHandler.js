@@ -34,7 +34,7 @@ async function listPartner(chatId) {
 	try {
 		console.log("listing partner...");
 		const user = await getUser(chatId);
-		const partnerId = user.partnerId;
+		const partnerId = user.PartnerId;
 		console.log("partnerId:", partnerId);
 		const goals = await getGoals(partnerId);
 		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
