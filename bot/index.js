@@ -81,6 +81,7 @@ exports.handler = async (event) => {
 			case '/partner':
 				console.log("getting partner list", chatId)
 				await listPartner(chatId);
+				break;
 			default:
 				await sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
 		}
