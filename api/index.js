@@ -1,9 +1,16 @@
 // require('dotenv').config();
 // const TelegramBot = require('node-telegram-bot-api');
 const { getAllGoals } = require('./common/goalRepository.js');
+require('dotenv').config();
+const AWS = require('aws-sdk');
 
-// const token = process.env.BOT_TOKEN;
-// const bot = new TelegramBot(token);
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
+
+const userMap = {
+	"-4711773993": "QA",
+	"1487289669": "Jamie",
+	"1397659260": "Brendan",
+};
 
 exports.handler = async (event) => {
 	console.log("Handling event", event.requestContext.http.method, event.rawPath, event.queryStringParameters);
@@ -13,7 +20,44 @@ exports.handler = async (event) => {
 		return { statusCode: 200, body: JSON.stringify(goals) };
 	}
 
+	if (event.rawPath === '/updateNames') {
+		await updateNames();
+	}
+
 	return { statusCode: 200, body: 'OK' };
+};
+
+const tableName = "GoaliphantGoals";
+
+const updateNames = async () => {
+	console.log(`Processing table: ${tableName}`);
+
+	// Scan the table for all items
+	const params = { TableName: tableName };
+	const scanResults = [];
+	let items;
+	do {
+		items = await dynamoDb.scan(params).promise();
+		scanResults.push(...items.Items);
+		params.ExclusiveStartKey = items.LastEvaluatedKey;
+	} while (items.LastEvaluatedKey);
+
+	// Update each item with the `name` field
+	for (const item of scanResults) {
+		if (userMap[item.chatId]) {
+			const updateParams = {
+				TableName: tableName,
+				Key: { chatId: item.chatId, date: item.date },
+				UpdateExpression: "set #name = :name",
+				ExpressionAttributeNames: { "#name": "name" },
+				ExpressionAttributeValues: { ":name": userMap[item.chatId] },
+			};
+			await dynamoDb.update(updateParams).promise();
+			console.log(`Updated item: ${JSON.stringify(updateParams.Key)}`);
+		} else {
+			console.log(`No mapping found for chatId: ${item.chatId}`);
+		}
+	}
 };
 
 // async function start(chatId) {

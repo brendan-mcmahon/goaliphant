@@ -3,7 +3,6 @@ const AWS = require('aws-sdk');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const goalsTable = 'GoaliphantGoals';
-const honeyTable = 'GoaliphantHoneyDo';
 const TIME_ZONE = 'America/Indiana/Indianapolis';
 
 function getLocalDate() {
