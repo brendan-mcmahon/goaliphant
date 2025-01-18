@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.scss'
-import { fetchData } from './api'
+import { addNames, fetchData } from './api'
 
 function App() {
 	const [data, setData] = useState({});
