@@ -14,16 +14,16 @@ exports.handler = async (event) => {
 		const chatId = event.queryStringParameters.chatId;
 		const index = parseInt(event.queryStringParameters.index);
 		console.log("Completing goal", index, "for chat", chatId);
-		await completeGoal(index, chatId);
+		return await completeGoal(index, chatId);
 	}
 
 	if (event.rawPath === '/uncompleteGoal') {
 		const chatId = event.queryStringParameters.chatId;
 		const index = parseInt(event.queryStringParameters.index);
-		await uncompleteGoal(index, chatId);
+		return await uncompleteGoal(index, chatId);
 	}
 
-	return { statusCode: 200, body: 'OK' };
+	return { statusCode: 400, body: 'Invalid path.' };
 };
 
 // async function addGoals(text, chatId) {
@@ -67,9 +67,11 @@ async function completeGoal(index, chatId) {
 			await updateGoals(chatId, goals);
 		} else {
 			console.error('Invalid goal number.', index);
+			return { statusCode: 400, body: 'Invalid goal number.' };
 		}
 	} catch (error) {
 		console.error('Error marking goal as completed:', error);
+		return { statusCode: 500, body: 'Error marking goal as completed.' };
 	}
 }
 
@@ -83,8 +85,10 @@ async function uncompleteGoal(index, chatId) {
 			await updateGoals(chatId, goals);
 		} else {
 			console.error('Invalid goal number.', index);
+			return { statusCode: 400, body: 'Invalid goal number.' };
 		}
 	} catch (error) {
 		console.error('Error marking goal as uncompleted:', error);
+		return { statusCode: 500, body: 'Error marking goal as uncompleted.' };
 	}
 }
