@@ -1,11 +1,13 @@
 const { getAllGoals, getGoals, updateGoals } = require('./common/goalRepository.js');
+const { getAllRewards } = require('./common/rewardRepository.js');
 
 exports.handler = async (event) => {
 	console.log("Handling event", event.requestContext.http.method, event.rawPath, event.queryStringParameters);
 
-	if (event.rawPath === '/getAllGoals') {
+	if (event.rawPath === '/getAllData') {
 		const goals = await getAllGoals();
-		return { statusCode: 200, body: JSON.stringify(goals) };
+		const rewards = await getAllRewards();
+		return { statusCode: 200, body: JSON.stringify({ goals, rewards }) };
 	}
 
 	if (event.rawPath === '/completeGoal') {

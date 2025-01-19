@@ -12,7 +12,7 @@ const dateOptions = {
 
 function App() {
 	const [data, setData] = useState([]);
-	const [todayData, setTodayData] = useState([]);
+	const [todaysGoals, setTodaysGoals] = useState([]);
 	const [date, setDate] = useState(new Date());
 	const isToday = date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
 
@@ -26,7 +26,7 @@ function App() {
 	}, []);
 
 	useEffect(() => {
-		setTodayData(data.filter(d => d.date === date.toISOString().split('T')[0]));
+		setTodaysGoals(data.goals.filter(d => d.date === date.toISOString().split('T')[0]));
 		console.log("loaded");
 	}, [data]);
 
@@ -37,12 +37,12 @@ function App() {
 		const newDate = new Date(date);
 		newDate.setDate(newDate.getDate() + offset);
 		setDate(newDate);
-		setTodayData(data.filter(d => d.date === newDate.toISOString().split('T')[0]));
+		setTodaysGoals(data.filter(d => d.date === newDate.toISOString().split('T')[0]));
 	}
 
 	const checked = async (e, index) => {
 		const isChecked = e.target.checked;
-		const chatId = todayData[0].chatId;
+		const chatId = todaysGoals[0].chatId;
 
 		if (isChecked) {
 			await completeGoal(chatId, index);
@@ -50,7 +50,7 @@ function App() {
 
 	}
 
-	if (!todayData) {
+	if (!todaysGoals) {
 		return <div>Loading...</div>
 	}
 
@@ -65,14 +65,23 @@ function App() {
 				</div>
 			</header>
 			<div id="Users">
-				{todayData.map((d, i) => (
+				{todaysGoals.map((g, i) => (
 					<div key={i}>
-						<h3>{d.name}</h3>
+						<h3>{g.name}</h3>
+						<h3>Goals</h3>
 						<li className="goals">
-							{d.goals.map((g, j) => (
+							{g.goals.map((g, j) => (
 								<div key={j} className="goal">
 									<input disabled={!isToday} onChange={(e) => checked(e, j)} type="checkbox" checked={g.completed} />
 									{g.text}
+								</div>
+							))}
+						</li>
+						<h3>Rewards</h3>
+						<li className="rewards">
+							{Object.groupBy(g.rewards, r => r.ChatId).group.map((r, j) => (
+								<div key={j} className="reward">
+									{r.text}
 								</div>
 							))}
 						</li>

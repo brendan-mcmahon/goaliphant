@@ -2,7 +2,7 @@ const API_URL = 'https://5fxpi3bue4dkhwv4kf5re3vcyi0cowqn.lambda-url.us-east-2.o
 
 export async function fetchData() {
 	try {
-		const response = await fetch(`${API_URL}/getAllGoals`);
+		const response = await fetch(`${API_URL}/getAllData`);
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}

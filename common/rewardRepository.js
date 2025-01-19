@@ -44,8 +44,24 @@ const getRewards = async (chatId) => {
 		throw err;
 	}
 };
-
 exports.getRewards = getRewards;
+
+const getAllRewards = async () => {
+	const params = {
+		TableName: rewardsTable,
+	};
+
+	try {
+		const result = await dynamoDb.scan(params).promise();
+		console.log('Got all rewards:', result.Items);
+		return result.Items;
+	} catch (err) {
+		console.error('Error fetching rewards:', err);
+		throw err;
+	}
+};
+exports.getAllRewards = getAllRewards;
+
 
 const insertReward = async (chatId) => {
 	const rewardId = uuidv4();

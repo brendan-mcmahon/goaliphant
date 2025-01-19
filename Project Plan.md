@@ -52,6 +52,9 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
 3. **Honey-Do** 🐝
    -[x] As in #2, add a `Partner` data point to Users that refers to another User in the system
    -[x] New Bot command: `/honey {1, 2, 3}` that operates the same as the `/add {1, 2, 3}` but adds it to the partner's honey-do list instead of their regular list.
+4. **Dashboard** 
+   - [ ] Create a dashboard page that pulls data from the API
+   - [ ] 
 ---
 
 ## Technical Requirements
