@@ -4,6 +4,7 @@ const { getUser, addTicket } = require('../common/userRepository.js');
 
 async function redeemReward(chatId, rewardIndex) {
 	try {
+		rewardIndex = parseInt(rewardIndex);
 		const rewards = await getRewards(chatId);
 		if (rewards.length === 0) {
 			await sendMessage(chatId, "You have 0 rewards.");
@@ -14,7 +15,7 @@ async function redeemReward(chatId, rewardIndex) {
 			return;
 		}
 
-		console.log(rewards);
+		console.log(rewards, rewardIndex);
 		const reward = rewards[rewardIndex - 1];
 		console.log(reward);
 
