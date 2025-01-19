@@ -17,10 +17,7 @@ export async function fetchData() {
 export async function completeGoal(chatId, index) {
 	try {
 		const response = await fetch(`${API_URL}/completeGoal?chatId=${chatId}&index=${index}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-			}
+			method: 'GET'
 		});
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -36,10 +33,7 @@ export async function completeGoal(chatId, index) {
 export async function uncompleteGoal(chatId, index) {
 	try {
 		const response = await fetch(`${API_URL}/uncompleteGoal?chatId=${chatId}&index=${index}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-			}
+			method: 'GET'
 		});
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);

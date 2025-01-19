@@ -19,7 +19,8 @@ function App() {
 	useEffect(() => {
 		async function fetchDataAsync() {
 			const _data = await fetchData();
-			setData(_data.filter(d => d.chatId !== '-4711773993'));
+			// setData(_data.filter(d => d.chatId !== '-4711773993'));
+			setData(_data);
 		}
 		fetchDataAsync();
 	}, []);
