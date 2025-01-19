@@ -73,7 +73,7 @@ async function updateGoals(chatId, goals) {
 }
 exports.updateGoals = updateGoals;
 
-async function createNewDayWithGoals(chatId, goals, date = null) {
+async function createNewDayWithGoals(chatId, username, goals, date = null) {
 	date = date ?? getLocalDate();
 	const formattedGoals = goals.map(goal => ({ text: goal.text, completed: false }));
 
@@ -82,6 +82,7 @@ async function createNewDayWithGoals(chatId, goals, date = null) {
 		Item: {
 			chatId: chatId.toString(),
 			date: date,
+			name: username,
 			goals: formattedGoals,
 		},
 	};

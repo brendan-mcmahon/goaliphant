@@ -1,6 +1,6 @@
 const TIME_ZONE = 'America/Indiana/Indianapolis';
 const { getGoals, createNewDayWithGoals } = require('./common/goalRepository');
-const { getChatIds } = require('./common/userRepository');
+const { getChatIds, getUser } = require('./common/userRepository');
 
 function getLocalDate(offsetDays = 0) {
 	const date = new Date();
@@ -14,13 +14,14 @@ async function rolloverGoals(chatId) {
 	const today = getLocalDate();
 
 	try {
+		const user = await getUser(chatId);
 		const previousGoals = await getGoals(chatId, yesterday);
 		const todayGoals = await getGoals(chatId, today);
 
 		const incompleteGoals = previousGoals.filter(goal => !goal.completed);
 		const newGoals = [...incompleteGoals, ...todayGoals];
 
-		await createNewDayWithGoals(chatId, newGoals);
+		await createNewDayWithGoals(chatId, user.Name, newGoals);
 	} catch (error) {
 		console.error('Error in rollover process:', error);
 		throw error;
