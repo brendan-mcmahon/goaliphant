@@ -11,6 +11,7 @@ exports.handler = async (event) => {
 	if (event.rawPath === '/completeGoal') {
 		const chatId = event.queryStringParameters.chatId;
 		const index = parseInt(event.queryStringParameters.index);
+		console.log("Completing goal", index, "for chat", chatId);
 		await completeGoal(index, chatId);
 	}
 
