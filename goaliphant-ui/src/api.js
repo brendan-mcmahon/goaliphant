@@ -13,3 +13,41 @@ export async function fetchData() {
 		throw error;
 	}
 }
+
+export async function completeGoal(chatId, index) {
+	try {
+		const response = await fetch(`${API_URL}/completeGoal?chatId=${chatId}&index=${index}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		});
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		console.error('Error completing goal:', error);
+		throw error;
+	}
+}
+
+export async function uncompleteGoal(chatId, index) {
+	try {
+		const response = await fetch(`${API_URL}/uncompleteGoal?chatId=${chatId}&index=${index}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		});
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		console.error('Error uncompleting goal:', error);
+		throw error;
+	}
+}

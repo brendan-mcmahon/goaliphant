@@ -4,3 +4,41 @@
 	padding: 2rem;
 	text-align: center;
 }
+
+.goals {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+
+	.goal {
+		text-align: left;
+		margin-bottom: .75rem;
+
+		input {
+			margin-right: .75rem;
+		}
+	}
+}
+
+.date-picker {
+	display: flex;
+	justify-content: center;
+	align-items: baseline;
+
+	h2 {
+		margin: 0;
+	}
+
+	.icon-button {
+		margin: 0 .5rem;
+	}
+
+}
+
+.icon-button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+}
