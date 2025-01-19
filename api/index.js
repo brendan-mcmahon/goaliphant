@@ -1,4 +1,4 @@
-const { getAllGoals, getGoals, listGoals } = require('./common/goalRepository.js');
+const { getAllGoals, getGoals, updateGoals, listGoals } = require('./common/goalRepository.js');
 
 exports.handler = async (event) => {
 	console.log("Handling event", event.requestContext.http.method, event.rawPath, event.queryStringParameters);
