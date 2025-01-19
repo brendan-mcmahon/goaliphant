@@ -27,12 +27,12 @@ async function redeemReward(chatId, rewardIndex) {
 		}
 
 		const user = await getUser(chatId);
-		if (user.Tickets < reward.Cost) {
+		if (user.TicketWallet < reward.Cost) {
 			await sendMessage(chatId, `You don't have enough tickets to redeem this reward.`);
 			return;
 		}
 		await addTicket(chatId, -reward.Cost);
-		const newTicketAmount = user.Tickets - reward.Cost;
+		const newTicketAmount = user.TicketWallet - reward.Cost;
 
 		const partner = await getUser(user.PartnerId);
 		await sendMessage(partner.ChatId, `${user.Name} has redeemed the reward "${rewardRecord.Title}"!`);

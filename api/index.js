@@ -60,6 +60,7 @@ exports.handler = async (event) => {
 async function completeGoal(index, chatId) {
 	try {
 		const goals = await getGoals(chatId);
+		console.log('completeGoal', index, chatId, goals);
 		if (index >= 0 && index < goals.length) {
 			console.log('Completing goal:', goals[index]);
 			goals[index].completed = true;
@@ -75,6 +76,7 @@ async function completeGoal(index, chatId) {
 async function uncompleteGoal(index, chatId) {
 	try {
 		const goals = await getGoals(chatId);
+		console.log('uncompleteGoal', index, chatId, goals);
 		if (index >= 0 && index < goals.length) {
 			console.log('Uncompleting goal:', goals[index]);
 			goals[index].completed = false;
