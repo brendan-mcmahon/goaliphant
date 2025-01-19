@@ -32,7 +32,7 @@ exports.handler = async (event) => {
 		if (chatStateResponseInvoked) { return { statusCode: 200, body: 'OK' }; }
 
 		const x = text.split(' ');
-		const command = x;[0]
+		const command = x[0];
 		const args = x[1];
 
 		switch (command) {
