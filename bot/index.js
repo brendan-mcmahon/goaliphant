@@ -31,7 +31,9 @@ exports.handler = async (event) => {
 		console.log("chatStateResponse:", chatStateResponseInvoked);
 		if (chatStateResponseInvoked) { return { statusCode: 200, body: 'OK' }; }
 
-		const command = text.split(' ')[0];
+		const x = text.split(' ');
+		const command = x;[0]
+		const args = x[1];
 
 		switch (command) {
 			case '/start':
@@ -72,7 +74,7 @@ exports.handler = async (event) => {
 				break;
 			case '/redeem':
 			case 'redeem':
-				await redeemReward(chatId, text);
+				await redeemReward(chatId, args);
 				break;
 			case '/honey':
 			case 'honey':
