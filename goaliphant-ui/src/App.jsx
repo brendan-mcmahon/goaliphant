@@ -20,15 +20,17 @@ function App() {
 		async function fetchDataAsync() {
 			const _data = await fetchData();
 			// setData(_data.filter(d => d.chatId !== '-4711773993'));
+			console.log("fetched data", _data);
 			setData(_data);
 		}
 		fetchDataAsync();
 	}, []);
 
 	useEffect(() => {
-		setTodaysGoals(data.goals.filter(d => d.date === date.toISOString().split('T')[0]));
+		console.log("data changed", data);
+		setTodaysGoals(data.goals?.filter(d => d.date === date.toISOString().split('T')[0]));
 		console.log("loaded");
-	}, [data]);
+	}, [data, date]);
 
 	const handleDateChange = (offset) => {
 		if (isToday && offset >= 1) {
@@ -37,7 +39,6 @@ function App() {
 		const newDate = new Date(date);
 		newDate.setDate(newDate.getDate() + offset);
 		setDate(newDate);
-		setTodaysGoals(data.filter(d => d.date === newDate.toISOString().split('T')[0]));
 	}
 
 	const checked = async (e, index) => {
@@ -78,13 +79,13 @@ function App() {
 							))}
 						</li>
 						<h3>Rewards</h3>
-						<li className="rewards">
+						{/* <li className="rewards">
 							{Object.groupBy(g.rewards, r => r.ChatId).group.map((r, j) => (
 								<div key={j} className="reward">
 									{r.text}
 								</div>
 							))}
-						</li>
+						</li> */}
 					</div>
 				))
 				}

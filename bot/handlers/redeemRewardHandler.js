@@ -34,7 +34,7 @@ async function redeemReward(chatId, rewardIndex) {
 		await addTicket(chatId, -reward.Cost);
 		const newTicketAmount = user.Tickets - reward.Cost;
 
-		const partner = await getUser(rewardRecord.PartnerId);
+		const partner = await getUser(user.PartnerId);
 		await sendMessage(partner.ChatId, `${user.Name} has redeemed the reward "${rewardRecord.Title}"!`);
 
 		await sendMessage(chatId, `Reward ${rewardIndex} redeemed!\nYou have ${newTicketAmount} ticket${newTicketAmount === 1 ? '' : 's'} left.`);
