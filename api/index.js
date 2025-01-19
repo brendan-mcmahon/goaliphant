@@ -1,4 +1,4 @@
-const { getAllGoals, getGoals, updateGoals, listGoals } = require('./common/goalRepository.js');
+const { getAllGoals, getGoals, updateGoals } = require('./common/goalRepository.js');
 
 exports.handler = async (event) => {
 	console.log("Handling event", event.requestContext.http.method, event.rawPath, event.queryStringParameters);
@@ -62,7 +62,6 @@ async function completeGoal(index, chatId) {
 			console.log('Completing goal:', goals[index]);
 			goals[index].completed = true;
 			await updateGoals(chatId, goals);
-			await listGoals(chatId);
 		} else {
 			console.error('Invalid goal number.', index);
 		}
@@ -78,7 +77,6 @@ async function uncompleteGoal(index, chatId) {
 			console.log('Uncompleting goal:', goals[index]);
 			goals[index].completed = false;
 			await updateGoals(chatId, goals);
-			await listGoals(chatId);
 		} else {
 			console.error('Invalid goal number.', index);
 		}
