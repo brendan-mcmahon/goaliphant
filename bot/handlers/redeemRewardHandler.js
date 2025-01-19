@@ -39,3 +39,5 @@ async function redeemReward(chatId, rewardIndex) {
 		await sendError(chatId, error);
 	}
 }
+
+exports.redeemReward = redeemReward;
