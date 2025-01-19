@@ -1,5 +1,5 @@
 const { sendMessage, sendError } = require('../bot.js');
-const { updateReward, getRewards, getReward } = require('../common/rewardRepository.js');
+const { getRewards, getReward } = require('../common/rewardRepository.js');
 const { getUser, addTicket } = require('../common/userRepository.js');
 
 async function redeemReward(chatId, rewardIndex) {
@@ -14,7 +14,9 @@ async function redeemReward(chatId, rewardIndex) {
 			return;
 		}
 
+		console.log(rewards);
 		const reward = rewards[rewardIndex - 1];
+		console.log(reward);
 
 		const rewardRecord = await getReward(chatId, reward.RewardId);
 		if (!rewardRecord) {
