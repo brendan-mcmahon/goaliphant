@@ -4,13 +4,11 @@ const { sendMessage, sendError } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
 
 async function completeGoals(text, chatId) {
+	console.log("text:", text);
 	const indexText = text.replace('/complete', '').trim();
+	console.log('indexText:', indexText);
 	if (!indexText) {
-		await sendMessage(chatId, 'Send the goal numbers to mark as complete (separated by spaces).');
-		bot.once('message', async (msg) => {
-			const indexes = msg.text.split(' ').map(n => parseInt(n.trim()) - 1);
-			await markGoalsAsComplete(indexes, chatId);
-		});
+		await sendMessage(chatId, 'You must send the goal numbers to mark as complete (separated by spaces).');
 	} else {
 		const indexes = indexText.split(' ').map(n => parseInt(n.trim()) - 1);
 		await markGoalsAsComplete(indexes, chatId);
