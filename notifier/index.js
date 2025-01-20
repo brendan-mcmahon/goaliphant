@@ -1,6 +1,6 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const { setChatState, getChatIds } = require('./common/userRepository');
+const { getChatIds } = require('./common/userRepository');
 const { getGoals } = require('./common/goalRepository');
 
 const bot = new TelegramBot(process.env.BOT_TOKEN);
@@ -9,8 +9,7 @@ async function sendNightlyPrompt(chatId) {
 	try {
 		const goals = await getGoals(chatId);
 		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
-		const message = `Good evening! Here's what you accomplished today:\n${goalsList || 'No goals set for today.'}\n\nReady to set your goals for tomorrow? Send them as a comma-separated list. Otherwise, just say "no thanks"`;
-		await setChatState(chatId, 'tomorrow');
+		const message = `Good evening! Here's what you accomplished today:\n${goalsList || 'No goals set for today.'}`;
 		await bot.sendMessage(chatId, message);
 	} catch (error) {
 		console.error('Error sending nightly prompt:', error);

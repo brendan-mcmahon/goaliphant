@@ -1,13 +1,12 @@
 const { getGoals, updateGoals } = require('../common/goalRepository.js');
-const { setChatState, getUser } = require('../common/userRepository.js');
+const { getUser } = require('../common/userRepository.js');
 const { listGoals } = require('./listHandler.js');
 const { sendMessage, sendError } = require('../bot.js');
 
 async function addGoals(text, chatId) {
 	const goalsText = text.replace('/add', '').trim();
 	if (!goalsText) {
-		await setChatState(chatId, 'addGoals');
-		await sendMessage(chatId, 'Send your goals as comma-separated text.');
+		await sendMessage(chatId, 'You must send a goal or list of goals to add!');
 	} else {
 		const newGoals = goalsText.split(',').map((goal) => goal.trim());
 		await saveGoalsAndList(newGoals, chatId);
