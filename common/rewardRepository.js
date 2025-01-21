@@ -53,7 +53,6 @@ const getAllRewards = async () => {
 
 	try {
 		const result = await dynamoDb.scan(params).promise();
-		console.log('Got all rewards:', result.Items);
 		return result.Items;
 	} catch (err) {
 		console.error('Error fetching rewards:', err);

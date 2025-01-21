@@ -82,12 +82,13 @@ async function editGoal(chatId, index, text) {
 		if (index >= 0 && index < goals.length) {
 			goals[index].text = text;
 			await updateGoals(chatId, goals);
-			await bot.sendMessage(chatId, 'Goal edited successfully.');
 		} else {
-			await bot.sendMessage(chatId, 'Invalid goal number.');
+			console.error('Invalid goal number.', index);
+			return { statusCode: 400, body: 'Invalid goal number.' };
 		}
 	} catch (error) {
-		await bot.sendMessage(chatId, 'Error editing goal.');
+		console.error('Error editing goal:', error);
+		return { statusCode: 500, body: 'Error editing goal' };
 	}
 }
 
@@ -99,10 +100,12 @@ async function deleteGoal(chatId, index) {
 			await updateGoals(chatId, goals);
 			await bot.sendMessage(chatId, 'Goal deleted successfully.');
 		} else {
-			await bot.sendMessage(chatId, 'Invalid goal number.');
+			console.error('Invalid goal number.', index);
+			return { statusCode: 400, body: 'Invalid goal number.' };
 		}
 	} catch (error) {
-		await bot.sendMessage(chatId, 'Error deleting goal.');
+		console.error(chatId, 'Error deleting goal.');
+		return { statusCode: 500, body: 'Error deleting goal.' };
 	}
 }
 
