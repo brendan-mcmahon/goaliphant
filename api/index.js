@@ -23,6 +23,25 @@ exports.handler = async (event) => {
 		return await uncompleteGoal(index, chatId);
 	}
 
+	if (event.rawPath === '/editGoal') {
+		console.log("Editing goal");
+		const body = JSON.parse(event.body);
+		console.log(body);
+		const chatId = body.chatId;
+		const index = parseInt(body.index);
+		const text = body.text;
+		return await editGoal(chatId, index, text);
+	}
+
+	if (event.rawPath === '/deleteGoal') {
+		console.log("Deleting goal");
+		const body = JSON.parse(event.body);
+		console.log(body);
+		const chatId = body.chatId;
+		const index = parseInt(body.index);
+		return await deleteGoal(chatId, index);
+	}
+
 	return { statusCode: 400, body: 'Invalid path.' };
 };
 
@@ -56,6 +75,36 @@ exports.handler = async (event) => {
 // 		await bot.sendMessage(chatId, 'Error deleting goal.');
 // 	}
 // }
+
+async function editGoal(chatId, index, text) {
+	try {
+		const goals = await getGoals(chatId);
+		if (index >= 0 && index < goals.length) {
+			goals[index].text = text;
+			await updateGoals(chatId, goals);
+			await bot.sendMessage(chatId, 'Goal edited successfully.');
+		} else {
+			await bot.sendMessage(chatId, 'Invalid goal number.');
+		}
+	} catch (error) {
+		await bot.sendMessage(chatId, 'Error editing goal.');
+	}
+}
+
+async function deleteGoal(chatId, index) {
+	try {
+		const goals = await getGoals(chatId);
+		if (index >= 0 && index < goals.length) {
+			goals.splice(index, 1);
+			await updateGoals(chatId, goals);
+			await bot.sendMessage(chatId, 'Goal deleted successfully.');
+		} else {
+			await bot.sendMessage(chatId, 'Invalid goal number.');
+		}
+	} catch (error) {
+		await bot.sendMessage(chatId, 'Error deleting goal.');
+	}
+}
 
 async function completeGoal(index, chatId) {
 	try {
