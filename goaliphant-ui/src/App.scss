@@ -5,7 +5,13 @@
 	text-align: center;
 }
 
-.goals {
+h2 {
+	margin: 1rem 0 0 0;
+	text-align: left;
+}
+
+.goals,
+.rewards {
 	display: flex;
 	flex-direction: column;
 	flex-wrap: wrap;
@@ -14,9 +20,49 @@
 	.goal {
 		text-align: left;
 		margin-bottom: .75rem;
+		display: flex;
+		align-items: flex-start;
+
+		.spinner {
+			height: 13px;
+			margin: 6px .75rem 3px 4px;
+
+		}
 
 		input {
 			margin-right: .75rem;
+			margin-top: 6px;
+		}
+
+		.actions {
+			margin-left: auto;
+			min-width: 3rem;
+
+			* {
+				margin-left: .5rem;
+			}
+		}
+	}
+}
+
+.rewards {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+
+
+	.reward {
+		display: flex;
+		flex-direction: column;
+		text-align: left;
+
+		h4 {
+			margin: 0;
+		}
+
+		p {
+			margin: 0;
 		}
 	}
 }
@@ -41,4 +87,67 @@
 	border: none;
 	cursor: pointer;
 	padding: 0;
+
+	&:focus {
+		outline: none;
+	}
+}
+
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+
+
+	.modal-content {
+		background: white;
+		padding: 2rem;
+		border-radius: 5px;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+
+		.modal-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 1rem;
+
+			h2 {
+				margin: 0;
+			}
+
+			.icon-button {
+				background: none;
+				border: none;
+				cursor: pointer;
+				padding: 0;
+
+				&:focus {
+					outline: none;
+				}
+			}
+		}
+
+		.modal-body {
+			margin-bottom: 1rem;
+		}
+
+		.modal-actions {
+			display: flex;
+			justify-content: center;
+			margin-top: 1rem;
+
+			button {
+				margin: 0 .5rem;
+			}
+		}
+	}
+
+
 }

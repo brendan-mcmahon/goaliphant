@@ -105,8 +105,6 @@ const getChatIds = async () => {
 
 	try {
 		const data = await dynamoDb.scan(params).promise();
-		console.log("chatIds:", data.Items.map(item => item.chatId));
-		console.log("ChatIds:", data.Items.map(item => item.ChatId));
 		return data.Items.map(item => item.ChatId);
 	} catch (err) {
 		console.error('Error fetching chat ids:', err);

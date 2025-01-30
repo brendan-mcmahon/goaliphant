@@ -22,3 +22,5 @@ npm-debug.log
 */*.zip
 */*.env
 */*.ps1
+
+secrets.md

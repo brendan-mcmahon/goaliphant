@@ -32,57 +32,59 @@ exports.handler = async (event) => {
 		if (chatStateResponseInvoked) { return { statusCode: 200, body: 'OK' }; }
 
 		const x = text.split(' ');
-		const command = x[0];
+		let command = x[0];
+		if (command[0] === '/') {
+			command = command.substring(1);
+		}
 		const args = x[1];
 
 		switch (command) {
-			case '/start':
 			case 'start':
 				await start(chatId);
 				break;
-			case '/add':
 			case 'add':
-				await addGoals(text, chatId);
+				const goalsToAdd = text.replace('add', '').trim();
+				await addGoals(goalsToAdd, chatId);
 				break;
-			case '/list':
 			case 'list':
 				await listGoals(chatId);
 				break;
-			case '/delete':
 			case 'delete':
-				await deleteGoals(text, chatId);
+				const goalsToDelete = text.replace('delete', '').trim();
+				await deleteGoals(goalsToDelete, chatId);
 				break;
-			case '/complete':
 			case 'complete':
-				await completeGoals(text, chatId);
+				const goalToComplete = text.replace('complete', '').trim();
+				await completeGoals(goalToComplete, chatId);
 				break;
-			case '/uncomplete':
 			case 'uncomplete':
-				await uncompleteGoals(text, chatId);
+				const goalToUncomplete = text.replace('uncomplete', '').trim();
+				await uncompleteGoals(goalToUncomplete, chatId);
 				break;
-			case '/wallet':
 			case 'wallet':
 				await getTickets(chatId);
 				break;
-			case '/rewards':
 			case 'rewards':
 				await listRewards(chatId);
 				break;
-			case '/createreward':
 			case 'createreward':
 				await handleCreateRewardStep(chatId, 0);
 				break;
-			case '/redeem':
 			case 'redeem':
 				await redeemReward(chatId, args);
 				break;
-			case '/honey':
 			case 'honey':
-				await addHoney(text, chatId);
+				const honeyToAdd = text.replace('honey', '').trim();
+				await addHoney(honeyToAdd, chatId);
 				break;
-			case '/partner':
+			case 'partner':
 				console.log("getting partner list", chatId)
 				await listPartner(chatId);
+				break;
+			case 'schedule':
+				const goalToSchedule = text.replace('schedule', '').trim();
+				console.log("scheduling goal", goalToSchedule);
+				await scheduleGoal(chatId, args);
 				break;
 			default:
 				await sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');

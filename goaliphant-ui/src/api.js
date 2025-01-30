@@ -23,11 +23,14 @@ export async function completeGoal(chatId, index) {
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
-		const data = await response.json();
-		return data;
+		console.log(response);
+		// const data = await response.json();
+		// return data;
+		return true;
 	} catch (error) {
 		console.error('Error completing goal:', error);
-		throw error;
+		// throw error;
+		return false;
 	}
 }
 
@@ -39,10 +42,32 @@ export async function uncompleteGoal(chatId, index) {
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
-		const data = await response.json();
-		return data;
+		console.log(response);
+		return true;
 	} catch (error) {
 		console.error('Error uncompleting goal:', error);
-		throw error;
+		// throw error;
+		return false;
+	}
+}
+
+export async function editGoal(chatId, index, text) {
+	try {
+		const response = await fetch(`${API_URL}/editGoal`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ chatId, index, text })
+		});
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+		console.log(response);
+		return true;
+	} catch (error) {
+		console.error('Error updating goal:', error);
+		// throw error;
+		return false;
 	}
 }
