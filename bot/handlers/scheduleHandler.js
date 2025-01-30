@@ -12,3 +12,5 @@ async function scheduleGoal(chatId, args) {
 	await updateGoals(chatId, goals);
 	await sendMessage(chatId, `Goal scheduled for ${date}.`);
 }
+
+exports.scheduleGoal = scheduleGoal;
