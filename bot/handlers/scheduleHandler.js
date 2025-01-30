@@ -7,6 +7,8 @@ async function scheduleGoal(chatId, args) {
 	const goalIndex = x[0];
 	const date = x[1];
 
+	console.log("scheduling goal", goalIndex, date);
+
 	const goals = await getGoals(chatId);
 	goals[goalIndex].schedule = date;
 	await updateGoals(chatId, goals);
