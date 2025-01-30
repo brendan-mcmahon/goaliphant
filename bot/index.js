@@ -1,4 +1,3 @@
-
 const { sendMessage } = require('./bot.js');
 const { start } = require('./handlers/startHandler.js');
 const { deleteGoals } = require('./handlers/deleteGoalsHandler.js');
@@ -32,56 +31,67 @@ exports.handler = async (event) => {
 		console.log("chatStateResponse:", chatStateResponseInvoked);
 		if (chatStateResponseInvoked) { return { statusCode: 200, body: 'OK' }; }
 
-		const x = text.split(' ');
-		let command = x[0];
-		if (command[0] === '/') {
-			command = command.substring(1);
-		}
-		const args = x[1];
+		if (text[0] === '/') { text = text.substring(1).trim(); }
+
+		const command = text.split(' ')[0];
+		const args = text.replace(command, '').trim();
 
 		switch (command) {
+			// DEFINITION: /start
 			case 'start':
 				await start(chatId);
 				break;
+			// DEFINITION: /add {goal: text}
 			case 'add':
 				const goalsToAdd = text.replace('add', '').trim();
 				await addGoals(goalsToAdd, chatId);
 				break;
+			// DEFINITION: /list
 			case 'list':
 				await listGoals(chatId);
 				break;
+			// DEFINITION: /delete {index: number}
 			case 'delete':
 				const goalsToDelete = text.replace('delete', '').trim();
 				await deleteGoals(goalsToDelete, chatId);
 				break;
+			// DEFINITION: /complete {index: number}
 			case 'complete':
 				const goalToComplete = text.replace('complete', '').trim();
 				await completeGoals(goalToComplete, chatId);
 				break;
+			// DEFINITION: /uncomplete {index: number}
 			case 'uncomplete':
 				const goalToUncomplete = text.replace('uncomplete', '').trim();
 				await uncompleteGoals(goalToUncomplete, chatId);
 				break;
+			// DEFINITION: /wallet
 			case 'wallet':
 				await getTickets(chatId);
 				break;
+			// DEFINITION: /rewards
 			case 'rewards':
 				await listRewards(chatId);
 				break;
+			// DEFINITION: /createreward
 			case 'createreward':
 				await handleCreateRewardStep(chatId, 0);
 				break;
+			// DEFINITION: /redeem {index: number}
 			case 'redeem':
 				await redeemReward(chatId, args);
 				break;
+			// DEFINITION: /honey {honey: text}
 			case 'honey':
 				const honeyToAdd = text.replace('honey', '').trim();
 				await addHoney(honeyToAdd, chatId);
 				break;
+			// DEFINITION: /partner
 			case 'partner':
 				console.log("getting partner list", chatId)
 				await listPartner(chatId);
 				break;
+			// DEFINITION: /schedule {index: number} {date: text}
 			case 'schedule':
 				const goalToSchedule = text.replace('schedule', '').trim();
 				console.log("scheduling goal", goalToSchedule);
