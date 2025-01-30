@@ -11,6 +11,7 @@ const { getTickets } = require('./handlers/walletHandler.js');
 const { listRewards } = require('./handlers/rewardsHandler.js');
 const { handleCreateRewardStep } = require('./handlers/createRewardHandler.js');
 const { redeemReward } = require('./handlers/redeemRewardHandler.js');
+const { scheduleGoal } = require('./handlers/scheduleHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
