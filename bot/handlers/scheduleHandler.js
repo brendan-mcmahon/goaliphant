@@ -1,4 +1,4 @@
-const { getGoals } = require('../common/goalRepository.js');
+const { getGoals, updateGoals } = require('../common/goalRepository.js');
 const { sendMessage } = require('../bot.js');
 
 async function scheduleGoal(chatId, args) {
