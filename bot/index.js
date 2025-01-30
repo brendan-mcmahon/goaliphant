@@ -85,6 +85,7 @@ exports.handler = async (event) => {
 			case 'schedule':
 				const goalToSchedule = text.replace('schedule', '').trim();
 				console.log("scheduling goal", goalToSchedule);
+				console.log(!!scheduleGoal);
 				await scheduleGoal(chatId, args);
 				break;
 			default:
