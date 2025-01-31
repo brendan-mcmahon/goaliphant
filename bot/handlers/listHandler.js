@@ -10,7 +10,7 @@ async function listGoals(chatId) {
 		const goals = await getGoals(chatId);
 		console.log("goals:", goals);
 		const goalsList = goals
-			.filter(g => !g.schedule || !isScheduledDateInTheFuture(g.schedule))
+			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled))
 			.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
 		console.log("goalsList:", goalsList);
 		await sendMessage(chatId, goalsList || 'No goals set for today.');
