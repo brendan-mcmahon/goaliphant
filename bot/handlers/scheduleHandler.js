@@ -4,7 +4,7 @@ const { sendMessage } = require('../bot.js');
 async function scheduleGoal(chatId, args) {
 	// the args come like this: "{goal index} {mm/dd}" so we need to parse that string out
 	const x = args.split(' ');
-	const goalIndex = x[0];
+	const goalIndex = x[0] - 1;
 	const date = x[1];
 
 	console.log("scheduling goal", args, "turns into ", goalIndex, date);
