@@ -17,11 +17,25 @@ async function scheduleGoal(chatId, args) {
 
 	console.log("scheduling goal", args, "turns into ", goalIndex, longDate);
 
-	const goals = (await getGoals(chatId))
-		.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
-	goals[goalIndex].scheduled = longDate;
-	await updateGoals(chatId, goals);
-	await sendMessage(chatId, `Goal scheduled for ${longDate}.`);
+	const goals = await getGoals(chatId);
+
+	const visibleGoals = goals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
+
+	if (goalIndex < 0 || goalIndex >= visibleGoals.length) {
+		await sendMessage(chatId, "Invalid goal index.");
+		return;
+	}
+
+	const targetGoal = visibleGoals[goalIndex];
+	const actualIndex = goals.findIndex(g => g === targetGoal);
+
+	if (actualIndex !== -1) {
+		goals[actualIndex].scheduled = longDate;
+		await updateGoals(chatId, goals);
+		await sendMessage(chatId, `Goal scheduled for ${longDate}.`);
+	} else {
+		await sendMessage(chatId, "Error scheduling goal.");
+	}
 }
 
 exports.scheduleGoal = scheduleGoal;
