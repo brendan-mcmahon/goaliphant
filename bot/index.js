@@ -33,7 +33,7 @@ exports.handler = async (event) => {
 
 		if (text[0] === '/') { text = text.substring(1).trim(); }
 
-		const command = text.split(' ')[0];
+		const command = text.split(' ')[0].toLowerCase();
 		const args = text.replace(command, '').trim();
 
 		switch (command) {
