@@ -11,7 +11,7 @@ async function scheduleGoal(chatId, args) {
 
 	const goals = (await getGoals(chatId))
 		.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
-	goals[goalIndex].schedule = date;
+	goals[goalIndex].scheduled = date;
 	await updateGoals(chatId, goals);
 	await sendMessage(chatId, `Goal scheduled for ${date}.`);
 }
