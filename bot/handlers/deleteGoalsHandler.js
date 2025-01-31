@@ -1,7 +1,7 @@
 const { sendMessage, sendError } = require('../bot.js');
 const { getGoals, updateGoals } = require('../common/goalRepository.js');
 const { listGoals } = require('./listHandler.js');
-const { isScheduledDateInTheFuture } = require('../common/utils.js');
+const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 
 async function deleteGoals(text, chatId) {
 	const indexText = text.replace('/delete', '').trim();
