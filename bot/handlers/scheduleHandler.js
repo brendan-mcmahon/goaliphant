@@ -13,7 +13,7 @@ async function scheduleGoal(chatId, args) {
 	if (scheduledDate < today) {
 		scheduledDate.setFullYear(today.getFullYear() + 1);
 	}
-	const longDate = scheduledDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+	const longDate = scheduledDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 
 	console.log("scheduling goal", args, "turns into ", goalIndex, longDate);
 
