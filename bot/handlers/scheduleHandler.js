@@ -13,15 +13,15 @@ async function scheduleGoal(chatId, args) {
 	if (scheduledDate < today) {
 		scheduledDate.setFullYear(today.getFullYear() + 1);
 	}
-	date = scheduledDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+	const longDate = scheduledDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
 
-	console.log("scheduling goal", args, "turns into ", goalIndex, date);
+	console.log("scheduling goal", args, "turns into ", goalIndex, longDate);
 
 	const goals = (await getGoals(chatId))
 		.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
-	goals[goalIndex].scheduled = date;
+	goals[goalIndex].scheduled = longDate;
 	await updateGoals(chatId, goals);
-	await sendMessage(chatId, `Goal scheduled for ${date}.`);
+	await sendMessage(chatId, `Goal scheduled for ${longDate}.`);
 }
 
 exports.scheduleGoal = scheduleGoal;
