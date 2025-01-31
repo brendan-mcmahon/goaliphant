@@ -2,6 +2,7 @@ const { getGoals, updateGoals } = require('../common/goalRepository.js');
 const { addTicket } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
+const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 
 async function completeGoals(text, chatId) {
 	console.log("text:", text);

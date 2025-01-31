@@ -1,11 +1,19 @@
 const { getGoals, updateGoals } = require('../common/goalRepository.js');
+const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 const { sendMessage } = require('../bot.js');
 
 async function scheduleGoal(chatId, args) {
-	// the args come like this: "{goal index} {mm/dd}" so we need to parse that string out
 	const x = args.split(' ');
 	const goalIndex = x[0] - 1;
 	const date = x[1];
+
+	const today = new Date();
+	const [month, day] = date.split('/').map(x => parseInt(x));
+	const scheduledDate = new Date(today.getFullYear(), month - 1, day);
+	if (scheduledDate < today) {
+		scheduledDate.setFullYear(today.getFullYear() + 1);
+	}
+	date = scheduledDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
 
 	console.log("scheduling goal", args, "turns into ", goalIndex, date);
 
