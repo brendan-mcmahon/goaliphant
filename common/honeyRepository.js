@@ -1,6 +1,6 @@
 require('dotenv').config();
 const AWS = require('aws-sdk');
-const { getLocalDate } = require('./utils.js');
+const { getLocalDate } = require('./utilities.js');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const honeyTable = 'GoaliphantHoneyDo';
