@@ -1,15 +1,10 @@
 require('dotenv').config();
 const AWS = require('aws-sdk');
+const { getLocalDate } = require('./utils.js');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const honeyTable = 'GoaliphantHoneyDo';
 const TIME_ZONE = 'America/Indiana/Indianapolis';
-
-function getLocalDate() {
-	const date = new Date();
-	const localDate = date.toLocaleString('en-US', { timeZone: TIME_ZONE });
-	return new Date(localDate).toISOString().split('T')[0];
-}
 
 async function getHoney(chatId, date = null) {
 	date = date ?? getLocalDate();

@@ -2,6 +2,7 @@ const { getGoals } = require('../common/goalRepository.js');
 const { getHoney } = require('../common/honeyRepository.js');
 const { getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
+const { isScheduledDateInTheFuture } = require('../common/utils.js');
 
 async function listGoals(chatId) {
 	try {
@@ -50,11 +51,3 @@ async function listPartner(chatId) {
 	}
 }
 exports.listPartner = listPartner;
-
-function isScheduledDateInTheFuture(date) {
-	// date is in the format mm/dd
-	const [month, day] = date.split('/').map(x => parseInt(x));
-	const today = new Date();
-	const scheduledDate = new Date(today.getFullYear(), month - 1, day);
-	return scheduledDate > today;
-}

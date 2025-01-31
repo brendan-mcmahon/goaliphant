@@ -1,13 +1,6 @@
-const TIME_ZONE = 'America/Indiana/Indianapolis';
 const { getGoals, createNewDayWithGoals } = require('./common/goalRepository');
 const { getChatIds, getUser } = require('./common/userRepository');
-
-function getLocalDate(offsetDays = 0) {
-	const date = new Date();
-	date.setDate(date.getDate() + offsetDays);
-	const localDate = date.toLocaleString('en-US', { timeZone: TIME_ZONE });
-	return new Date(localDate).toISOString().split('T')[0];
-}
+const { getLocalDate } = require('./common/utils');
 
 async function rolloverGoals(chatId) {
 	const yesterday = getLocalDate(-1);

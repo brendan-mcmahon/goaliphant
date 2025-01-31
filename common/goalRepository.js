@@ -1,15 +1,9 @@
 require('dotenv').config();
 const AWS = require('aws-sdk');
+const { getLocalDate } = require('./utils.js');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const goalsTable = 'GoaliphantGoals';
-const TIME_ZONE = 'America/Indiana/Indianapolis';
-
-function getLocalDate() {
-	const date = new Date();
-	const localDate = date.toLocaleString('en-US', { timeZone: TIME_ZONE });
-	return new Date(localDate).toISOString().split('T')[0];
-}
 
 async function getGoals(chatId, date = null) {
 	date = date ?? getLocalDate();
@@ -73,7 +67,7 @@ exports.updateGoals = updateGoals;
 
 async function createNewDayWithGoals(chatId, username, goals, date = null) {
 	date = date ?? getLocalDate();
-	const formattedGoals = goals.map(goal => ({ text: goal.text, completed: false }));
+	const formattedGoals = goals.map(goal => ({ text: goal.text, scheduled: goal.scheduled, completed: false }));
 
 	const params = {
 		TableName: goalsTable,

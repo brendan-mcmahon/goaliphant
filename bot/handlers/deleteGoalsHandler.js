@@ -1,6 +1,7 @@
 const { sendMessage, sendError } = require('../bot.js');
 const { getGoals, updateGoals } = require('../common/goalRepository.js');
 const { listGoals } = require('./listHandler.js');
+const { isScheduledDateInTheFuture } = require('../common/utils.js');
 
 async function deleteGoals(text, chatId) {
 	const indexText = text.replace('/delete', '').trim();
@@ -15,7 +16,7 @@ exports.deleteGoals = deleteGoals;
 
 async function removeGoals(indexes, chatId) {
 	try {
-		const goals = await getGoals(chatId);
+		const goals = await getGoals(chatId).filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
 		let updated = false;
 		indexes.sort((a, b) => b - a).forEach(index => {
 			if (index >= 0 && index < goals.length) {

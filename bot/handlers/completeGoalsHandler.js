@@ -18,7 +18,8 @@ exports.completeGoals = completeGoals;
 
 async function markGoalsAsComplete(indexes, chatId) {
 	try {
-		const goals = await getGoals(chatId);
+		const goals = await getGoals(chatId)
+			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
 		let updated = false;
 		indexes.forEach(index => {
 			if (index >= 0 && index < goals.length && !goals[index].completed) {

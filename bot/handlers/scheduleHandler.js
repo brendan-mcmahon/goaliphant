@@ -9,7 +9,8 @@ async function scheduleGoal(chatId, args) {
 
 	console.log("scheduling goal", args, "turns into ", goalIndex, date);
 
-	const goals = await getGoals(chatId);
+	const goals = await getGoals(chatId)
+		.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
 	goals[goalIndex].schedule = date;
 	await updateGoals(chatId, goals);
 	await sendMessage(chatId, `Goal scheduled for ${date}.`);
