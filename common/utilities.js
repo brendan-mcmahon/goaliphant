@@ -1,11 +1,11 @@
 function isScheduledDateInTheFuture(date) {
-	// date is in the format mm/dd
+	// date is in the format mm/dd/yyyy
 	if (!date) return false;
-	const [month, day] = date.split('/').map(x => parseInt(x));
-	console.log("month:", month, "day:", day);
+	const [month, day, year] = date.split('/').map(x => parseInt(x));
+	console.log("month:", month, "day:", day, "year:", year);
 	const today = new Date();
 	console.log("today:", today);
-	const scheduledDate = new Date(today.getFullYear(), month - 1, day);
+	const scheduledDate = new Date(year, month - 1, day);
 	console.log("scheduledDate:", scheduledDate);
 	return scheduledDate > today;
 }
