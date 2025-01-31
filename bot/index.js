@@ -18,7 +18,7 @@ exports.handler = async (event) => {
 
 	if (body.message) {
 		const chatId = body.message.chat.id;
-		const text = body.message.text;
+		let text = body.message.text;
 
 		console.log("message from", chatId, body.message.from.first_name, ":", text);
 

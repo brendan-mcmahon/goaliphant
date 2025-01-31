@@ -7,7 +7,9 @@ async function listGoals(chatId) {
 	try {
 		console.log("listing...");
 		const goals = await getGoals(chatId);
-		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
+		const goalsList = goals
+			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled))
+			.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
 		await sendMessage(chatId, goalsList || 'No goals set for today.');
 	} catch (error) {
 		console.error('Error listing goals:', error);
@@ -15,6 +17,7 @@ async function listGoals(chatId) {
 	}
 }
 exports.listGoals = listGoals;
+
 
 async function listHoney(chatId) {
 	try {
@@ -37,7 +40,9 @@ async function listPartner(chatId) {
 		const partnerId = user.PartnerId;
 		console.log("partnerId:", partnerId);
 		const goals = await getGoals(partnerId);
-		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
+		const goalsList = goals
+			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled))
+			.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
 		await sendMessage(chatId, goalsList || 'No goals set for partner today.');
 	} catch (error) {
 		console.error('Error listing partner goals:', error);
@@ -45,3 +50,11 @@ async function listPartner(chatId) {
 	}
 }
 exports.listPartner = listPartner;
+
+function isScheduledDateInTheFuture(date) {
+	// date is in the format mm/dd
+	const [month, day] = date.split('/').map(x => parseInt(x));
+	const today = new Date();
+	const scheduledDate = new Date(today.getFullYear(), month - 1, day);
+	return scheduledDate > today;
+}
