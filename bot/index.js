@@ -98,6 +98,9 @@ exports.handler = async (event) => {
 				console.log(!!scheduleGoal);
 				await scheduleGoal(chatId, args);
 				break;
+			case 'help':
+				await sendMessage(chatId, 'Commands: `add`, `list`, `delete`, `complete`, `uncomplete`, `wallet`, `rewards`, `createreward`, `redeem`, `honey`, `partner`, `schedule`');
+				break
 			default:
 				await sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
 		}
