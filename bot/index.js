@@ -43,8 +43,7 @@ exports.handler = async (event) => {
 				break;
 			// DEFINITION: /add {goal: text}
 			case 'add':
-				const goalsToAdd = text.replace('add', '').trim();
-				await addGoals(goalsToAdd, chatId);
+				await addGoals(args, chatId);
 				break;
 			// DEFINITION: /list
 			case 'list':
@@ -97,6 +96,9 @@ exports.handler = async (event) => {
 				console.log("scheduling goal", goalToSchedule);
 				console.log(!!scheduleGoal);
 				await scheduleGoal(chatId, args);
+				break;
+			case 'requestreward':
+				await sendMessage(chatId, 'Requesting reward...');
 				break;
 			case 'help':
 				await sendMessage(chatId, 'Commands: `add`, `list`, `delete`, `complete`, `uncomplete`, `wallet`, `rewards`, `createreward`, `redeem`, `honey`, `partner`, `schedule`');
