@@ -1,6 +1,6 @@
 const { getGoals, createNewDayWithGoals } = require('./common/goalRepository');
 const { getChatIds, getUser } = require('./common/userRepository');
-const { getLocalDate } = require('./common/utils');
+const { getLocalDate } = require('./common/utilities');
 
 async function rolloverGoals(chatId) {
 	const yesterday = getLocalDate(-1);
