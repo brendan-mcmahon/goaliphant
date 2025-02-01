@@ -1,5 +1,5 @@
 const { getGoals, updateGoals } = require('../common/goalRepository.js');
-const { addTicket } = require('../common/userRepository.js');
+const { addTicket, getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
@@ -19,12 +19,17 @@ exports.completeGoals = completeGoals;
 
 async function markGoalsAsComplete(indexes, chatId) {
 	try {
+		const user = await getUser(chatId);
+		const partnerId = user.PartnerId;
 		const goals = (await getGoals(chatId))
 			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
 		let updated = false;
 		indexes.forEach(index => {
 			if (index >= 0 && index < goals.length && !goals[index].completed) {
 				goals[index].completed = true;
+				if (goals[index][0] === "🐝") {
+					sendMessage(partnerId, `Your partner has completed a 🐝 task: ${goals[index].text}`);
+				}
 				updated = true;
 			}
 		});
