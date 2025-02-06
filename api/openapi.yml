@@ -1,0 +1,157 @@
+openapi: 3.0.0
+info:
+  title: Goaliphant API
+  description: API for managing daily goals via Goaliphant.
+  version: 1.0.0
+servers:
+  - url: https://5fxpi3bue4dkhwv4kf5re3vcyi0cowqn.lambda-url.us-east-2.on.aws
+paths:
+  /getAllData:
+    get:
+      summary: Get all goals and rewards
+      operationId: getAllData
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                        completed:
+                          type: boolean
+                  rewards:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        cost:
+                          type: integer
+  /today:
+    get:
+      summary: Get today's goals for a user
+      operationId: getTodayGoals
+      parameters:
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Today's goals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                        completed:
+                          type: boolean
+  /addGoal:
+    post:
+      summary: Add a new goal
+      operationId: addGoal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chatId:
+                  type: string
+                text:
+                  type: string
+      responses:
+        "200":
+          description: Goal added successfully
+  /completeGoal:
+    post:
+      summary: Mark a goal as completed
+      operationId: completeGoal
+      parameters:
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: index
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Goal marked as completed
+  /uncompleteGoal:
+    post:
+      summary: Mark a goal as incomplete
+      operationId: uncompleteGoal
+      parameters:
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: index
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Goal marked as incomplete
+  /editGoal:
+    post:
+      summary: Edit a goal's text
+      operationId: editGoal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chatId:
+                  type: string
+                index:
+                  type: integer
+                text:
+                  type: string
+      responses:
+        "200":
+          description: Goal edited successfully
+  /deleteGoal:
+    post:
+      summary: Delete a goal
+      operationId: deleteGoal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chatId:
+                  type: string
+                index:
+                  type: integer
+      responses:
+        "200":
+          description: Goal deleted successfully

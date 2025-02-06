@@ -52,7 +52,7 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
 3. **Honey-Do** 🐝
    - [x] As in #2, add a `Partner` data point to Users that refers to another User in the system
    - [x] New Bot command: `/honey {1, 2, 3}` that operates the same as the `/add {1, 2, 3}` but adds it to the partner's honey-do list instead of their regular list.
-   - [ ] Notify partner when one of these items is completed
+   - [x] Notify partner when one of these items is completed
 4. **Dashboard** 
    - [ ] Create a dashboard page that pulls data from the API
 5. **Scheduled Goals**
@@ -67,8 +67,8 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [ ] New Bot command: `/swap {#} {#}` which just does a simple swap of two goals in the order
 8. **Edit Goal**
    - [ ] New Bot command `/edit {#} {new text}` which swaps the text of a goal for new text the user enters
-9. **Telegram Buttons**
-   - [ ] Research how to do this. I think it's custom keyboards, but I'm not sure?
+9. **Custom GPT**
+   - [ ] Create a custom GPT with OpenAI that will have access to the API as actions.
 ---
 
 ## Technical Requirements

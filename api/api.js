@@ -10,14 +10,6 @@ exports.handler = async (event) => {
 		return { statusCode: 200, body: JSON.stringify({ goals, rewards }) };
 	}
 
-	if (event.rawPath === '/today') {
-		const chatId = event.queryStringParameters.chatId;
-		const goals = await getGoals(chatId);
-
-		// TODO: Filter scheduled goals
-		return { statusCode: 200, body: JSON.stringify({ goals }) };
-	}
-
 	if (event.rawPath === '/completeGoal') {
 		const chatId = event.queryStringParameters.chatId;
 		const index = parseInt(event.queryStringParameters.index);
@@ -61,6 +53,20 @@ exports.handler = async (event) => {
 
 	return { statusCode: 400, body: 'Invalid path.' };
 };
+
+// async function addGoals(text, chatId) {
+// 	const goalsText = text.replace('/add', '').trim();
+// 	const newGoals = goalsText.split(',').map((goal) => goal.trim());
+// 	try {
+// 		const existingGoals = await getGoals(chatId);
+// 		const updatedGoals = [...existingGoals, ...newGoals.map(goal => ({ text: goal, completed: false }))];
+// 		await updateGoals(chatId, updatedGoals);
+// 		await bot.sendMessage(chatId, 'Goals added successfully!');
+// 		await listGoals(chatId);
+// 	} catch (error) {
+// 		await bot.sendMessage(chatId, 'Error saving goals.');
+// 	}
+// }
 
 async function addGoal(chatId, text) {
 	try {
