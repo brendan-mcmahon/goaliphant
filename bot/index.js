@@ -34,7 +34,7 @@ exports.handler = async (event) => {
 		if (text[0] === '/') { text = text.substring(1).trim(); }
 
 		const command = text.split(' ')[0].toLowerCase();
-		const args = text.replace(command, '').trim();
+		const args = text.substring(command.length).trim();
 
 		switch (command) {
 			// DEFINITION: /start
