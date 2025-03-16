@@ -88,4 +88,3 @@ async function createNewDayWithGoals(chatId, username, goals, date = null) {
 	}
 }
 exports.createNewDayWithGoals = createNewDayWithGoals;
-

@@ -33,7 +33,9 @@ exports.handler = async (event) => {
 	console.log('Event type:', type);
 	const chatIds = event.chatIds ?? await getChatIds();
 
-	for (const chatId of chatIds) {
+	const filteredChatIds = chatIds.filter(chatId => chatId !== '-4711773993');
+
+	for (const chatId of filteredChatIds) {
 
 		if (type === 'morning') {
 			await sendMorningReminder(chatId);

@@ -19,12 +19,18 @@ exports.handler = async (event) => {
 	if (body.message) {
 		const chatId = body.message.chat.id;
 		let text = body.message.text;
+		let ticketRecipientId = chatId;
 
 		console.log("message from", chatId, body.message.from.first_name, ":", text);
 
 		if (!text) {
 			console.log("no text");
 			return { statusCode: 200, body: 'OK' };
+		}
+
+		if (body.message && body.message.chat && body.message.chat.type === 'group') {
+			console.log("group chat", body.message.chat.id);
+			ticketRecipientId = body.message.from.id;
 		}
 
 		const chatStateResponseInvoked = await handleChatState(text, chatId);
@@ -37,10 +43,6 @@ exports.handler = async (event) => {
 		const args = text.substring(command.length).trim();
 
 		switch (command) {
-			// DEFINITION: /start
-			case 'start':
-				await start(chatId);
-				break;
 			// DEFINITION: /add {goal: text}
 			case 'add':
 				await addGoals(args, chatId);
@@ -57,7 +59,7 @@ exports.handler = async (event) => {
 			// DEFINITION: /complete {index: number}
 			case 'complete':
 				const goalToComplete = text.replace('complete', '').trim();
-				await completeGoals(goalToComplete, chatId);
+				await completeGoals(goalToComplete, chatId, ticketRecipientId);
 				break;
 			// DEFINITION: /uncomplete {index: number}
 			case 'uncomplete':

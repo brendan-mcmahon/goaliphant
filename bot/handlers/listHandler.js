@@ -21,7 +21,6 @@ async function listGoals(chatId) {
 }
 exports.listGoals = listGoals;
 
-
 async function listHoney(chatId) {
 	try {
 		console.log("listing...");

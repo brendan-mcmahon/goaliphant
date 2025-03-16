@@ -4,7 +4,7 @@ const { sendMessage, sendError } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 
-async function completeGoals(text, chatId) {
+async function completeGoals(text, chatId, ticketRecipientId) {
 	console.log("text:", text);
 	const indexText = text.replace('/complete', '').trim();
 	console.log('indexText:', indexText);
@@ -12,12 +12,12 @@ async function completeGoals(text, chatId) {
 		await sendMessage(chatId, 'You must send the goal numbers to mark as complete (separated by spaces).');
 	} else {
 		const indexes = indexText.split(' ').map(n => parseInt(n.trim()) - 1);
-		await markGoalsAsComplete(indexes, chatId);
+		await markGoalsAsComplete(indexes, chatId, ticketRecipientId);
 	}
 }
 exports.completeGoals = completeGoals;
 
-async function markGoalsAsComplete(indexes, chatId) {
+async function markGoalsAsComplete(indexes, chatId, ticketRecipientId) {
 	try {
 		const user = await getUser(chatId);
 		const partnerId = user.PartnerId;
@@ -35,7 +35,7 @@ async function markGoalsAsComplete(indexes, chatId) {
 		});
 		if (updated) {
 			await updateGoals(chatId, goals);
-			await addTicket(chatId);
+			await addTicket(ticketRecipientId);
 			await sendMessage(chatId, 'Goals marked as completed.');
 			await listGoals(chatId);
 		} else {
