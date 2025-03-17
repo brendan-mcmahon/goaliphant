@@ -64,7 +64,7 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [x] Send notification to partner and go into "pricing" mode. The next input from the user should be a number, set that value on the reward table.
    - [x] Make sure to hide rewards from the user that don't have ticket values on them. That way we can go ahead and make the new record without having to worry about it. Or maybe we show them but just say *"pending ticket price"* or something?
 7. **Rearrange Goals**
-   - [ ] New Bot command: `/swap {#} {#}` which just does a simple swap of two goals in the order
+   - [x] New Bot command: `/swap {#} {#}` which just does a simple swap of two goals in the order
 8. **Edit Goal**
    - [x] New Bot command `/edit {#} {new text}` which swaps the text of a goal for new text the user enters
 9. **Custom GPT**

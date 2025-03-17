@@ -11,6 +11,8 @@ const { handleCreateRewardStep } = require('./handlers/createRewardHandler.js');
 const { redeemReward } = require('./handlers/redeemRewardHandler.js');
 const { scheduleGoal } = require('./handlers/scheduleHandler.js');
 const { handleRequestRewardStep } = require('./handlers/requestRewardHandler.js');
+const { editGoal } = require('./handlers/editGoalHandler.js');
+const { swapGoals } = require('./handlers/swapGoalsHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
@@ -61,7 +63,7 @@ exports.handler = async (event) => {
 				const goalToEditIndex = args.split(' ')[0];
 				const newText = args.substring(goalToEditIndex.length).trim();
 				console.log("editing goal", goalToEditIndex, newText);
-				await editGoals(goalToEditIndex, newText, chatId);
+				await editGoal(goalToEditIndex, newText, chatId);
 				break;
 			// DEFINITION: /swap {index1: number} {index2: number}
 			case 'swap':
