@@ -67,7 +67,8 @@ exports.handler = async (event) => {
 				break;
 			// DEFINITION: /swap {index1: number} {index2: number}
 			case 'swap':
-				await swapGoals(args, chatId);
+				const indices = args.split(' ');
+				await swapGoals(indices[0], indices[1], chatId);
 				break;
 			// DEFINITION: /complete {index: number}
 			case 'complete':

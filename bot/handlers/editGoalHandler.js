@@ -23,6 +23,8 @@ async function saveGoalsAndList(index, newGoal, chatId) {
 		const updatedGoals = [...existingGoals];
 		updatedGoals[index] = { ...updatedGoals[index], text: newGoal };
 		await updateGoals(chatId, updatedGoals);
+		await sendMessage(chatId, 'Goal updated successfully!');
+		await listGoals(chatId);
 	} catch (error) {
 		console.error('Error adding goals:', error);
 		await sendError(chatId, error);
