@@ -23,6 +23,9 @@ async function listRewards(chatId) {
 			rewardsMessage = "You have 0 rewards.";
 		} else {
 			rewardsMessage = rewards.map((reward, index) => {
+				if (reward.Cost === 0) {
+					return `<b>${index + 1}. ${reward.Title}</b> | <i>pending pricing</i>\n<i>${reward.Description}</i>`;
+				}
 				return `<b>${index + 1}. ${reward.Title}</b> | ${reward.Cost} 🎟\n<i>${reward.Description}</i>`;
 			}).join('\n');
 		}
