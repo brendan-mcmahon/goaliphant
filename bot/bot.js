@@ -43,4 +43,4 @@ async function sendError(chatId, error) {
 	await bot.sendMessage(chatId, `❌ ${JSON.stringify(error)}`);
 }
 
-module.exports = { sendMessage, editMessage, deleteMessage, sendError };
+module.exports = { sendThinkingMessage, sendMessage, editMessage, deleteMessage, sendError };
