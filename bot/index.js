@@ -21,7 +21,7 @@ exports.handler = async (event) => {
 
 	if (body.message) {
 		const chatId = body.message.chat.id;
-		sendThinkingMessage(chatId);
+		await sendThinkingMessage(chatId);
 
 		let text = body.message.text;
 		let ticketRecipientId = chatId;
