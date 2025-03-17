@@ -9,6 +9,7 @@ let thinkingMessageId = null;
 async function sendThinkingMessage(chatId) {
 
 	const thinkingMessage = await bot.sendMessage(chatId, 'Thinking... 🤔');
+	thinkingMessageId = thinkingMessage.message_id;
 	console.log("Thinking message sent", thinkingMessage);
 }
 
