@@ -99,6 +99,7 @@ exports.handler = async (event) => {
 				console.log(!!scheduleGoal);
 				await scheduleGoal(chatId, args);
 				break;
+			// DEFINITION: /requestreward
 			case 'requestreward':
 				await handleRequestRewardStep(chatId, 0);
 				break;

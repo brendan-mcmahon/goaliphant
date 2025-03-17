@@ -10,6 +10,7 @@ const steps = [
 ];
 
 async function handleRequestRewardStep(chatId, step, rewardId, partnerId, text) {
+	console.log("handleRequestRewardStep", chatId, step, rewardId, partnerId, text);
 	await steps[step](chatId, rewardId, partnerId, text);
 }
 exports.handleRequestRewardStep = handleRequestRewardStep;

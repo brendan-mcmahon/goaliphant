@@ -2,6 +2,7 @@ const { getChatState, clearChatState } = require('../common/userRepository.js');
 const { saveGoalsAndList } = require('./addGoalsHandler.js');
 const { sendMessage } = require('../bot.js');
 const { handleCreateRewardStep } = require('./createRewardHandler.js');
+const { handleRequestRewardStep } = require('./requestRewardHandler.js');
 
 const cancelWords = [
 	'cancel',
@@ -49,6 +50,11 @@ async function handleChatState(text, chatId) {
 		const step = parseInt(state.split('-')[1]);
 		console.log("passing args", args);
 		await handleCreateRewardStep(chatId, step, args[0], args[1], text);
+	}
+
+	if (state.startsWith('requestReward')) {
+		const step = parseInt(state.split('-')[1]);
+		await handleRequestRewardStep(chatId, step, args[0], args[1], text);
 	}
 
 	return true;
