@@ -3,6 +3,8 @@ const { listGoals } = require('./listHandler.js');
 const { sendMessage } = require('../bot.js');
 
 async function swapGoals(index1, index2, chatId) {
+	index1--;
+	index2--;
 
 	const existingGoals = await getGoals(chatId);
 

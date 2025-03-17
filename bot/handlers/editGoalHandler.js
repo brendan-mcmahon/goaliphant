@@ -4,6 +4,7 @@ const { listGoals } = require('./listHandler.js');
 const { sendMessage, sendError } = require('../bot.js');
 
 async function editGoal(index, text, chatId) {
+	index--;
 	if (!text) {
 		await sendMessage(chatId, 'You must send new text to replace the existing text!');
 	} else {
