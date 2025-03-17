@@ -10,7 +10,7 @@ async function editGoal(index, text, chatId) {
 		await saveGoalsAndList(index, text.trim(), chatId);
 	}
 }
-exports.addGoals = addGoals;
+exports.editGoal = editGoal;
 
 async function saveGoalsAndList(index, newGoal, chatId) {
 	try {

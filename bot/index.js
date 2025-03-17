@@ -56,12 +56,16 @@ exports.handler = async (event) => {
 				const goalsToDelete = text.replace('delete', '').trim();
 				await deleteGoals(goalsToDelete, chatId);
 				break;
+			// DEFINITION: /edit {index: number} {text: text}
 			case 'edit':
-				const args = text.substring(command.length).trim();
 				const goalToEditIndex = args.split(' ')[0];
 				const newText = args.substring(goalToEditIndex.length).trim();
 				console.log("editing goal", goalToEditIndex, newText);
 				await editGoals(goalToEditIndex, newText, chatId);
+				break;
+			// DEFINITION: /swap {index1: number} {index2: number}
+			case 'swap':
+				await swapGoals(args, chatId);
 				break;
 			// DEFINITION: /complete {index: number}
 			case 'complete':
