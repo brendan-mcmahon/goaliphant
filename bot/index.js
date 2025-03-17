@@ -1,5 +1,4 @@
 const { sendMessage } = require('./bot.js');
-const { start } = require('./handlers/startHandler.js');
 const { deleteGoals } = require('./handlers/deleteGoalsHandler.js');
 const { addGoals, addHoney } = require('./handlers/addGoalsHandler.js');
 const { listGoals, listPartner } = require('./handlers/listHandler.js');
@@ -11,6 +10,7 @@ const { listRewards } = require('./handlers/rewardsHandler.js');
 const { handleCreateRewardStep } = require('./handlers/createRewardHandler.js');
 const { redeemReward } = require('./handlers/redeemRewardHandler.js');
 const { scheduleGoal } = require('./handlers/scheduleHandler.js');
+const { handleRequestRewardStep } = require('./handlers/requestRewardHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
@@ -100,7 +100,7 @@ exports.handler = async (event) => {
 				await scheduleGoal(chatId, args);
 				break;
 			case 'requestreward':
-				await sendMessage(chatId, 'Requesting reward...');
+				await handleRequestRewardStep(chatId, 0);
 				break;
 			case 'help':
 				await sendMessage(chatId, 'Commands: `add`, `list`, `delete`, `complete`, `uncomplete`, `wallet`, `rewards`, `createreward`, `redeem`, `honey`, `partner`, `schedule`');
