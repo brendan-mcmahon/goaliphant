@@ -56,6 +56,13 @@ exports.handler = async (event) => {
 				const goalsToDelete = text.replace('delete', '').trim();
 				await deleteGoals(goalsToDelete, chatId);
 				break;
+			case 'edit':
+				const args = text.substring(command.length).trim();
+				const goalToEditIndex = args.split(' ')[0];
+				const newText = args.substring(goalToEditIndex.length).trim();
+				console.log("editing goal", goalToEditIndex, newText);
+				await editGoals(goalToEditIndex, newText, chatId);
+				break;
 			// DEFINITION: /complete {index: number}
 			case 'complete':
 				const goalToComplete = text.replace('complete', '').trim();
