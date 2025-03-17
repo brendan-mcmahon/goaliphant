@@ -7,7 +7,9 @@ const bot = new TelegramBot(token);
 let thinkingMessageId = null;
 
 async function sendThinkingMessage(chatId) {
-	thinkingMessageId = await bot.sendMessage(chatId, 'Thinking... 🤔');
+
+	const thinkingMessage = await bot.sendMessage(chatId, 'Thinking... 🤔');
+	console.log("Thinking message sent", thinkingMessage);
 }
 
 async function sendMessage(chatId, message, options) {
