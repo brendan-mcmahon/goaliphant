@@ -16,7 +16,7 @@ async function sendThinkingMessage(chatId) {
 async function sendMessage(chatId, message, options) {
 
 	if (thinkingMessageId) {
-		await editMessage(chatId, thinkingMessageId, thinkingMessageId);
+		await editMessage(chatId, thinkingMessageId, message, options);
 		thinkingMessageId = null;
 	} else {
 		await bot.sendMessage(chatId, message, options);
