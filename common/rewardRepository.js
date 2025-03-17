@@ -71,7 +71,7 @@ const insertReward = async (chatId) => {
 			RewardId: rewardId,
 			Title: 'New Reward',
 			Description: 'Description',
-			Cost: 1,
+			Cost: 0,
 		},
 	};
 
