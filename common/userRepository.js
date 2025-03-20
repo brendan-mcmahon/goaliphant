@@ -152,3 +152,18 @@ const getTicketCount = async (chatId) => {
 	}
 }
 exports.getTicketCount = getTicketCount;
+
+const getAllUsers = async () => {
+	const params = {
+		TableName: userTable,
+	};
+
+	try {
+		const data = await dynamoDb.scan(params).promise();
+		return data.Items;
+	} catch (err) {
+		console.error('Error fetching all users:', err);
+		throw err;
+	}
+}
+exports.getAllUsers = getAllUsers;

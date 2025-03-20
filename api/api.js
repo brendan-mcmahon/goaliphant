@@ -1,6 +1,6 @@
 const { getAllGoals, getGoals, updateGoals } = require('./common/goalRepository.js');
 const { getAllRewards } = require('./common/rewardRepository.js');
-const { getUser, saveUser, getChatState, setChatState } = require('./common/userRepository.js');
+const { getUser, getAllUsers } = require('./common/userRepository.js');
 
 exports.handler = async (event) => {
 	console.log("Handling event", event.requestContext.http.method, event.rawPath, event.queryStringParameters);
@@ -8,7 +8,15 @@ exports.handler = async (event) => {
 	if (event.rawPath === '/getAllData') {
 		const goals = await getAllGoals();
 		const rewards = await getAllRewards();
-		return { statusCode: 200, body: JSON.stringify({ goals, rewards }) };
+		const users = await getAllUsers();
+
+		// Might not use this since I already have it the other way?
+		const userGoals = users.map(user => {
+			const userGoals = goals.filter(goal => goal.ChatId === user.ChatId);
+			return { ...user, goals: userGoals };
+		});
+
+		return { statusCode: 200, body: JSON.stringify({ goals, rewards, users, userGoals }) };
 	}
 
 	if (event.rawPath === '/completeGoal') {
