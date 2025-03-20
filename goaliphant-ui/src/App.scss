@@ -10,6 +10,13 @@ h2 {
 	text-align: left;
 }
 
+.user-day-summary {
+	border: solid black 2px;
+	border-radius: 5px;
+	padding: 1rem;
+	margin: 1rem 0;
+}
+
 .goals,
 .rewards {
 	display: flex;

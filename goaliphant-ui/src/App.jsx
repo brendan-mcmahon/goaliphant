@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.scss'
-import { fetchData } from './api'
+import { fetchData, deleteGoal } from './api'
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 import Goal from './Goal'
 import Modal from './Modal'
@@ -12,9 +12,9 @@ const dateOptions = {
 	day: 'numeric',
 };
 
-const dateEquals = (date1, date2) => {
-	return new Date(date1).toISOString().split('T')[0] === new Date(date2).toISOString().split('T')[0];
-}
+// const dateEquals = (date1, date2) => {
+// 	return new Date(date1).toISOString().split('T')[0] === new Date(date2).toISOString().split('T')[0];
+// }
 
 function App() {
 	const [data, setData] = useState([]);
@@ -51,12 +51,18 @@ function App() {
 		return <div>Loading...</div>
 	}
 
+	const handleGoalDelete = async (chatId, index) => {
+		await deleteGoal(chatId, index);
+		const newGoals = [...data.goals];
+		newGoals.filter(g => g.date === date).goals.splice(index, 1);
+		setData({ ...data, goals: newGoals });
+	}
+
 	console.log('todaysGoals', todaysGoals);
 
 	return (
 		<>
 			<header>
-				{/* <h1>Goaliphant</h1> */}
 				<div className="date-picker">
 					<button className="icon-button" onClick={() => handleDateChange(-1)} > <FaAngleLeft /> </button>
 					<h2>{isToday ? "Today" : date.toLocaleString('en-US', dateOptions)}</h2>
@@ -65,7 +71,7 @@ function App() {
 			</header>
 			<div id="Users">
 				{todaysGoals.map((g, i) => (
-					<div key={i}>
+					<div key={i} className="user-day-summary">
 						<h2>{g.name}</h2>
 						<h3>Goals</h3>
 						<li className="goals">
@@ -110,7 +116,7 @@ function App() {
 				<p>Are you sure you want to delete this goal?</p>
 				<p>{goalToDelete?.goal.text}</p>
 				<div className="modal-actions">
-					<button onClick={() => deleteGoal(goalToDelete.chatId, goalToDelete.index)} >Yes</button>
+					<button onClick={async () => await handleGoalDelete(goalToDelete.chatId, goalToDelete.index)} >Yes</button>
 					<button onClick={() => setGoalToDelete(null)} >No</button>
 				</div>
 			</Modal>

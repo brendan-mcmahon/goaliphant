@@ -1,5 +1,6 @@
 const { getAllGoals, getGoals, updateGoals } = require('./common/goalRepository.js');
 const { getAllRewards } = require('./common/rewardRepository.js');
+const { getUser, saveUser, getChatState, setChatState } = require('./common/userRepository.js');
 
 exports.handler = async (event) => {
 	console.log("Handling event", event.requestContext.http.method, event.rawPath, event.queryStringParameters);
@@ -44,29 +45,19 @@ exports.handler = async (event) => {
 
 	if (event.rawPath === '/deleteGoal') {
 		console.log("Deleting goal");
-		const body = JSON.parse(event.body);
-		console.log(body);
-		const chatId = body.chatId;
-		const index = parseInt(body.index);
+		const chatId = event.queryStringParameters.chatId;
+		const index = parseInt(event.queryStringParameters.index);
 		return await deleteGoal(chatId, index);
+	}
+
+	if (event.rawPath === '/getUserData') {
+		const chatId = event.queryStringParameters.chatId;
+		const user = await getUser(chatId);
+		return { statusCode: 200, body: JSON.stringify({ user }) };
 	}
 
 	return { statusCode: 400, body: 'Invalid path.' };
 };
-
-// async function addGoals(text, chatId) {
-// 	const goalsText = text.replace('/add', '').trim();
-// 	const newGoals = goalsText.split(',').map((goal) => goal.trim());
-// 	try {
-// 		const existingGoals = await getGoals(chatId);
-// 		const updatedGoals = [...existingGoals, ...newGoals.map(goal => ({ text: goal, completed: false }))];
-// 		await updateGoals(chatId, updatedGoals);
-// 		await bot.sendMessage(chatId, 'Goals added successfully!');
-// 		await listGoals(chatId);
-// 	} catch (error) {
-// 		await bot.sendMessage(chatId, 'Error saving goals.');
-// 	}
-// }
 
 async function addGoal(chatId, text) {
 	try {
