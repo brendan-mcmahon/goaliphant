@@ -1,4 +1,4 @@
-const { sendMessage, sendThinkingMessage } = require('./bot.js');
+const { sendMessage, sendThinkingMessage, getUserProfilePhoto } = require('./bot.js');
 const { deleteGoals } = require('./handlers/deleteGoalsHandler.js');
 const { addGoals, addHoney } = require('./handlers/addGoalsHandler.js');
 const { listGoals, listPartner } = require('./handlers/listHandler.js');
@@ -18,9 +18,14 @@ exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
 	console.log("body:", body);
 
+	
 	if (body.message) {
 		const chatId = body.message.chat.id;
 		await sendThinkingMessage(chatId);
+		
+		console.log(await getUserProfilePhoto(chatId));
+		console.log(await getUserProfilePhoto(body.message.from.id));
+
 
 		let text = body.message.text;
 		let ticketRecipientId = chatId;

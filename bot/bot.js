@@ -47,4 +47,26 @@ async function sendError(chatId, error) {
 	await bot.sendMessage(chatId, `❌ ${JSON.stringify(error)}`);
 }
 
-module.exports = { sendThinkingMessage, sendMessage, editMessage, deleteMessage, sendError };
+
+async function getUserProfilePhoto(userId) {
+	try {
+	  const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+	  
+	  if (photos && photos.photos && photos.photos.length > 0 && photos.photos[0].length > 0) {
+		const fileId = photos.photos[0][photos.photos[0].length - 1].file_id;
+		
+		const fileInfo = await bot.getFile(fileId);
+		
+		const fileUrl = `https://api.telegram.org/file/bot${token}/${fileInfo.file_path}`;
+		return fileUrl;
+	  }
+	  console.log("No profile photo found");
+	  return null;
+	} catch (error) {
+	  console.error("Error fetching profile photo:", error);
+	  return null;
+	}
+  }
+
+  
+module.exports = { sendThinkingMessage, sendMessage, editMessage, deleteMessage, sendError, getUserProfilePhoto };

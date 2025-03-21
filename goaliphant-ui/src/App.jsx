@@ -30,6 +30,7 @@ function App() {
 			let _data = await fetchData();
 			_data.goals = _data.goals.filter(d => d.chatId !== '-4711773993');
 			setData(_data);
+			console.log(_data);
 		}
 		fetchDataAsync();
 	}, []);
