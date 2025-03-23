@@ -12,8 +12,12 @@ exports.handler = async (event) => {
 
 		// Might not use this since I already have it the other way?
 		const userGoals = users.map(user => {
-			const userGoals = goals.filter(goal => goal.chatId === user.ChatId);
-			return { ...user, goals: userGoals };
+			const days = goals.filter(goal => goal.chatId === user.ChatId);
+			return {
+				...user, days: days.map(ug => {
+					return { date: ug.date, goals: ug.goals };
+				})
+			};
 		});
 
 		return { statusCode: 200, body: JSON.stringify({ goals, rewards, users, userGoals }) };
