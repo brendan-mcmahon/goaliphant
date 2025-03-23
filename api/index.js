@@ -12,15 +12,13 @@ exports.handler = async (event) => {
 
 		// Might not use this since I already have it the other way?
 		const userGoals = users.map(user => {
-			const days = goals.filter(goal => goal.chatId === user.ChatId);
-			return {
-				...user, days: days.map(ug => {
-					return { date: ug.date, goals: ug.goals };
-				})
-			};
+			const days = goals.filter(goal => goal.chatId === user.ChatId).map(ug => ({ date: ug.date, goals: ug.goals }));
+			// get the rewards for each user
+			const userRewards = rewards.filter(r => r.ChatId === user.ChatId)
+			return { ...user, Days: days, Rewards: userRewards };
 		});
 
-		return { statusCode: 200, body: JSON.stringify({ goals, rewards, users, userGoals }) };
+		return { statusCode: 200, body: JSON.stringify({ goals, rewards, userGoals }) };
 	}
 
 	if (event.rawPath === '/completeGoal') {
