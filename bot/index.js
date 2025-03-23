@@ -18,11 +18,11 @@ exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
 	console.log("body:", body);
 
-	
+
 	if (body.message) {
 		const chatId = body.message.chat.id;
 		await sendThinkingMessage(chatId);
-		
+
 		console.log(await getUserProfilePhoto(chatId));
 		console.log(await getUserProfilePhoto(body.message.from.id));
 
@@ -58,7 +58,7 @@ exports.handler = async (event) => {
 				break;
 			// DEFINITION: /list
 			case 'list':
-				await listGoals(chatId);
+				await listGoals(chatId, args);
 				break;
 			// DEFINITION: /delete {index: number}
 			case 'delete':

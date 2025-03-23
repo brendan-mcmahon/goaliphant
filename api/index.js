@@ -1,5 +1,6 @@
 const { getAllGoals, getGoals, updateGoals } = require('./common/goalRepository.js');
 const { getAllRewards } = require('./common/rewardRepository.js');
+const { getUser, getAllUsers } = require('./common/userRepository.js');
 
 exports.handler = async (event) => {
 	console.log("Handling event", event.requestContext.http.method, event.rawPath, event.queryStringParameters);
@@ -7,15 +8,15 @@ exports.handler = async (event) => {
 	if (event.rawPath === '/getAllData') {
 		const goals = await getAllGoals();
 		const rewards = await getAllRewards();
-		return { statusCode: 200, body: JSON.stringify({ goals, rewards }) };
-	}
+		const users = await getAllUsers();
 
-	if (event.rawPath === '/today') {
-		const chatId = event.queryStringParameters.chatId;
-		const goals = await getGoals(chatId);
+		// Might not use this since I already have it the other way?
+		const userGoals = users.map(user => {
+			const userGoals = goals.filter(goal => goal.ChatId === user.ChatId);
+			return { ...user, goals: userGoals };
+		});
 
-		// TODO: Filter scheduled goals
-		return { statusCode: 200, body: JSON.stringify({ goals }) };
+		return { statusCode: 200, body: JSON.stringify({ goals, rewards, users, userGoals }) };
 	}
 
 	if (event.rawPath === '/completeGoal') {
@@ -52,11 +53,15 @@ exports.handler = async (event) => {
 
 	if (event.rawPath === '/deleteGoal') {
 		console.log("Deleting goal");
-		const body = JSON.parse(event.body);
-		console.log(body);
-		const chatId = body.chatId;
-		const index = parseInt(body.index);
+		const chatId = event.queryStringParameters.chatId;
+		const index = parseInt(event.queryStringParameters.index);
 		return await deleteGoal(chatId, index);
+	}
+
+	if (event.rawPath === '/getUserData') {
+		const chatId = event.queryStringParameters.chatId;
+		const user = await getUser(chatId);
+		return { statusCode: 200, body: JSON.stringify({ user }) };
 	}
 
 	return { statusCode: 400, body: 'Invalid path.' };

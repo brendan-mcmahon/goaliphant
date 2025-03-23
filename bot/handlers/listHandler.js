@@ -4,9 +4,14 @@ const { getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 
-async function listGoals(chatId) {
+// `all` should list all checked, unchecked, and scheduled things
+// `today` should list everything but scheduled items
+//  `todo` should only list things that are not checked
+//  `done` should only list things that are checked
+//  `scheduled` should only show things that are scheduled in the future
+async function listGoals(chatId, args) {
 	try {
-		console.log("listing...");
+		console.log("listing...", args);
 		const goals = await getGoals(chatId);
 		console.log("goals:", goals);
 		const goalsList = goals

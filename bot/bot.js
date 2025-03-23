@@ -51,6 +51,8 @@ async function sendError(chatId, error) {
 async function getUserProfilePhoto(userId) {
 	try {
 	  const photos = await bot.getUserProfilePhotos(userId, { limit: 1 });
+	  console.log("Did we get any photos?", photos.length);
+	  console.log(photos);
 	  
 	  if (photos && photos.photos && photos.photos.length > 0 && photos.photos[0].length > 0) {
 		const fileId = photos.photos[0][photos.photos[0].length - 1].file_id;
@@ -58,6 +60,7 @@ async function getUserProfilePhoto(userId) {
 		const fileInfo = await bot.getFile(fileId);
 		
 		const fileUrl = `https://api.telegram.org/file/bot${token}/${fileInfo.file_path}`;
+		console.log("file URL:", fileUrl)
 		return fileUrl;
 	  }
 	  console.log("No profile photo found");
