@@ -12,7 +12,7 @@ exports.handler = async (event) => {
 
 		// Might not use this since I already have it the other way?
 		const userGoals = users.map(user => {
-			const userGoals = goals.filter(goal => goal.ChatId === user.ChatId);
+			const userGoals = goals.filter(goal => goal.chatId === user.ChatId);
 			return { ...user, goals: userGoals };
 		});
 
