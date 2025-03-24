@@ -10,10 +10,8 @@ exports.handler = async (event) => {
 		const rewards = await getAllRewards();
 		const users = await getAllUsers();
 
-		// Might not use this since I already have it the other way?
 		const userGoals = users.map(user => {
 			const days = goals.filter(goal => goal.chatId === user.ChatId).map(ug => ({ date: ug.date, goals: ug.goals }));
-			// get the rewards for each user
 			const userRewards = rewards.filter(r => r.ChatId === user.ChatId)
 			return { ...user, Days: days, Rewards: userRewards };
 		});
@@ -98,6 +96,7 @@ async function editGoal(chatId, index, text) {
 
 async function deleteGoal(chatId, index) {
 	try {
+		console.log('Deleting goal:', chatId, index);
 		const goals = await getGoals(chatId);
 		if (index >= 0 && index < goals.length) {
 			goals.splice(index, 1);
@@ -108,7 +107,7 @@ async function deleteGoal(chatId, index) {
 			return { statusCode: 400, body: 'Invalid goal number.' };
 		}
 	} catch (error) {
-		console.error(chatId, 'Error deleting goal.');
+		console.error(chatId, error);
 		return { statusCode: 500, body: 'Error deleting goal.' };
 	}
 }
