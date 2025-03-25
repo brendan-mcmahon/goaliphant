@@ -1,16 +1,30 @@
+// https://coolors.co/190e1a-673d6f-cb793a-fcdc4d-f5dfb8
 $licorice: #190e1aff;
-$finn: #673d6fff;
+$dark-purple: #483d58; //#402645ff;
+$finn: #71577b; //#673d6fff;
+$light-purple: #a088a2; //#7a5f7b;
 $caramel: #cb793aff;
 $mustard: #fcdc4dff;
 $wheat: #f5dfb8ff;
+$floral-white: #FFFBF3FF;
+
+body {
+	background-color: $dark-purple;
+	align-items: flex-start;
+	justify-content: center;
+}
 
 #root {
 	max-width: 1280px;
 	margin: 0 auto;
-	padding: 2rem;
 	text-align: center;
 	font-family: 'Arial', sans-serif;
-	background-color: $finn;
+	color: $floral-white;
+}
+
+h1 {
+	margin: 1rem 0 0 0;
+	text-align: center;
 }
 
 h2 {
@@ -19,13 +33,22 @@ h2 {
 	color: $licorice;
 }
 
-.user-day-summary {
-	border: solid $caramel 2px;
-	border-radius: 5px;
-	padding: 1.5rem;
-	margin: 1.5rem 0;
-	background-color: $wheat;
+h3 {
+	margin: 0;
+	text-align: left;
+	margin: 0 0 0 1rem;
 }
+
+hr {
+	border: 1px solid $floral-white;
+	margin: 0 1rem 1rem 1rem;
+}
+
+header {
+	margin-top: 1rem;
+}
+
+.user-day-summary {}
 
 .goals,
 .rewards {
@@ -36,14 +59,17 @@ h2 {
 
 	.goal {
 		text-align: left;
-		margin-bottom: 1rem;
 		display: flex;
 		align-items: flex-start;
+		background-color: $finn;
+		padding: 1rem;
+		margin: 0 1rem 1rem 1rem;
+		border-radius: 1rem;
+		box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
 
 		.spinner {
 			height: 13px;
 			margin: 6px .75rem 3px 4px;
-
 		}
 
 		input {
@@ -67,7 +93,6 @@ h2 {
 	flex-direction: column;
 	flex-wrap: wrap;
 	justify-content: flex-start;
-
 
 	.reward {
 		display: flex;
@@ -181,6 +206,4 @@ h2 {
 			}
 		}
 	}
-
-
 }

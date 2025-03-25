@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import './App.scss'
 import { fetchData, deleteGoal, editGoal } from './api'
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
-import Goal from './Goal'
 import Modal from './Modal'
 import EditModalGoal from './EditGoalModal'
+import UserDaySummary from './UserDaySummary'
 
 const dateOptions = {
 	weekday: 'short',
@@ -18,11 +18,14 @@ function App() {
 	const [selectedGoal, setSelectedGoal] = useState(null);
 	const [goalToDelete, setGoalToDelete] = useState(null);
 	const [userData, setUserData] = useState([]);
+	const [currentUser, setCurrentUser] = useState(null);
 
 	useEffect(() => {
 		async function fetchDataAsync() {
 			let _data = await fetchData();
 			setUserData(_data.userGoals);
+			console.log(_data.userGoals[2]);
+			setCurrentUser(_data.userGoals[2]);
 		}
 		fetchDataAsync();
 	}, []);
@@ -36,8 +39,22 @@ function App() {
 		setDate(newDate);
 	}
 
-	if (!userData) {
-		return <div>Loading...</div>
+	let content = null;
+
+	if (!userData || !currentUser) {
+		content = <div>Loading...</div>
+	} else {
+		content = <>
+			<h1>{currentUser.Name}</h1>
+			<p>🎟 {currentUser.TicketWallet} 🎟</p>
+			<UserDaySummary
+				user={currentUser}
+				date={date}
+				isToday={isToday}
+				setSelectedGoal={setSelectedGoal}
+				setGoalToDelete={setGoalToDelete}
+			/>
+		</>;
 	}
 
 	const handleGoalDelete = async (chatId, index) => {
@@ -59,47 +76,19 @@ function App() {
 		setUserData(newUserData);
 	}
 
-	return (
-		<>
-			<header>
-				<div className="date-picker">
-					<button className="icon-button" onClick={() => handleDateChange(-1)} > <FaAngleLeft /> </button>
-					<h2>{isToday ? "Today" : date.toLocaleString('en-US', dateOptions)}</h2>
-					<button className="icon-button" disabled={isToday} onClick={() => handleDateChange(1)} > <FaAngleRight /> </button>
-				</div>
-			</header>
-			<div id="Users">
-				<h1>Users</h1>
-				{userData.map((user, i) => {
-					return <div key={i} className="user-day-summary">
-						<h2>{user.Name}</h2>
-						<h3>Goals</h3>
-						<li className="goals">
-							{user.Days.filter(d => d.date === date.toISOString().split('T')[0])[0]
-								.goals.map((goal, j) => <Goal
-									key={j}
-									disabled={!isToday}
-									goal={goal}
-									chatId={user.ChatId}
-									index={j}
-									onEdit={() => setSelectedGoal({ chatId: user.ChatId, index: j, goal })}
-									onDelete={() => setGoalToDelete({ chatId: user.ChatId, index: j, goal })}
-								/>)}
-						</li>
-						<h3>Rewards</h3>
-						<li className="rewards">
-							{user.Rewards.map((r, j) => (
-								<div key={j} className="reward">
-									<h4>{r.Title}</h4>
-									<p>{r.Description}</p>
-								</div>
-							))}
-						</li>
-					</div>
-				}
-				)}
-			</div>
+	const header = (<header>
+		<div className="date-picker">
+			<button className="icon-button" onClick={() => handleDateChange(-1)} > <FaAngleLeft /> </button>
+			<h2>{isToday ? "Today" : date.toLocaleString('en-US', dateOptions)}</h2>
+			<button className="icon-button" disabled={isToday} onClick={() => handleDateChange(1)} > <FaAngleRight /> </button>
+		</div>
+	</header>);
 
+	return (
+		<div>
+			{header}
+
+			{content}
 			<EditModalGoal
 				isOpen={!!selectedGoal}
 				onClose={() => setSelectedGoal(null)}
@@ -115,7 +104,7 @@ function App() {
 					<button onClick={() => setGoalToDelete(null)} >No</button>
 				</div>
 			</Modal>
-		</>
+		</div>
 	)
 }
 

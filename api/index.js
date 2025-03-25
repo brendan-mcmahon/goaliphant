@@ -101,7 +101,6 @@ async function deleteGoal(chatId, index) {
 		if (index >= 0 && index < goals.length) {
 			goals.splice(index, 1);
 			await updateGoals(chatId, goals);
-			await bot.sendMessage(chatId, 'Goal deleted successfully.');
 		} else {
 			console.error('Invalid goal number.', index);
 			return { statusCode: 400, body: 'Invalid goal number.' };
