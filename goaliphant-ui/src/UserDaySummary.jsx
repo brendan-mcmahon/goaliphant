@@ -1,4 +1,5 @@
 import Goal from './Goal'
+import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
 
 function UserDaySummary({ user, date, isToday, setSelectedGoal, setGoalToDelete }) {
 	console.log("length", user.Days.length);
@@ -29,11 +30,23 @@ function UserDaySummary({ user, date, isToday, setSelectedGoal, setGoalToDelete 
 				/>)}
 		</li>
 		<h3>Rewards</h3>
+		<hr />
 		<li className="rewards">
 			{user.Rewards.map((r, j) => (
 				<div key={j} className="reward">
-					<h4>{r.Title}</h4>
-					<p>{r.Description}</p>
+					<div className="reward-content">
+						<h4><span>{r.Title}</span><span>🎟️{r.Cost == 0 ? '?' : r.Cost}</span></h4>
+						<p>{r.Description}</p>
+					</div>
+					<div className="actions">
+						{/* Add icons or buttons for actions */}
+						<button className="icon-button secondary" onClick={() => console.log('Edit reward', r)}>
+							<FaPencilAlt />
+						</button>
+						<button className="icon-button danger" onClick={() => console.log('Delete reward', r)}>
+							<FaTrashAlt />
+						</button>
+					</div>
 				</div>
 			))}
 		</li>

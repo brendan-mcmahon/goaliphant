@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.scss'
 import { fetchData, deleteGoal, editGoal } from './api'
-import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
+import { FaAngleLeft, FaAngleRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import Modal from './Modal'
 import EditModalGoal from './EditGoalModal'
 import UserDaySummary from './UserDaySummary'
@@ -18,14 +18,15 @@ function App() {
 	const [selectedGoal, setSelectedGoal] = useState(null);
 	const [goalToDelete, setGoalToDelete] = useState(null);
 	const [userData, setUserData] = useState([]);
+	const [currentUserIndex, setCurrentUserIndex] = useState(0);
 	const [currentUser, setCurrentUser] = useState(null);
 
 	useEffect(() => {
 		async function fetchDataAsync() {
 			let _data = await fetchData();
 			setUserData(_data.userGoals);
-			console.log(_data.userGoals[2]);
-			setCurrentUser(_data.userGoals[2]);
+			console.log(_data.userGoals[currentUserIndex]);
+			setCurrentUser(_data.userGoals[currentUserIndex]);
 		}
 		fetchDataAsync();
 	}, []);
@@ -39,14 +40,40 @@ function App() {
 		setDate(newDate);
 	}
 
+	const onUserSelect = (mvmt) => {
+		console.log("onUserSelect", mvmt);
+		let newIndex = currentUserIndex + mvmt;
+		console.log("newIndex", newIndex);
+		if (newIndex < 0) {
+			console.log("newIndex < 0");
+			newIndex = userData.length - 1;
+		} else if (newIndex >= userData.length) {
+			console.log("newIndex >= userData.length");
+			newIndex = 0;
+		}
+		console.log("newIndex", newIndex);
+		setCurrentUserIndex(newIndex);
+		setCurrentUser(userData[newIndex]);
+	}
+
 	let content = null;
 
 	if (!userData || !currentUser) {
 		content = <div>Loading...</div>
 	} else {
 		content = <>
-			<h1>{currentUser.Name}</h1>
-			<p>🎟 {currentUser.TicketWallet} 🎟</p>
+			<div className="current-user">
+				<button className="icon-button" onClick={() => onUserSelect(1)}><FaChevronLeft /></button>
+				<h1>{currentUser.Name}</h1>
+				<button className="icon-button" onClick={() => onUserSelect(-1)}><FaChevronRight /></button>
+			</div>
+			<div className="user-info">
+				<p>🎟️ <b>{currentUser.TicketWallet}</b> 🎟️</p>
+				<p className="state">{currentUser.ChatState}
+					{/* {currentUser.ChatStateArgs?.length > 0 && <><br />{currentUser.ChatStateArgs}</>} */}
+				</p>
+
+			</div>
 			<UserDaySummary
 				user={currentUser}
 				date={date}
@@ -64,6 +91,7 @@ function App() {
 		const userIndex = newUserData.findIndex(u => u.ChatId === chatId);
 		newUserData[userIndex].Days.filter(d => d.date === date.toISOString().split('T')[0])[0].goals.splice(index, 1);
 		setUserData(newUserData);
+		setGoalToDelete(null);
 	}
 
 	const onSaveEdit = async (goalData) => {
@@ -76,11 +104,12 @@ function App() {
 		setUserData(newUserData);
 	}
 
+
 	const header = (<header>
 		<div className="date-picker">
-			<button className="icon-button" onClick={() => handleDateChange(-1)} > <FaAngleLeft /> </button>
+			<button className="icon-button primary" onClick={() => handleDateChange(-1)} > <FaAngleLeft /> </button>
 			<h2>{isToday ? "Today" : date.toLocaleString('en-US', dateOptions)}</h2>
-			<button className="icon-button" disabled={isToday} onClick={() => handleDateChange(1)} > <FaAngleRight /> </button>
+			<button className="icon-button primary" disabled={isToday} onClick={() => handleDateChange(1)} > <FaAngleRight /> </button>
 		</div>
 	</header>);
 

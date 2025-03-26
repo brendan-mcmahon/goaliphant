@@ -1,24 +1,27 @@
 // https://coolors.co/190e1a-673d6f-cb793a-fcdc4d-f5dfb8
 $licorice: #190e1aff;
-$dark-purple: #483d58; //#402645ff;
-$finn: #71577b; //#673d6fff;
+$dark-purple: #534564; //#402645ff;
+$finn: #685373; //#673d6fff;
 $light-purple: #a088a2; //#7a5f7b;
-$caramel: #cb793aff;
+$caramel: #fcb045ff;
+$caramel-gradient: radial-gradient(#fcd789, $caramel);
 $mustard: #fcdc4dff;
-$wheat: #f5dfb8ff;
-$floral-white: #FFFBF3FF;
+$wheat: #f4e8daff;
+$floral-white: #f4e8da;
+$danger: #b94c41;
+$danger-gradient: radial-gradient(#e68162, $danger);
 
 body {
 	background-color: $dark-purple;
 	align-items: flex-start;
 	justify-content: center;
+	font-family: 'Nunito', sans-serif;
 }
 
 #root {
 	max-width: 1280px;
 	margin: 0 auto;
 	text-align: center;
-	font-family: 'Arial', sans-serif;
 	color: $floral-white;
 }
 
@@ -48,6 +51,51 @@ header {
 	margin-top: 1rem;
 }
 
+p {
+	margin: 0;
+	margin-bottom: .5rem;
+}
+
+.current-user {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	.icon-button {
+		margin: 0 .5rem;
+		transition: transform 0.2s;
+		background-color: $floral-white;
+		transform: translateY(6px);
+
+		svg {
+			color: $licorice
+		}
+	}
+
+	.icon-button:hover {
+		transform: scale(1.1);
+	}
+}
+
+
+.user-info {
+
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+
+	.state {
+		background-color: $caramel;
+		padding: .25rem .5rem;
+		border-radius: 5rem;
+		color: $licorice;
+		box-shadow: 3px 3px $licorice;
+		font-weight: bolder;
+		text-transform: uppercase;
+		background: $caramel-gradient;
+	}
+}
+
 .user-day-summary {}
 
 .goals,
@@ -57,7 +105,8 @@ header {
 	flex-wrap: wrap;
 	justify-content: flex-start;
 
-	.goal {
+	.goal,
+	.reward {
 		text-align: left;
 		display: flex;
 		align-items: flex-start;
@@ -65,7 +114,12 @@ header {
 		padding: 1rem;
 		margin: 0 1rem 1rem 1rem;
 		border-radius: 1rem;
-		box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+
+		box-shadow: 6px 6px $licorice;
+
+		.goal-text {
+			max-width: 60%;
+		}
 
 		.spinner {
 			height: 13px;
@@ -80,8 +134,9 @@ header {
 		.actions {
 			margin-left: auto;
 			min-width: 3rem;
+			display: flex;
 
-			* {
+			button {
 				margin-left: .5rem;
 			}
 		}
@@ -95,18 +150,44 @@ header {
 	justify-content: flex-start;
 
 	.reward {
-		display: flex;
-		flex-direction: column;
 		text-align: left;
+		display: flex;
+		align-items: center;
+		background-color: $wheat;
+		padding: 1rem;
+		margin: 0 1rem 1rem 1rem;
+		border-radius: 1rem;
+		box-shadow: 6px 6px $licorice;
 
-		h4 {
-			margin: 0;
-			color: $caramel;
+		.reward-content {
+			flex: 1;
+			overflow-wrap: break-word;
+			word-wrap: break-word;
+			word-break: break-word;
+
+			h4 {
+				margin: 0;
+				color: $licorice;
+				display: flex;
+				justify-content: space-between;
+				margin-right: 1rem;
+
+				>* {
+					min-width: 3rem;
+				}
+			}
+
+			p {
+				margin: 0;
+				color: $licorice;
+			}
 		}
 
-		p {
-			margin: 0;
-			color: $licorice;
+		.actions {
+			margin-left: auto;
+			min-width: 3rem;
+			display: flex;
+			align-items: center;
 		}
 	}
 }
@@ -133,13 +214,61 @@ header {
 }
 
 .icon-button {
-	background: none;
 	border: none;
 	cursor: pointer;
 	padding: 0;
+	width: 2.5rem;
+	height: 2.5rem;
+	min-width: 2.5rem;
+	min-height: 2.5rem;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: transform 0.2s, background-color 0.2s;
+
+	box-shadow: 3px 3px $licorice;
+
+	svg {
+		width: 1.25rem;
+		height: 1.25rem;
+		color: $licorice;
+	}
+
+	&:hover {
+		transform: scale(1.1);
+		background-color: $mustard;
+	}
 
 	&:focus {
 		outline: none;
+		box-shadow: 0 0 5px $mustard;
+	}
+
+	&.primary {
+		background-color: $finn;
+
+		svg {
+			color: $light-purple;
+		}
+	}
+
+	&.secondary {
+		background-color: $caramel;
+		background: $caramel-gradient;
+
+		svg {
+			color: $licorice;
+		}
+	}
+
+	&.danger {
+		background-color: $danger;
+		background: $danger-gradient;
+
+		svg {
+			color: $licorice;
+		}
 	}
 }
 
@@ -158,9 +287,10 @@ header {
 
 	.modal-content {
 		background: $wheat;
+		min-width: 80dvw;
 		padding: 2.5rem;
 		border-radius: 5px;
-		box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+		box-shadow: 0 0 15px $licorice;
 
 		.modal-header {
 			display: flex;
@@ -182,6 +312,12 @@ header {
 				&:focus {
 					outline: none;
 				}
+			}
+
+			.close {
+				color: $licorice;
+				font-size: 1.5rem;
+				cursor: pointer;
 			}
 		}
 

@@ -29,10 +29,10 @@ function Goal({ chatId, disabled, goal, index, onEdit, onDelete }) {
 				? <img className="spinner" src={spinner} alt="loading" />
 				: <input disabled={disabled} onChange={(e) => checked(e, chatId, index)} type="checkbox" checked={goal.completed} />
 			}
-			{goal.text}
+			<p className="goal-text">{goal.text}</p>
 			<div className="actions">
-				<FaPencilAlt onClick={onEdit} />
-				<FaTrashAlt onClick={onDelete} />
+				<button className="icon-button secondary" onClick={onEdit}><FaPencilAlt /></button>
+				<button className="icon-button danger" onClick={onDelete}><FaTrashAlt /></button>
 			</div>
 		</div>
 

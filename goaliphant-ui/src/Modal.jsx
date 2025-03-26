@@ -1,3 +1,5 @@
+import { FaTimes } from 'react-icons/fa'
+
 function Modal({ isOpen, isLoading, title, children, onClose }) {
 	if (!isOpen) {
 		return null;
@@ -17,8 +19,7 @@ function Modal({ isOpen, isLoading, title, children, onClose }) {
 		<div className="modal-content">
 			<div className="modal-header">
 				<h2>{title}</h2>
-				<span className="close" onClick={onClose} >&times;</span>
-
+				<span className="close" onClick={onClose} > <FaTimes /> </span>
 			</div>
 			<div className="modal-body">
 				{children}
