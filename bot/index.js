@@ -124,6 +124,9 @@ exports.handler = async (event) => {
 			case 'requestreward':
 				await handleRequestRewardStep(chatId, 0);
 				break;
+			case 'dashboard':
+				await sendMessage(chatId, 'https://goaliphant.netlify.app/');
+				break;
 			case 'help':
 				await sendMessage(chatId, 'Commands: `add`, `list`, `delete`, `complete`, `uncomplete`, `wallet`, `rewards`, `createreward`, `redeem`, `honey`, `partner`, `schedule`');
 				break
