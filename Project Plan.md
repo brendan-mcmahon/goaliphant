@@ -67,8 +67,19 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [x] New Bot command: `/swap {#} {#}` which just does a simple swap of two goals in the order
 8. **Edit Goal**
    - [x] New Bot command `/edit {#} {new text}` which swaps the text of a goal for new text the user enters
-9. **Custom GPT**
+9. **List params**
+   - [x] `todo` should only list things that are not checked
+   - [x] `done` should only list things that are checked
+   - [x] `scheduled` should only show things that are scheduled in the future
+   - [x] `all` should list all completed, incompleted, and scheduled things
+   - [x] `today` (default) should list everything but scheduled items in the future
+10. **Custom GPT**
    - [ ] Create a custom GPT with OpenAI that will have access to the API as actions.
+11. **Priority Scoring System**
+   - [ ]
+12. **Goal Notes**
+   - [ ] New Bot command `/note {#} {note text}` that adds to a notes array on the record for that goal
+   - [ ] New Bot command `/details {#}` that lists the text and details of the selected goal
 ---
 
 ## Technical Requirements
