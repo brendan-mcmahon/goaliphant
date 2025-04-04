@@ -132,6 +132,7 @@ exports.handler = async (event) => {
 				await addNote(noteIndex, noteText, chatId);
 				break;
 			// DEFINITION: /details {index: number}
+			case 'detail':
 			case 'details':
 				await showGoalDetails(args.trim(), chatId);
 				break;

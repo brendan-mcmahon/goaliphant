@@ -65,7 +65,6 @@ async function addNote(goalIndex, noteText, chatId) {
  */
 async function showGoalDetails(goalIndex, chatId) {
     try {
-        // Parse index to number
         const index = parseInt(goalIndex);
         
         if (isNaN(index) || index <= 0) {
@@ -73,7 +72,6 @@ async function showGoalDetails(goalIndex, chatId) {
             return;
         }
 
-        // Get goals for this user
         const goals = await getGoals(chatId);
         
         if (!goals || goals.length === 0) {
@@ -88,36 +86,29 @@ async function showGoalDetails(goalIndex, chatId) {
 
         const goal = goals[index - 1];
         
-        // Format creation date if it exists
         let createdAt = 'Unknown';
         if (goal.createdAt) {
             createdAt = new Date(goal.createdAt).toLocaleString();
         }
         
         let messageText = `📝 *Goal #${index} Details:*\n\n`;
-        messageText += `*Text:* ${goal.text}\n`;
-        messageText += `*Status:* ${goal.completed ? '✅ Completed' : '⬜ Not completed'}\n`;
+        messageText += `*${goal.text}*\n`;
         
-        // Add created date if it exists
         if (goal.createdAt) {
             messageText += `*Created:* ${createdAt}\n`;
         }
         
-        // Add scheduled date if exists
         if (goal.scheduledDate) {
             const scheduledDate = new Date(goal.scheduledDate).toLocaleDateString();
             messageText += `*Scheduled for:* ${scheduledDate}\n`;
         }
         
-        // Add notes section if there are notes
         if (goal.notes && goal.notes.length > 0) {
-            messageText += `\n*Notes (${goal.notes.length}):*\n`;
+            messageText += `\n*Notes:*\n`;
             goal.notes.forEach((note, i) => {
                 const noteDate = new Date(note.timestamp).toLocaleString();
                 messageText += `\n${i+1}. ${note.text}\n   _Added: ${noteDate}_\n`;
             });
-        } else {
-            messageText += '\n_No notes added yet. Add notes with_ /note';
         }
         
         await sendMessage(chatId, messageText, { parse_mode: 'Markdown' });
