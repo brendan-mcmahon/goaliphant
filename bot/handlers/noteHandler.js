@@ -1,5 +1,5 @@
 const { sendMessage } = require('../bot.js');
-const { getGoals, updateGoal } = require('../../common/repository.js');
+const { getGoals, updateGoals } = require('../../common/goalRepository.js');
 
 /**
  * Adds a note to a specific goal
@@ -48,8 +48,8 @@ async function addNote(goalIndex, noteText, chatId) {
             timestamp: new Date().toISOString()
         });
         
-        // Update the goal
-        await updateGoal(goalToUpdate);
+        // Update the entire goals array
+        await updateGoals(chatId, goals);
         
         await sendMessage(chatId, `✅ Note added to goal #${index}: "${goalToUpdate.text}"`);
     } catch (error) {
@@ -88,13 +88,20 @@ async function showGoalDetails(goalIndex, chatId) {
 
         const goal = goals[index - 1];
         
-        // Format creation date
-        const createdAt = new Date(goal.createdAt).toLocaleString();
+        // Format creation date if it exists
+        let createdAt = 'Unknown';
+        if (goal.createdAt) {
+            createdAt = new Date(goal.createdAt).toLocaleString();
+        }
         
         let messageText = `📝 *Goal #${index} Details:*\n\n`;
         messageText += `*Text:* ${goal.text}\n`;
         messageText += `*Status:* ${goal.completed ? '✅ Completed' : '⬜ Not completed'}\n`;
-        messageText += `*Created:* ${createdAt}\n`;
+        
+        // Add created date if it exists
+        if (goal.createdAt) {
+            messageText += `*Created:* ${createdAt}\n`;
+        }
         
         // Add scheduled date if exists
         if (goal.scheduledDate) {
