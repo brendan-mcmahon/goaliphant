@@ -10,9 +10,9 @@ async function listGoals(chatId, args) {
 		const goals = await getGoals(chatId);
 		console.log("goals:", goals);
 		
-		const filter = args?.[0]?.toLowerCase() || 'today';
+		const filter = args?.toLowerCase() || 'today';
 
-		console.log("filter:", filter, args, args?.[0]);
+		console.log("filter:", filter);
 		
 		let filteredGoals = goals;
 		let messagePrefix = '';
