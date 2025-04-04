@@ -14,6 +14,7 @@ const { handleRequestRewardStep } = require('./handlers/requestRewardHandler.js'
 const { editGoal } = require('./handlers/editGoalHandler.js');
 const { swapGoals } = require('./handlers/swapGoalsHandler.js');
 const { getHelp } = require('./handlers/helpHandler.js');
+const { addNote, showGoalDetails } = require('./handlers/noteHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
@@ -123,6 +124,16 @@ exports.handler = async (event) => {
 			// DEFINITION: /requestreward
 			case 'requestreward':
 				await handleRequestRewardStep(chatId, 0);
+				break;
+			// DEFINITION: /note {index: number} {note: text}
+			case 'note':
+				const noteIndex = args.split(' ')[0];
+				const noteText = args.substring(noteIndex.length).trim();
+				await addNote(noteIndex, noteText, chatId);
+				break;
+			// DEFINITION: /details {index: number}
+			case 'details':
+				await showGoalDetails(args.trim(), chatId);
 				break;
 			case 'dashboard':
 				await sendMessage(chatId, 'https://goaliphant.netlify.app/');

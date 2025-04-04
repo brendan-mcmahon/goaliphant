@@ -105,6 +105,16 @@ const commands = {
     description: 'Show help information',
     syntax: '/help [command]',
     example: '/help rewards'
+  },
+  'note': {
+    description: 'Add a note to a specific goal',
+    syntax: '/note {goal number} {note text}',
+    example: '/note 2 This is important to finish by Friday!'
+  },
+  'details': {
+    description: 'View all details and notes for a specific goal',
+    syntax: '/details {goal number}',
+    example: '/details 2'
   }
 };
 
