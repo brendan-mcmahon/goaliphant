@@ -4,11 +4,6 @@ const { getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 
-// `all` should list all completed, incompleted, and scheduled things
-// `today` should list everything but scheduled items (scheduled items start with the calendar emoji) (also, if there are no args, it should default to today)
-//  `todo` should only list things that are not completed
-//  `done` should only list things that are completed
-//  `scheduled` should only show things that are scheduled in the future
 async function listGoals(chatId, args) {
 	try {
 		console.log("listing...", args);
@@ -22,26 +17,32 @@ async function listGoals(chatId, args) {
 		
 		switch(filter) {
 			case 'all':
+				console.log("listing all goals");
 				messagePrefix = 'All goals:';
 				break;
 			
 			case 'todo':
+				console.log("listing todo goals");
 				filteredGoals = goals.filter(g => !g.completed);
 				messagePrefix = 'To-do goals:';
 				break;
 			
 			case 'done':
+				console.log("listing done goals");
 				filteredGoals = goals.filter(g => g.completed);
 				messagePrefix = 'Completed goals:';
 				break;
 			
 			case 'scheduled':
+				console.log("listing scheduled goals");
 				filteredGoals = goals.filter(g => g.scheduled && isScheduledDateInTheFuture(g.scheduled));
 				messagePrefix = 'Scheduled goals:';
 				break;
-				
+
 			case 'today':
+
 			default:
+				console.log("listing today's goals");
 				filteredGoals = goals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
 				messagePrefix = 'Today\'s goals:';
 		}
