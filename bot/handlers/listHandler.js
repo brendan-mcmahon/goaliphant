@@ -9,32 +9,32 @@ async function listGoals(chatId, args) {
 		console.log("listing...", args);
 		const goals = await getGoals(chatId);
 		console.log("goals:", goals);
-		
+
 		const filter = args?.toLowerCase() || 'today';
 
 		console.log("filter:", filter);
-		
+
 		let filteredGoals = goals;
 		let messagePrefix = '';
-		
-		switch(filter) {
+
+		switch (filter) {
 			case 'all':
 				console.log("listing all goals");
 				messagePrefix = 'All goals:';
 				break;
-			
+
 			case 'todo':
 				console.log("listing todo goals");
 				filteredGoals = goals.filter(g => !g.completed);
 				messagePrefix = 'To-do goals:';
 				break;
-			
+
 			case 'done':
 				console.log("listing done goals");
 				filteredGoals = goals.filter(g => g.completed);
 				messagePrefix = 'Completed goals:';
 				break;
-			
+
 			case 'scheduled':
 				console.log("listing scheduled goals");
 				filteredGoals = goals.filter(g => g.scheduled && isScheduledDateInTheFuture(g.scheduled));
@@ -47,10 +47,14 @@ async function listGoals(chatId, args) {
 				filteredGoals = goals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
 				messagePrefix = 'Today\'s goals:';
 		}
-		
-		const goalsList = filteredGoals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
+
+		const goalsList = filteredGoals.map((g, i) => { 
+			let goalText = g.completed ? '✅' : '⬜';
+			goalText = g.scheduled ? `${goalText} 🗓️` : goalText;
+			return `${i + 1}. ${goalText} ${g.text}`;
+		}).join('\n');
 		console.log("goalsList:", goalsList);
-		
+
 		await sendMessage(chatId, `${messagePrefix}\n${goalsList || 'No goals found.'}`);
 	} catch (error) {
 		console.error('Error listing goals:', error);
