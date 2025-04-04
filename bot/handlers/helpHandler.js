@@ -4,56 +4,53 @@ const commands = {
   'add': {
     description: 'Add a goal to your daily list',
     syntax: '/add <goal text>',
-    example: '/add Finish project proposal',
-    details: 'Adds a new goal to your daily task list.'
+    example: '/add Finish project proposal'
   },
   'list': {
     description: 'List your goals',
     syntax: '/list [filter]',
     example: '/list todo',
-    details: 'Shows your current goals. Optional filters: all, todo, done, scheduled, today (default).'
+    details: 'Optional filters: all, todo, done, scheduled, today (default).'
   },
   'delete': {
     description: 'Delete a goal',
     syntax: '/delete <number>',
     example: '/delete 2',
-    details: 'Removes a goal from your list. Use the number shown in the list command. Make sure you are referring to the default list (or today) and not another filtered list.'
+    details: 'Make sure you are referring to the default list (or today) and not another filtered list.'
   },
   'edit': {
     description: 'Edit an existing goal',
     syntax: '/edit <number> <new text>',
     example: '/edit 3 Updated goal text',
-    details: 'Changes the text of an existing goal. Use the number shown in the list command. Make sure you are referring to the default list (or today) and not another filtered list.'
+    details: 'Make sure you are referring to the default list (or today) and not another filtered list.'
   },
   'swap': {
     description: 'Swap the position of two goals',
     syntax: '/swap <number1> <number2>',
     example: '/swap 2 5',
-    details: 'Exchanges the positions of two goals in your list. Use the numbers shown in the list command. Make sure you are referring to the default list (or today) and not another filtered list.'
+    details: 'Make sure you are referring to the default list (or today) and not another filtered list.'
   },
   'complete': {
     description: 'Mark a goal as completed',
     syntax: '/complete <number>',
     example: '/complete 1',
-    details: 'Marks a goal as completed and awards you a ticket. Use the number shown in the list command. Make sure you are referring to the default list (or today) and not another filtered list.'
+    details: 'Awards you a ticket upon completion.'
   },
   'uncomplete': {
     description: 'Mark a completed goal as incomplete',
     syntax: '/uncomplete <number>',
     example: '/uncomplete 3',
-    details: 'Marks a completed goal as incomplete and removes the awarded ticket. Use the number shown in the list command. Make sure you are referring to the default list (or today) and not another filtered list.'
+    details: 'Removes the previously awarded ticket.'
   },
   'wallet': {
     description: 'Check your ticket balance',
     syntax: '/wallet',
-    example: '/wallet',
-    details: 'Shows how many tickets you currently have.'
+    example: '/wallet'
   },
   'rewards': {
     description: 'List available rewards',
     syntax: '/rewards',
-    example: '/rewards',
-    details: 'Shows all rewards you can redeem with your tickets.'
+    example: '/rewards'
   },
   'createreward': {
     description: 'Create a new reward for your partner',
@@ -76,19 +73,17 @@ const commands = {
     description: 'Add a task to your partner\'s honey-do list',
     syntax: '/honey <task text>',
     example: '/honey Please take out the trash',
-    details: 'Adds a task to your partner\'s list. They\'ll be notified when they complete it.'
+    details: 'Your partner will be notified when they complete it.'
   },
   'partner': {
     description: 'View your partner\'s goals',
     syntax: '/partner',
-    example: '/partner',
-    details: 'Shows your partner\'s current goal list.'
+    example: '/partner'
   },
   'schedule': {
     description: 'Schedule a goal for a future date',
     syntax: '/schedule <number> <mm dd>',
-    example: '/schedule 3 05 15',
-    details: 'Schedules an existing goal for a future date (month day).'
+    example: '/schedule 3 05 15'
   },
   'requestreward': {
     description: 'Request a reward to be created',
@@ -104,14 +99,12 @@ const commands = {
   'dashboard': {
     description: 'Get a link to the Goaliphant dashboard',
     syntax: '/dashboard',
-    example: '/dashboard',
-    details: 'Returns a link to the web dashboard for Goaliphant.'
+    example: '/dashboard'
   },
   'help': {
     description: 'Show help information',
     syntax: '/help [command]',
-    example: '/help rewards',
-    details: 'Shows list of commands or detailed help for a specific command.'
+    example: '/help rewards'
   }
 };
 
@@ -135,9 +128,12 @@ async function getHelp(chatId, commandArg) {
           `*Command:* ${command}`,
           `*Description:* ${commands[command].description}`,
           `*Syntax:* ${commands[command].syntax}`,
-          `*Example:* ${commands[command].example}`,
-          `*Details:* ${commands[command].details}`
+          `*Example:* ${commands[command].example}`
         ].join('\n\n');
+
+		if (commands[command].details) {
+			helpText += `\n\n*Details:* ${commands[command].details}`;
+		}
         
         await sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
       } else {
