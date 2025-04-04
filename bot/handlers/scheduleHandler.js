@@ -3,6 +3,11 @@ const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 const { sendMessage } = require('../bot.js');
 
 async function scheduleGoal(chatId, args) {
+	if (!args) {
+		await sendMessage(chatId, "No goal index or date provided.");
+		return;
+	}
+
 	const x = args.split(' ');
 	const goalIndex = x[0] - 1;
 	const date = x[1];
