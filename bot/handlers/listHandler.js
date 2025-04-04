@@ -26,12 +26,14 @@ async function listGoals(chatId, args) {
 			case 'todo':
 				console.log("listing todo goals");
 				filteredGoals = goals.filter(g => !g.completed);
+				filteredGoals = filteredGoals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
 				messagePrefix = 'To-do goals:';
 				break;
 
 			case 'done':
 				console.log("listing done goals");
 				filteredGoals = goals.filter(g => g.completed);
+				filteredGoals = filteredGoals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
 				messagePrefix = 'Completed goals:';
 				break;
 
@@ -50,7 +52,7 @@ async function listGoals(chatId, args) {
 
 		const goalsList = filteredGoals.map((g, i) => { 
 			let goalText = g.completed ? '✅' : '⬜';
-			goalText = g.scheduled ? `${goalText} 🗓️` : goalText;
+			goalText = g.scheduled ? `${goalText} 🗓️ ${g.scheduled}` : goalText;
 			return `${i + 1}. ${goalText} ${g.text}`;
 		}).join('\n');
 		console.log("goalsList:", goalsList);
