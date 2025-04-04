@@ -1,5 +1,5 @@
 const { sendMessage } = require('../bot.js');
-const { getGoals, updateGoals } = require('../../common/goalRepository.js');
+const { getGoals, updateGoals } = require('../common/goalRepository.js');
 
 /**
  * Adds a note to a specific goal
