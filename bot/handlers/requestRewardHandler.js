@@ -70,3 +70,32 @@ async function confirmRequestReward(chatId, rewardId, partnerId, text) {
 		await sendError(chatId, error);
 	}
 }
+
+async function handlePricingReward(chatId, rewardId, requesterId, text) {
+	try {
+		const cost = parseInt(text.trim());
+		
+		if (isNaN(cost) || cost < 0) {
+			await sendMessage(chatId, "Please provide a valid positive number for the ticket cost.");
+			return false;
+		}
+		
+		await updateReward(chatId, { rewardId, cost });
+		
+		const reward = await getReward(chatId, rewardId);
+		
+		await sendMessage(requesterId, `Your reward request has been priced!\n\nTitle: ${reward.Title}\nDescription: ${reward.Description}\nCost: ${reward.Cost} tickets`);
+		
+		await sendMessage(chatId, `You've set the cost for "${reward.Title}" to ${reward.Cost} tickets.`);
+		
+		await clearChatState(chatId);
+		
+		return true;
+	} catch (error) {
+		console.error('Error handling reward pricing:', error);
+		await sendError(chatId, error);
+		return true;
+	}
+}
+
+exports.handlePricingReward = handlePricingReward;
