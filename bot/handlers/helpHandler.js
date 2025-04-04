@@ -121,7 +121,7 @@ async function getHelp(chatId, commandArg) {
       const helpLines = ['*Available Commands:*'];
       
       Object.keys(commands).forEach(cmd => {
-        helpLines.push(`• /${cmd} - ${commands[cmd].description}`);
+        helpLines.push(`• ${cmd} - ${commands[cmd].description}`);
       });
       
       helpLines.push('\nFor detailed help on a specific command, use: `/help <command>`');
@@ -132,7 +132,7 @@ async function getHelp(chatId, commandArg) {
       
       if (commands[command]) {
         const helpText = [
-          `*Command:* /${command}`,
+          `*Command:* ${command}`,
           `*Description:* ${commands[command].description}`,
           `*Syntax:* ${commands[command].syntax}`,
           `*Example:* ${commands[command].example}`,
