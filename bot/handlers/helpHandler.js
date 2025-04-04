@@ -134,7 +134,7 @@ async function getHelp(chatId, commandArg) {
       const command = commandArg.toLowerCase().replace('/', '');
       
       if (commands[command]) {
-        const helpText = [
+        let helpText = [
           `*Command:* ${command}`,
           `*Description:* ${commands[command].description}`,
           `*Syntax:* ${commands[command].syntax}`,
