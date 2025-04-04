@@ -78,8 +78,8 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
 11. **Priority Scoring System**
    - [ ] Something similar to Eisenhower Matrix but with three dimensions
 12. **Goal Notes**
-   - [ ] New Bot command `/note {#} {note text}` that adds to a notes array on the record for that goal
-   - [ ] New Bot command `/details {#}` that lists the text and details of the selected goal
+   - [x] New Bot command `/note {#} {note text}` that adds to a notes array on the record for that goal
+   - [x] New Bot command `/details {#}` that lists the text and details of the selected goal
 13. **Release Notes**
    - [ ] New GitHub action that I can run when a new feature is added. This will invoke a lambda that will send a message to all the chat ids in the User Table with the release notes.
    - [ ] New Bot command `/release-notes` that lists the release notes for the current version

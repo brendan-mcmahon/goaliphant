@@ -93,6 +93,7 @@ async function showGoalDetails(goalIndex, chatId) {
         
         let messageText = `📝 *Goal #${index} Details:*\n\n`;
         messageText += `*${goal.text}*\n`;
+        messageText += `*Status:* ${goal.completed ? '✅ Completed' : '⬜ Not completed'}\n`;
         
         if (goal.createdAt) {
             messageText += `*Created:* ${createdAt}\n`;
