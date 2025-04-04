@@ -13,6 +13,7 @@ const { scheduleGoal } = require('./handlers/scheduleHandler.js');
 const { handleRequestRewardStep } = require('./handlers/requestRewardHandler.js');
 const { editGoal } = require('./handlers/editGoalHandler.js');
 const { swapGoals } = require('./handlers/swapGoalsHandler.js');
+const { getHelp } = require('./handlers/helpHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
@@ -127,10 +128,10 @@ exports.handler = async (event) => {
 				await sendMessage(chatId, 'https://goaliphant.netlify.app/');
 				break;
 			case 'help':
-				await sendMessage(chatId, 'Commands: `add`, `list`, `delete`, `complete`, `uncomplete`, `wallet`, `rewards`, `createreward`, `redeem`, `honey`, `partner`, `schedule`');
-				break
+				await getHelp(chatId, args);
+				break;
 			default:
-				await sendMessage(chatId, 'Unrecognized command. Use /add, /list, /delete, /complete, or /uncomplete.');
+				await sendMessage(chatId, 'Unrecognized command. Use /help to see available commands.');
 		}
 	}
 
