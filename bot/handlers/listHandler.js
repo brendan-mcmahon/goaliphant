@@ -11,6 +11,8 @@ async function listGoals(chatId, args) {
 		console.log("goals:", goals);
 		
 		const filter = args?.[0]?.toLowerCase() || 'today';
+
+		console.log("filter:", filter, args, args?.[0]);
 		
 		let filteredGoals = goals;
 		let messagePrefix = '';
@@ -40,7 +42,6 @@ async function listGoals(chatId, args) {
 				break;
 
 			case 'today':
-
 			default:
 				console.log("listing today's goals");
 				filteredGoals = goals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
