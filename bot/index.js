@@ -137,13 +137,13 @@ exports.handler = async (event) => {
 				await showGoalDetails(args.trim(), chatId);
 				break;
 			case 'dashboard':
-				await sendMessage(chatId, 'https://goaliphant.netlify.app/');
+				await sendMessage(chatId, '*📊 Dashboard*\nAccess your goals dashboard at: [Goaliphant Dashboard](https://goaliphant.netlify.app/)');
 				break;
 			case 'help':
 				await getHelp(chatId, args);
 				break;
 			default:
-				await sendMessage(chatId, 'Unrecognized command. Use /help to see available commands.');
+				await sendMessage(chatId, '❓ *Unrecognized command*\nUse /help to see available commands.');
 		}
 	}
 
