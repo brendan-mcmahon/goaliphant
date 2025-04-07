@@ -79,9 +79,9 @@ async function handleAIMessage(chatId, userMessage) {
     });
     
     const responseMessage = response.choices[0].message;
-    
-    if (responseMessage.tool_calls) {
-      const toolCalls = responseMessage.tool_calls;
+    console.log("first response", responseMessage);
+    if (responseMessage.function_calls) {
+      const toolCalls = responseMessage.function_calls;
       
       for (const toolCall of toolCalls) {
         const functionName = toolCall.function.name;
