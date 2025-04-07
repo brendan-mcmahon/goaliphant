@@ -115,6 +115,12 @@ const commands = {
     description: 'View all details and notes for a specific goal',
     syntax: '/details {goal number}',
     example: '/details 2'
+  },
+  'recurring': {
+    description: 'Make a goal recurring with a cron schedule',
+    syntax: '/recurring <number> <cron_expression>',
+    example: '/recurring 3 0 9 * * * (sets goal #3 to recur every day at 9:00 AM)',
+    details: 'Sets a goal to recur automatically based on a cron schedule.\nThe cron format has 5-6 fields: minute hour day month weekday [year]'
   }
 };
 

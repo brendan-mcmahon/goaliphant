@@ -15,6 +15,7 @@ const { editGoal } = require('./handlers/editGoalHandler.js');
 const { swapGoals } = require('./handlers/swapGoalsHandler.js');
 const { getHelp } = require('./handlers/helpHandler.js');
 const { addNote, showGoalDetails } = require('./handlers/noteHandler.js');
+const { makeGoalRecurring } = require('./handlers/recurringGoalsHandler.js');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
@@ -141,6 +142,10 @@ exports.handler = async (event) => {
 				break;
 			case 'help':
 				await getHelp(chatId, args);
+				break;
+			case 'recurring':
+				const [goalNumber, cronExpression] = args.split(' ');
+				await makeGoalRecurring(goalNumber, cronExpression, chatId);
 				break;
 			default:
 				await sendMessage(chatId, '❓ *Unrecognized command*\nUse /help to see available commands.');

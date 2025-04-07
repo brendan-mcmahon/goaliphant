@@ -90,6 +90,17 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [x] The help response with no arguments should just list all the commands, a short description of what they do.
    - [x] The help response with an argument should list the command name, a short description of what it does, and the arguments it takes (with an example).
    - [x] For more complicated commands (e.g. createreward), the help response should list the command name, a short description of what it does, the arguments it takes (with an example), and a walkthrough of the process.
+15. **Recurring Goals**
+   - [ ] New Bot command `/recurring {#} {cron}` that turns a goal into a recurring goal.
+   - [ ] New Bot command `/unrecurring {#}` that turns a recurring goal back into a one-time goal.
+   - [ ] New Bot command `/editrecurring {#} {cron}` that edits the cron expression for a recurring goal.
+   - [ ] This will require an update to the rollover function to check for recurring goals and add them to the day's goals.
+     - [ ] Make sure we're not duplicating goals
+15. **Ticket Values**
+   - [ ] New Bot command `/ticketvalue {#}` that lists the ticket value for a goal.
+   - [ ] New Bot command `/setticketvalue {#}` that sets the ticket value for a goal.
+   - [ ] New Bot command `/editticketvalue {#}` that edits the ticket value for a goal.
+   - [ ] Goals without an explicit ticket value should have a default value of 1.
 ---
 
 ## Technical Requirements
