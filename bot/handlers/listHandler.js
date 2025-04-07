@@ -3,7 +3,7 @@ const { getHoney } = require('../common/honeyRepository.js');
 const { getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
-const { shouldShowRecurringGoalToday } = require('../common/cronUtils.js');
+const { shouldShowRecurringGoalToday } = require('./cronUtils.js');
 
 async function listGoals(chatId, args) {
 	try {
