@@ -10,6 +10,7 @@ const openai = new OpenAI({
 
 const availableFunctions = {
   addGoal: async (chatId, goalText) => {
+	console.log("addGoal", chatId, goalText);
     if (!goalText || goalText.trim() === '') {
       return "Goal text cannot be empty.";
     }
@@ -80,11 +81,12 @@ async function handleAIMessage(chatId, userMessage) {
     
     const responseMessage = response.choices[0].message;
     console.log("first response", responseMessage);
-    if (responseMessage.function_calls) {
-      const toolCalls = responseMessage.function_calls;
+    if (responseMessage.tool_calls) {
+      const toolCalls = responseMessage.tool_calls;
       
       for (const toolCall of toolCalls) {
         const functionName = toolCall.function.name;
+		console.log("functionName", functionName);
         const functionToCall = availableFunctions[functionName];
         
         if (functionToCall) {
@@ -99,6 +101,7 @@ async function handleAIMessage(chatId, userMessage) {
           // Extract the goalText parameter
           const goalText = functionArgs.goalText;
           const functionResponse = await functionToCall(chatId, goalText);
+		  console.log("functionResponse", functionResponse);
           
           messages.push(responseMessage);
           messages.push({
