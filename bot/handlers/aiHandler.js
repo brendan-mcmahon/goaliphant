@@ -18,6 +18,41 @@ const availableFunctions = {
     ).join('\n');
   },
 
+  findGoalIndex: async (chatId, goalDescription) => {
+    console.log("findGoalIndex", chatId, goalDescription);
+    if (!goalDescription || goalDescription.trim() === '') {
+      return "Goal description cannot be empty.";
+    }
+    
+    const goals = await goalRepo.getGoals(chatId);
+    if (goals.length === 0) {
+      return "You don't have any goals yet.";
+    }
+    
+    // Try to find an exact match first
+    for (let i = 0; i < goals.length; i++) {
+      if (goals[i].text.toLowerCase() === goalDescription.toLowerCase()) {
+        return `Found exact match: Goal #${i + 1} - ${goals[i].text}`;
+      }
+    }
+    
+    // If no exact match, look for partial matches
+    const matches = [];
+    for (let i = 0; i < goals.length; i++) {
+      if (goals[i].text.toLowerCase().includes(goalDescription.toLowerCase())) {
+        matches.push({ index: i + 1, text: goals[i].text });
+      }
+    }
+    
+    if (matches.length === 1) {
+      return `Found match: Goal #${matches[0].index} - ${matches[0].text}`;
+    } else if (matches.length > 1) {
+      return `Found multiple matches:\n${matches.map(m => `${m.index}. ${m.text}`).join('\n')}`;
+    } else {
+      return "No matching goal found. Please try with a different description or check your goals list.";
+    }
+  },
+
   addGoal: async (chatId, goalText) => {
     console.log("addGoal", chatId, goalText);
     if (!goalText || goalText.trim() === '') {
@@ -85,6 +120,23 @@ const tools = [
   {
     type: "function",
     function: {
+      name: "findGoalIndex",
+      description: "Find a goal's index by its description",
+      parameters: {
+        type: "object",
+        properties: {
+          goalDescription: {
+            type: "string",
+            description: "Description or text of the goal to find"
+          }
+        },
+        required: ["goalDescription"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
       name: "addGoal",
       description: "Add a new goal for the user",
       parameters: {
@@ -135,6 +187,12 @@ async function handleAIMessage(chatId, userMessage) {
         Respond naturally as if you're having a conversation, but handle the user's requests efficiently.
 		
 		Don't ask for confirmation if you believe the user's request is clear and unambiguous.
+
+		If the user sends a message that isn't an explicit request, let them know and ask them to try again.
+
+		Don't ask follow up questions.
+		
+		When a user asks to complete a goal but doesn't provide the goal number, you should first list their goals, then use findGoalIndex to identify which goal they're referring to, and finally use completeGoal with the correct index.
 		`
       },
       {
@@ -181,6 +239,10 @@ async function handleAIMessage(chatId, userMessage) {
             // Extract the goalIndex parameter
             const goalIndex = functionArgs.goalIndex;
             functionResponse = await functionToCall(chatId, goalIndex);
+          } else if (functionName === 'findGoalIndex') {
+            // Extract the goalDescription parameter
+            const goalDescription = functionArgs.goalDescription;
+            functionResponse = await functionToCall(chatId, goalDescription);
           }
           
           console.log("functionResponse", functionResponse);
