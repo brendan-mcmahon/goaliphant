@@ -479,7 +479,7 @@ async function handleAIMessage(chatId, userMessage) {
       }
       
       const secondResponse = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: "o3-mini-2025-01-31",
         messages: messages
       });
       
