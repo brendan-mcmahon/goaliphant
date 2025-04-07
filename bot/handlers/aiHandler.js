@@ -132,7 +132,10 @@ async function handleAIMessage(chatId, userMessage) {
         Be friendly, supportive, and encouraging. Keep responses concise and conversational.
         
         When users ask you to perform actions like adding or completing goals, use the appropriate function rather than just explaining how to do it.
-        Respond naturally as if you're having a conversation, but handle the user's requests efficiently.`
+        Respond naturally as if you're having a conversation, but handle the user's requests efficiently.
+		
+		Don't ask for confirmation if you believe the user's request is clear and unambiguous.
+		`
       },
       {
         role: "user",
