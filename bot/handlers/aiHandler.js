@@ -216,8 +216,6 @@ async function handleAIMessage(chatId, userMessage) {
 		If the user sends a message that isn't an explicit request, let them know and ask them to try again.
 
 		Don't ask follow up questions.
-		
-		When a user asks to complete a goal but doesn't provide the goal number, you should first list their goals, then use findGoalIndex to identify which goal they're referring to, and finally use completeGoal with the correct index.
 		`
       },
       {
