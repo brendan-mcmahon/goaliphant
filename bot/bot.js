@@ -18,7 +18,7 @@ async function sendMessage(chatId, message, options) {
 		await editMessage(chatId, thinkingMessageId, message, options);
 		thinkingMessageId = null;
 	} else {
-		await bot.sendMessage(chatId, message, options);
+		await bot.sendMessage(chatId, message, { ...options, parse_mode: 'Markdown' });
 	}
 }
 
