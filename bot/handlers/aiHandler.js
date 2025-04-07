@@ -75,7 +75,10 @@ const availableFunctions = {
     return `Goal added: ${goalText}`;
   },
   
-  completeGoal: async (chatId, goalIndex) => {
+  completeGoal: async (chatId, goalDescription) => {
+    // first, find the goal index with a separate openAI call
+    const goalIndex = await tryMatchGoalByDescription(chatId, goalDescription);
+    
     console.log("completeGoal", chatId, goalIndex);
     const index = parseInt(goalIndex);
     if (isNaN(index) || index < 1) {
@@ -103,6 +106,28 @@ const availableFunctions = {
     return `Completed goal: ${goal.text}\nYou earned 1 ticket!`;
   }
 };
+
+// delete
+// edit
+// swap
+// schedule
+// unschedule
+// recurring
+// unrecurring
+// ticketvalue
+// setticketvalue
+// wallet
+// rewards
+// createreward
+// redeem
+// honey
+// partner
+// note
+// details
+// dashboard
+// help
+// release-notes
+// requestreward
 
 const tools = [
   {
@@ -270,6 +295,69 @@ async function handleAIMessage(chatId, userMessage) {
   } catch (error) {
     console.error('Error in AI handler:', error);
     await sendMessage(chatId, "Sorry, I encountered an error while processing your message. Please try again later.");
+  }
+}
+
+async function tryMatchGoalByDescription(chatId, goalDescription) {
+  console.log("tryMatchGoalByDescription", chatId, goalDescription);
+  
+  // First get all goals
+  const goals = await goalRepo.getGoals(chatId);
+  if (!goals || goals.length === 0) {
+    return "-1"; // No goals found
+  }
+  
+  // Simple case: if goalDescription is a number, return it directly
+  const directIndex = parseInt(goalDescription);
+  if (!isNaN(directIndex) && directIndex > 0 && directIndex <= goals.length) {
+    return directIndex.toString();
+  }
+  
+  // Create a formatted list of goals for the AI
+  const goalsList = goals.map((goal, index) => 
+    `${index + 1}. ${goal.text}`
+  ).join('\n');
+  
+  // Create a prompt for the AI to match the description to a goal
+  const messages = [
+    {
+      role: "system",
+      content: `You are a goal matching system. You will be given a list of goals and a description, and your task is to determine which goal the description refers to. Return only the index number of the matching goal.
+
+If there's an exact match, return that goal's number.
+If there's a partial match and only one goal matches, return that goal's number.
+If multiple goals could match, return the best match.
+If no goals match, return -1.
+Always return ONLY a number, nothing else.`
+    },
+    {
+      role: "user",
+      content: `Here are the goals:\n${goalsList}\n\nWhich goal matches this description: "${goalDescription}"?`
+    }
+  ];
+  
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: messages,
+      max_tokens: 10 // We only need a small number to return
+    });
+    
+    const content = response.choices[0].message.content.trim();
+    console.log("AI matched goal index:", content);
+    
+    // Parse the result and ensure it's valid
+    const matchedIndex = parseInt(content);
+    if (!isNaN(matchedIndex) && matchedIndex > 0 && matchedIndex <= goals.length) {
+      return matchedIndex.toString();
+    } else if (matchedIndex === -1) {
+      return "-1"; // No match found
+    } else {
+      return "-1"; // Invalid response
+    }
+  } catch (error) {
+    console.error("Error matching goal by description:", error);
+    return "-1"; // Error case
   }
 }
 
