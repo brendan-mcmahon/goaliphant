@@ -431,7 +431,7 @@ async function handleAIMessage(chatId, userMessage) {
     ];
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
+	  model: "o3-mini-2025-01-31",
       messages: messages,
       tools: tools,
       tool_choice: "auto"
