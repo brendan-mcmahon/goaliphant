@@ -104,6 +104,12 @@ async function showGoalDetails(goalIndex, chatId) {
             messageText += `*Scheduled for:* ${scheduledDate}\n`;
         }
         
+        // Add recurring information if applicable
+        if (goal.isRecurring) {
+            messageText += `*Recurring:* Yes\n`;
+            messageText += `*Schedule:* ${goal.recurringSchedule}\n`;
+        }
+        
         if (goal.notes && goal.notes.length > 0) {
             messageText += `\n*Notes:*\n`;
             goal.notes.forEach((note, i) => {

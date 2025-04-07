@@ -117,10 +117,19 @@ const commands = {
     example: '/details 2'
   },
   'recurring': {
-    description: 'Make a goal recurring with a cron schedule',
-    syntax: '/recurring <number> <cron_expression>',
-    example: '/recurring 3 0 9 * * * (sets goal #3 to recur every day at 9:00 AM)',
-    details: 'Sets a goal to recur automatically based on a cron schedule.\nThe cron format has 5-6 fields: minute hour day month weekday [year]'
+    description: 'Make a goal recurring with a schedule',
+    syntax: '/recurring <number> <date_pattern>',
+    example: '/recurring 3 * * 1,3,5 (sets goal #3 to recur every Monday, Wednesday, Friday)',
+    details: 'Sets a goal to recur automatically based on a date pattern.\n\n' +
+      'Date pattern format: "day month weekday"\n' +
+      '- day: Day of month (1-31 or * for any)\n' +
+      '- month: Month (1-12 or * for any)\n' +
+      '- weekday: Day of week (0-6, where 0=Sunday, or * for any)\n\n' +
+      'Common patterns:\n' +
+      '- "* * *" - Every day\n' +
+      '- "* * 1" - Every Monday\n' +
+      '- "* * 1,3,5" - Every Monday, Wednesday, Friday\n' +
+      '- "1 * *" - First day of every month'
   }
 };
 

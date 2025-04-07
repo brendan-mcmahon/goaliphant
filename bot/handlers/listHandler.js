@@ -3,6 +3,7 @@ const { getHoney } = require('../common/honeyRepository.js');
 const { getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
+const { shouldShowRecurringGoalToday } = require('../common/cronUtils.js');
 
 async function listGoals(chatId, args) {
 	try {
@@ -11,12 +12,12 @@ async function listGoals(chatId, args) {
 		console.log("goals:", goals);
 
 		const filter = args?.toLowerCase() || 'today';
-
 		console.log("filter:", filter);
 
 		let filteredGoals = goals;
 		let messagePrefix = '';
 
+		// Filter based on command arguments
 		switch (filter) {
 			case 'all':
 				console.log("listing all goals");
@@ -26,14 +27,19 @@ async function listGoals(chatId, args) {
 			case 'todo':
 				console.log("listing todo goals");
 				filteredGoals = goals.filter(g => !g.completed);
-				filteredGoals = filteredGoals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
+				filteredGoals = filteredGoals.filter(g => 
+					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduled)) ||
+					(g.isRecurring && shouldShowRecurringGoalToday(g))
+				);
 				messagePrefix = 'To-do goals:';
 				break;
 
 			case 'done':
 				console.log("listing done goals");
 				filteredGoals = goals.filter(g => g.completed);
-				filteredGoals = filteredGoals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
+				filteredGoals = filteredGoals.filter(g => 
+					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduled))
+				);
 				messagePrefix = 'Completed goals:';
 				break;
 
@@ -46,13 +52,26 @@ async function listGoals(chatId, args) {
 			case 'today':
 			default:
 				console.log("listing today's goals");
-				filteredGoals = goals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
+				filteredGoals = goals.filter(g => 
+					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduled)) ||
+					(g.isRecurring && shouldShowRecurringGoalToday(g))
+				);
 				messagePrefix = 'Today\'s goals:';
 		}
 
 		const goalsList = filteredGoals.map((g, i) => { 
 			let goalText = g.completed ? '✅' : '⬜';
-			goalText = g.scheduled ? `${goalText} 🗓️ ${g.scheduled}` : goalText;
+			
+			// Add scheduled indicator if applicable
+			if (g.scheduled) {
+				goalText = `${goalText} 🗓️ ${g.scheduled}`;
+			}
+			
+			// Add recurring indicator if applicable
+			if (g.isRecurring) {
+				goalText = `${goalText} 🔄`;
+			}
+			
 			return `${i + 1}. ${goalText} ${g.text}`;
 		}).join('\n');
 		console.log("goalsList:", goalsList);
