@@ -73,8 +73,10 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [x] `scheduled` should only show things that are scheduled in the future
    - [x] `all` should list all completed, incompleted, and scheduled things
    - [x] `today` (default) should list everything but scheduled items in the future
-10. **Custom GPT**
-   - [ ] Create a custom GPT with OpenAI that will have access to the API as actions.
+10. **AI Integration**
+   - [ ] Integrate with OpenAI to allow the bot to use GPT as an action.
+   - [ ] When a message is sent to the bot that doesn't start with a slash, the bot should use GPT to respond to the message.
+   - [ ] The OpenAI API call should utilize the tools feature so that the bot can call functions and return data. (So we'll need to define the functions and the data they return.)
 11. **Priority Scoring System**
    - [ ] Something similar to Eisenhower Matrix but with three dimensions
 12. **Goal Notes**
@@ -96,7 +98,7 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [ ] New Bot command `/editrecurring {#} {cron}` that edits the cron expression for a recurring goal.
    - [ ] This will require an update to the rollover function to check for recurring goals and add them to the day's goals.
      - [ ] Make sure we're not duplicating goals
-15. **Ticket Values**
+16. **Ticket Values**
    - [ ] New Bot command `/ticketvalue {#}` that lists the ticket value for a goal.
    - [ ] New Bot command `/setticketvalue {#}` that sets the ticket value for a goal.
    - [ ] New Bot command `/editticketvalue {#}` that edits the ticket value for a goal.

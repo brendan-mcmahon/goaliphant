@@ -1,3 +1,5 @@
+// This is the main entry point for the bot lambda function.
+// It handles incoming messages from the Telegram API and passes them to the appropriate handler.
 const { sendMessage, sendThinkingMessage, getUserProfilePhoto } = require('./bot.js');
 const { deleteGoals } = require('./handlers/deleteGoalsHandler.js');
 const { addGoals, addHoney } = require('./handlers/addGoalsHandler.js');
@@ -16,6 +18,7 @@ const { swapGoals } = require('./handlers/swapGoalsHandler.js');
 const { getHelp } = require('./handlers/helpHandler.js');
 const { addNote, showGoalDetails } = require('./handlers/noteHandler.js');
 const { makeGoalRecurring } = require('./handlers/recurringGoalsHandler.js');
+const { handleAIMessage } = require('./handlers/aiHandler');
 
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
@@ -149,7 +152,8 @@ exports.handler = async (event) => {
 				await makeGoalRecurring(goalNumber, cronExpression, chatId);
 				break;
 			default:
-				await sendMessage(chatId, '❓ *Unrecognized command*\nUse /help to see available commands.');
+				// If it's not a recognized command, treat it as a message for the AI
+				await handleAIMessage(chatId, text);
 		}
 	}
 
