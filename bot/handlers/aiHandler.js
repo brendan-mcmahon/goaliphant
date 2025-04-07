@@ -431,7 +431,7 @@ async function handleAIMessage(chatId, userMessage) {
     ];
     
     const response = await openai.chat.completions.create({
-	  model: "o3-mini-2025-01-31",
+	  model: "gpt-4o-mini",
       messages: messages,
       tools: tools,
       tool_choice: "auto"
@@ -479,7 +479,7 @@ async function handleAIMessage(chatId, userMessage) {
       }
       
       const secondResponse = await openai.chat.completions.create({
-        model: "o3-mini-2025-01-31",
+        model: "gpt-4o-mini",
         messages: messages
       });
       
