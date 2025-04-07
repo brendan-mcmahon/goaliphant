@@ -144,7 +144,8 @@ exports.handler = async (event) => {
 				await getHelp(chatId, args);
 				break;
 			case 'recurring':
-				const [goalNumber, cronExpression] = args.split(' ');
+				const goalNumber = args.split(' ')[0];
+				const cronExpression = args.substring(goalNumber.length).trim();
 				await makeGoalRecurring(goalNumber, cronExpression, chatId);
 				break;
 			default:
