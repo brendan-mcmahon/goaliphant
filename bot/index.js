@@ -53,9 +53,9 @@ exports.handler = async (event) => {
 			if (chatHistory.length > config.MAX_HISTORY_LENGTH) {
 				chatHistory.splice(0, chatHistory.length - config.MAX_HISTORY_LENGTH);
 			}
+			await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
 		}
 
-		await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
 
 		if (body.message && body.message.chat && body.message.chat.type === 'group') {
 			console.log("group chat", body.message.chat.id);
