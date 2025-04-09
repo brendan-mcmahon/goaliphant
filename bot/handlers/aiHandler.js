@@ -88,7 +88,9 @@ const availableFunctions = {
 
 		await goalRepo.updateGoals(chatId, goals);
 
-		return `Goal deleted: ${goals[index - 1].text}`;
+		console.log("Goal deleted: ", goals[index - 1]);
+
+		return `Goal deleted:`; // ${goals[index - 1].text}`;
 	},
 
 	editGoal: async (chatId, goalIndex, goalText) => {
