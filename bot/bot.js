@@ -21,7 +21,6 @@ async function sendMessage(chatId, message, options) {
 			thinkingMessageId = null;
 		} else {
 			await bot.sendMessage(chatId, message, { ...options, parse_mode: 'Markdown' });
-			await addMessageToHistory(chatId, message);
 		}
 
 		const user = await userRepo.getUser(chatId);	
@@ -55,8 +54,6 @@ async function editMessage(chatId, messageId, newText, options = {}) {
 			...options,
 		});
 		
-		// Also update the history when we edit a message
-		await addMessageToHistory(chatId, newText);
 	} catch (error) {
 		console.error("Failed to edit message:", error);
 	}
@@ -103,6 +100,5 @@ module.exports = {
 	editMessage, 
 	deleteMessage, 
 	sendError, 
-	getUserProfilePhoto, 
-	addMessageToHistory 
+	getUserProfilePhoto
 };

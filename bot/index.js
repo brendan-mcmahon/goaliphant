@@ -1,6 +1,6 @@
 // This is the main entry point for the bot lambda function.
 // It handles incoming messages from the Telegram API and passes them to the appropriate handler.
-const { sendMessage, sendThinkingMessage, getUserProfilePhoto, addMessageToHistory } = require('./bot.js');
+const { sendMessage, sendThinkingMessage, getUserProfilePhoto } = require('./bot.js');
 const { deleteGoals } = require('./handlers/deleteGoalsHandler.js');
 const { addGoals, addHoney } = require('./handlers/addGoalsHandler.js');
 const { listGoals, listPartner } = require('./handlers/listHandler.js');
