@@ -74,14 +74,14 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [x] `all` should list all completed, incompleted, and scheduled things
    - [x] `today` (default) should list everything but scheduled items in the future
 10. **AI Integration**
-   - [ ] Integrate with OpenAI to allow the bot to use GPT as an action.
-   - [ ] When a message is sent to the bot that doesn't start with a slash, the bot should use GPT to respond to the message.
-   - [ ] The OpenAI API call should utilize the tools feature so that the bot can call functions and return data. (So we'll need to define the functions and the data they return.)
-   - [ ] We should just store the last like 10 messages in the chat history and use that for the context window.
-     - [ ] On the User table, add another field called `chatHistory` that is an array of strings.
-     - [ ] Every time the bot responds to a message, add the message to the user's chat history.
-     - [ ] Every time the bot sends a message, add the message to the user's chat history.
-     - [ ] Every time the bot receives a message, add the message to the user's chat history.
+   - [x] Integrate with OpenAI to allow the bot to use GPT as an action.
+   - [x] When a message is sent to the bot that doesn't start with a slash, the bot should use GPT to respond to the message.
+   - [x] The OpenAI API call should utilize the tools feature so that the bot can call functions and return data. (So we'll need to define the functions and the data they return.)
+   - [x] We should just store the last like 10 messages in the chat history and use that for the context window.
+     - [x] On the User table, add another field called `chatHistory` that is an array of strings.
+     - [x] Every time the bot responds to a message, add the message to the user's chat history.
+     - [x] Every time the bot sends a message, add the message to the user's chat history.
+     - [x] Every time the bot receives a message, add the message to the user's chat history.
 11. **Priority Scoring System**
    - [ ] Something similar to Eisenhower Matrix but with three dimensions
 12. **Goal Notes**
