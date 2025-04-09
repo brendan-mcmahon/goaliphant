@@ -29,9 +29,6 @@ exports.handler = async (event) => {
 		const chatId = body.message.chat.id;
 		await sendThinkingMessage(chatId);
 
-		console.log(await getUserProfilePhoto(chatId));
-		console.log(await getUserProfilePhoto(body.message.from.id));
-
 		let text = body.message.text;
 		let ticketRecipientId = chatId;
 
@@ -42,45 +39,24 @@ exports.handler = async (event) => {
 			return { statusCode: 200, body: 'OK' };
 		}
 
-		// Add user message to chat history
-		try {
-			const user = await userRepo.getUser(chatId);
-			if (user) {
-				const userMsg = {
-					role: "user",
-					content: text
-				};
-				
-				// Get existing chat history or initialize
-				const chatHistory = user.chatHistory || [];
-				
-				// Add system message if needed
-				if (chatHistory.length === 0) {
-					chatHistory.push({
-						role: "system",
-						content: "You are Goaliphant, a helpful goal tracking assistant."
-					});
-				}
-				
-				chatHistory.push(userMsg);
-				
-				// Trim if needed (keeping system message)
-				const MAX_HISTORY_LENGTH = 10;
-				if (chatHistory.length > MAX_HISTORY_LENGTH) {
-					const systemMessage = chatHistory.find(msg => msg.role === "system");
-					if (systemMessage) {
-						const recentMessages = chatHistory.slice(-MAX_HISTORY_LENGTH + 1);
-						chatHistory.splice(0, chatHistory.length, systemMessage, ...recentMessages);
-					} else {
-						chatHistory.splice(0, chatHistory.length - MAX_HISTORY_LENGTH);
-					}
-				}
-				
-				await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
+		const user = await userRepo.getUser(chatId);
+		if (user) {
+			const userMsg = {
+				role: "user",
+				content: text
+			};
+
+			const chatHistory = user.chatHistory || [];
+
+			chatHistory.push(userMsg);
+
+			const MAX_HISTORY_LENGTH = 10;
+			if (chatHistory.length > MAX_HISTORY_LENGTH) {
+				chatHistory.splice(0, chatHistory.length - MAX_HISTORY_LENGTH);
 			}
-		} catch (error) {
-			console.error("Error recording user message:", error);
 		}
+
+		await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
 
 		if (body.message && body.message.chat && body.message.chat.type === 'group') {
 			console.log("group chat", body.message.chat.id);

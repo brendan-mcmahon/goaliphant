@@ -7,46 +7,6 @@ const bot = new TelegramBot(token);
 
 let thinkingMessageId = null;
 
-// Function to add any bot message to chat history
-async function addMessageToHistory(chatId, content) {
-	try {
-		const user = await userRepo.getUser(chatId);
-		if (!user) {
-			console.error(`User ${chatId} not found when trying to update chat history`);
-			return;
-		}
-		
-		// Initialize chatHistory if it doesn't exist
-		const MAX_HISTORY_LENGTH = 10;
-		const chatHistory = user.chatHistory || [];
-		
-		// Add the bot message
-		const botMessage = {
-			role: "assistant",
-			content: content
-		};
-		
-		chatHistory.push(botMessage);
-		
-		// Trim history if it gets too long
-		if (chatHistory.length > MAX_HISTORY_LENGTH) {
-			// Keep the system message if it exists, plus most recent messages
-			const systemMessage = chatHistory.find(msg => msg.role === "system");
-			
-			if (systemMessage) {
-				const recentMessages = chatHistory.slice(-MAX_HISTORY_LENGTH + 1);
-				chatHistory.splice(0, chatHistory.length, systemMessage, ...recentMessages);
-			} else {
-				chatHistory.splice(0, chatHistory.length - MAX_HISTORY_LENGTH);
-			}
-		}
-		
-		// Update the user record with the new chat history
-		await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
-	} catch (error) {
-		console.error('Error adding bot message to chat history:', error);
-	}
-}
 
 async function sendThinkingMessage(chatId) {
 	const thinkingMessage = await bot.sendMessage(chatId, 'Thinking... 🤔');
@@ -55,16 +15,33 @@ async function sendThinkingMessage(chatId) {
 
 async function sendMessage(chatId, message, options) {
 	try {
-		// First send the actual message
 		if (thinkingMessageId) {
 			await editMessage(chatId, thinkingMessageId, message, options);
 			thinkingMessageId = null;
 		} else {
 			await bot.sendMessage(chatId, message, { ...options, parse_mode: 'Markdown' });
+			await addMessageToHistory(chatId, message);
+		}
+
+		const user = await userRepo.getUser(chatId);	
+		if (user) {
+			const userMsg = {
+				role: "user",
+				content: message
+			};
+
+			const chatHistory = user.chatHistory || [];
+
+			chatHistory.push(userMsg);
+
+			const MAX_HISTORY_LENGTH = 10;
+			if (chatHistory.length > MAX_HISTORY_LENGTH) {
+				chatHistory.splice(0, chatHistory.length - MAX_HISTORY_LENGTH);
+			}
+			
+			await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
 		}
 		
-		// Then add it to chat history
-		await addMessageToHistory(chatId, message);
 	} catch (error) {
 		console.error("Error in sendMessage:", error);
 	}
