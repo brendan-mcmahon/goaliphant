@@ -10,6 +10,7 @@ const openai = new OpenAI({
 });
 
 const availableFunctions = {
+	// TODO: Let's just call listHandler and don't send the response from the bot.
 	listGoals: async (chatId) => {
 		console.log("listGoals", chatId);
 		const goals = await goalRepo.getGoals(chatId);
@@ -112,6 +113,7 @@ const availableFunctions = {
 		return `Goal updated: ${goalText}`;
 	},
 	
+	// Update to use the handler. Do not respond.
 	swap: async (chatId, goalIndex1, goalIndex2) => {
 		console.log("swap", chatId, goalIndex1, goalIndex2);
 		const index1 = parseInt(goalIndex1);
@@ -250,16 +252,20 @@ const availableFunctions = {
 	wallet: async (chatId) => {
 		console.log("wallet", chatId);
 		const user = await userRepo.getUser(chatId);
-		return `You have ${user.tickets || 0} tickets in your wallet.`;
+		return `You have ${user.TicketWallet || 0} tickets in your wallet.`;
 	},
 	
 	rewards: async (chatId) => {
 		console.log("rewards", chatId);
+		// This is not how this works. There is a separate rewards table.
+		// But in the end, we don't necessarily want to get it from there, we really just need to trigger the same thing 
 		const user = await userRepo.getUser(chatId);
 		
 		if (!user.rewards || user.rewards.length === 0) {
 			return "You don't have any rewards yet. Create one with the createreward command!";
 		}
+
+		// Call rewardsHandler.listRewards instead of sending a message to the user.
 		
 		return user.rewards.map((reward, index) =>
 			`${index + 1}. ${reward.name} (${reward.cost} tickets)`
@@ -493,6 +499,7 @@ const tools = [
 			description: "Get the list of today's goals for the user",
 			parameters: {
 				type: "object",
+				// TODO: add options for "todo," "all," "scheduled", etc...
 				properties: {},
 				required: []
 			}
@@ -505,6 +512,7 @@ const tools = [
 			description: "Add a new goal for the user",
 			parameters: {
 				type: "object",
+				// TODO: add options for "schedule," "recurring," "note," etc...
 				properties: {
 					goalText: {
 						type: "string",
@@ -603,6 +611,7 @@ const tools = [
 						type: "string",
 						description: "The number of the goal to schedule (1-based)"
 					},
+					// TODO: This is not right. We need a specific format for the scheduled time that we can parse. Right now we're using {day/month}
 					scheduledTime: {
 						type: "string",
 						description: "When to schedule the goal (e.g., 'tomorrow at 3pm', 'Monday morning')" 
@@ -641,6 +650,7 @@ const tools = [
 						type: "string",
 						description: "The number of the goal to make recurring (1-based)"
 					},
+					// This is still a work in progress. We need a format that's similar to CRON but without dates. It should also be able to handle "every 2 weeks" or "every 2 months" etc...
 					recurrencePattern: {
 						type: "string",
 						description: "How often the goal should recur (e.g., 'daily', 'weekly on Monday', 'monthly')"
@@ -697,6 +707,7 @@ const tools = [
 		}
 	},
 	{
+		// TODO: This is broken.
 		type: "function",
 		function: {
 			name: "wallet",
@@ -1012,6 +1023,8 @@ async function handleAIMessage(chatId, userMessage) {
 					});
 				}
 			}
+
+			// Is there a way to avoid sending a second message if we don't need to? (e.g. if the tool call is just to list goals?)
 
 			const secondResponse = await openai.chat.completions.create({
 				model: "gpt-4o-mini",
