@@ -167,3 +167,26 @@ const getAllUsers = async () => {
 	}
 }
 exports.getAllUsers = getAllUsers;
+
+// Add this function to update a specific field in a user record
+async function updateUserField(chatId, fieldName, fieldValue) {
+	const params = {
+		TableName: userTable,
+		Key: { ChatId: chatId.toString() },
+		UpdateExpression: `SET ${fieldName} = :value`,
+		ExpressionAttributeValues: {
+			':value': fieldValue,
+		},
+		ReturnValues: 'UPDATED_NEW',
+	};
+
+	try {
+		const result = await dynamoDb.update(params).promise();
+		console.log(`User field '${fieldName}' updated successfully`);
+		return result.Attributes;
+	} catch (err) {
+		console.error(`Error updating user field '${fieldName}':`, err);
+		throw err;
+	}
+}
+exports.updateUserField = updateUserField;

@@ -5,9 +5,45 @@ const goalRepo = require('../common/goalRepository.js');
 const userRepo = require('../common/userRepository.js');
 const { v4: uuidv4 } = require('uuid');
 
+const MAX_HISTORY_LENGTH = 10;
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
+
+async function getChatHistory(chatId) {
+  const user = await userRepo.getUser(chatId);
+  if (!user || !user.chatHistory) {
+    return [];
+  }
+  return user.chatHistory;
+}
+
+async function addMessageToHistory(chatId, message) {
+  const user = await userRepo.getUser(chatId);
+  
+  if (!user) {
+    console.error(`User ${chatId} not found when trying to update chat history`);
+    return;
+  }
+  
+  const chatHistory = user.chatHistory || [];
+  
+  chatHistory.push(message);
+  
+  if (chatHistory.length > MAX_HISTORY_LENGTH) {
+    const systemMessage = chatHistory.find(msg => msg.role === "system");
+    
+    if (systemMessage) {
+      const recentMessages = chatHistory.slice(-MAX_HISTORY_LENGTH + 1);
+      chatHistory.splice(0, chatHistory.length, systemMessage, ...recentMessages);
+    } else {
+      chatHistory.splice(0, chatHistory.length - MAX_HISTORY_LENGTH);
+    }
+  }
+  
+  await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
+}
 
 const availableFunctions = {
   listGoals: async (chatId) => {
@@ -16,41 +52,6 @@ const availableFunctions = {
     return goals.map((goal, index) => 
       `${index + 1}. ${goal.completed ? '✅' : '⬜'} ${goal.text}`
     ).join('\n');
-  },
-
-  findGoalIndex: async (chatId, goalDescription) => {
-    console.log("findGoalIndex", chatId, goalDescription);
-    if (!goalDescription || goalDescription.trim() === '') {
-      return "Goal description cannot be empty.";
-    }
-    
-    const goals = await goalRepo.getGoals(chatId);
-    if (goals.length === 0) {
-      return "You don't have any goals yet.";
-    }
-    
-    // Try to find an exact match first
-    for (let i = 0; i < goals.length; i++) {
-      if (goals[i].text.toLowerCase() === goalDescription.toLowerCase()) {
-        return `Found exact match: Goal #${i + 1} - ${goals[i].text}`;
-      }
-    }
-    
-    // If no exact match, look for partial matches
-    const matches = [];
-    for (let i = 0; i < goals.length; i++) {
-      if (goals[i].text.toLowerCase().includes(goalDescription.toLowerCase())) {
-        matches.push({ index: i + 1, text: goals[i].text });
-      }
-    }
-    
-    if (matches.length === 1) {
-      return `Found match: Goal #${matches[0].index} - ${matches[0].text}`;
-    } else if (matches.length > 1) {
-      return `Found multiple matches:\n${matches.map(m => `${m.index}. ${m.text}`).join('\n')}`;
-    } else {
-      return "No matching goal found. Please try with a different description or check your goals list.";
-    }
   },
 
   addGoal: async (chatId, goalText) => {
@@ -145,23 +146,6 @@ const tools = [
   {
     type: "function",
     function: {
-      name: "findGoalIndex",
-      description: "Find a goal's index by its description",
-      parameters: {
-        type: "object",
-        properties: {
-          goalDescription: {
-            type: "string",
-            description: "Description or text of the goal to find"
-          }
-        },
-        required: ["goalDescription"]
-      }
-    }
-  },
-  {
-    type: "function",
-    function: {
       name: "addGoal",
       description: "Add a new goal for the user",
       parameters: {
@@ -195,34 +179,41 @@ const tools = [
   }
 ];
 
+const SYSTEM_PROMPT = `You are Goaliphant, a helpful assistant integrated with a goal tracking Telegram bot. 
+You can help users manage their goals by:
+- Listing their current goals
+- Adding new goals to their list
+- Marking goals as completed
+
+Be friendly, supportive, and encouraging. Keep responses concise and conversational.
+
+When users ask you to perform actions like adding or completing goals, use the appropriate function rather than just explaining how to do it.
+Respond naturally as if you're having a conversation, but handle the user's requests efficiently.
+
+Don't ask for confirmation if you believe the user's request is clear and unambiguous.
+
+If the user sends a message that isn't an explicit request, let them know and ask them to try again.
+
+Don't ask follow up questions.`;
+
 async function handleAIMessage(chatId, userMessage) {
   try {
-    const messages = [
-      {
+    let messages = await getChatHistory(chatId);
+    
+    if (messages.length === 0) {
+      messages.push({
         role: "system",
-        content: `You are Goaliphant, a helpful assistant integrated with a goal tracking Telegram bot. 
-        You can help users manage their goals by:
-        - Listing their current goals
-        - Adding new goals to their list
-        - Marking goals as completed
-        
-        Be friendly, supportive, and encouraging. Keep responses concise and conversational.
-        
-        When users ask you to perform actions like adding or completing goals, use the appropriate function rather than just explaining how to do it.
-        Respond naturally as if you're having a conversation, but handle the user's requests efficiently.
-		
-		Don't ask for confirmation if you believe the user's request is clear and unambiguous.
-
-		If the user sends a message that isn't an explicit request, let them know and ask them to try again.
-
-		Don't ask follow up questions.
-		`
-      },
-      {
-        role: "user",
-        content: userMessage
-      }
-    ];
+        content: SYSTEM_PROMPT
+      });
+    }
+    
+    const userMsg = {
+      role: "user",
+      content: userMessage
+    };
+    
+    messages.push(userMsg);
+    await addMessageToHistory(chatId, userMsg);
     
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -233,6 +224,9 @@ async function handleAIMessage(chatId, userMessage) {
     
     const responseMessage = response.choices[0].message;
     console.log("first response", responseMessage);
+    
+    await addMessageToHistory(chatId, responseMessage);
+    
     if (responseMessage.tool_calls) {
       const toolCalls = responseMessage.tool_calls;
       
@@ -245,38 +239,38 @@ async function handleAIMessage(chatId, userMessage) {
           let functionArgs;
           try {
             functionArgs = JSON.parse(toolCall.function.arguments);
-          } catch (err) {
-            console.error("Error parsing function arguments:", err);
+          } catch (error) {
+            console.error('Error parsing function arguments:', error);
             continue;
           }
           
-          let functionResponse;
-          if (functionName === 'listGoals') {
-            // listGoals takes no arguments
-            functionResponse = await functionToCall(chatId);
-          } else if (functionName === 'addGoal') {
-            // Extract the goalText parameter
-            const goalText = functionArgs.goalText;
-            functionResponse = await functionToCall(chatId, goalText);
-          } else if (functionName === 'completeGoal') {
-            // Extract the goalIndex parameter
-            const goalIndex = functionArgs.goalIndex;
-            functionResponse = await functionToCall(chatId, goalIndex);
-          } else if (functionName === 'findGoalIndex') {
-            // Extract the goalDescription parameter
-            const goalDescription = functionArgs.goalDescription;
-            functionResponse = await functionToCall(chatId, goalDescription);
-          }
+          const functionHandlers = {
+            listGoals: async () => {
+              return await functionToCall(chatId);
+            },
+            addGoal: async () => {
+              const goalText = functionArgs.goalText;
+              return await functionToCall(chatId, goalText);
+            },
+            completeGoal: async () => {
+              const goalIndex = functionArgs.goalIndex;
+              return await functionToCall(chatId, goalIndex);
+            }
+          };
+
+          const functionResponse = await functionHandlers[functionName]();
           
           console.log("functionResponse", functionResponse);
           
-          messages.push(responseMessage);
-          messages.push({
+          const toolResponseMsg = {
             role: "tool",
             tool_call_id: toolCall.id,
             name: functionName,
             content: functionResponse
-          });
+          };
+          
+          messages.push(toolResponseMsg);
+          await addMessageToHistory(chatId, toolResponseMsg);
         }
       }
       
@@ -285,7 +279,10 @@ async function handleAIMessage(chatId, userMessage) {
         messages: messages
       });
       
-      await sendMessage(chatId, secondResponse.choices[0].message.content);
+      const finalResponseMsg = secondResponse.choices[0].message;
+      await addMessageToHistory(chatId, finalResponseMsg);
+      
+      await sendMessage(chatId, finalResponseMsg.content);
     } else {
       console.log("no tool calls");
       await sendMessage(chatId, responseMessage.content);
@@ -299,24 +296,20 @@ async function handleAIMessage(chatId, userMessage) {
 async function tryMatchGoalByDescription(chatId, goalDescription) {
   console.log("tryMatchGoalByDescription", chatId, goalDescription);
   
-  // First get all goals
   const goals = await goalRepo.getGoals(chatId);
   if (!goals || goals.length === 0) {
     return "-1"; // No goals found
   }
   
-  // Simple case: if goalDescription is a number, return it directly
   const directIndex = parseInt(goalDescription);
   if (!isNaN(directIndex) && directIndex > 0 && directIndex <= goals.length) {
     return directIndex.toString();
   }
   
-  // Create a formatted list of goals for the AI
   const goalsList = goals.map((goal, index) => 
     `${index + 1}. ${goal.text}`
   ).join('\n');
   
-  // Create a prompt for the AI to match the description to a goal
   const messages = [
     {
       role: "system",
@@ -344,7 +337,6 @@ Always return ONLY a number, nothing else.`
     const content = response.choices[0].message.content.trim();
     console.log("AI matched goal index:", content);
     
-    // Parse the result and ensure it's valid
     const matchedIndex = parseInt(content);
     if (!isNaN(matchedIndex) && matchedIndex > 0 && matchedIndex <= goals.length) {
       return matchedIndex.toString();
@@ -359,6 +351,17 @@ Always return ONLY a number, nothing else.`
   }
 }
 
+async function clearChatHistory(chatId) {
+  try {
+    await userRepo.updateUserField(chatId, 'chatHistory', []);
+    return true;
+  } catch (error) {
+    console.error('Error clearing chat history:', error);
+    return false;
+  }
+}
+
 module.exports = {
-  handleAIMessage
+  handleAIMessage,
+  clearChatHistory
 }; 

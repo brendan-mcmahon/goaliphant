@@ -1,24 +1,72 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const token = process.env.BOT_TOKEN;
+const userRepo = require('./common/userRepository.js');
 
 const bot = new TelegramBot(token);
 
 let thinkingMessageId = null;
 
-async function sendThinkingMessage(chatId) {
+// Function to add any bot message to chat history
+async function addMessageToHistory(chatId, content) {
+	try {
+		const user = await userRepo.getUser(chatId);
+		if (!user) {
+			console.error(`User ${chatId} not found when trying to update chat history`);
+			return;
+		}
+		
+		// Initialize chatHistory if it doesn't exist
+		const MAX_HISTORY_LENGTH = 10;
+		const chatHistory = user.chatHistory || [];
+		
+		// Add the bot message
+		const botMessage = {
+			role: "assistant",
+			content: content
+		};
+		
+		chatHistory.push(botMessage);
+		
+		// Trim history if it gets too long
+		if (chatHistory.length > MAX_HISTORY_LENGTH) {
+			// Keep the system message if it exists, plus most recent messages
+			const systemMessage = chatHistory.find(msg => msg.role === "system");
+			
+			if (systemMessage) {
+				const recentMessages = chatHistory.slice(-MAX_HISTORY_LENGTH + 1);
+				chatHistory.splice(0, chatHistory.length, systemMessage, ...recentMessages);
+			} else {
+				chatHistory.splice(0, chatHistory.length - MAX_HISTORY_LENGTH);
+			}
+		}
+		
+		// Update the user record with the new chat history
+		await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
+	} catch (error) {
+		console.error('Error adding bot message to chat history:', error);
+	}
+}
 
+async function sendThinkingMessage(chatId) {
 	const thinkingMessage = await bot.sendMessage(chatId, 'Thinking... 🤔');
 	thinkingMessageId = thinkingMessage.message_id;
 }
 
 async function sendMessage(chatId, message, options) {
-
-	if (thinkingMessageId) {
-		await editMessage(chatId, thinkingMessageId, message, options);
-		thinkingMessageId = null;
-	} else {
-		await bot.sendMessage(chatId, message, { ...options, parse_mode: 'Markdown' });
+	try {
+		// First send the actual message
+		if (thinkingMessageId) {
+			await editMessage(chatId, thinkingMessageId, message, options);
+			thinkingMessageId = null;
+		} else {
+			await bot.sendMessage(chatId, message, { ...options, parse_mode: 'Markdown' });
+		}
+		
+		// Then add it to chat history
+		await addMessageToHistory(chatId, message);
+	} catch (error) {
+		console.error("Error in sendMessage:", error);
 	}
 }
 
@@ -29,6 +77,9 @@ async function editMessage(chatId, messageId, newText, options = {}) {
 			message_id: messageId,
 			...options,
 		});
+		
+		// Also update the history when we edit a message
+		await addMessageToHistory(chatId, newText);
 	} catch (error) {
 		console.error("Failed to edit message:", error);
 	}
@@ -45,7 +96,6 @@ async function deleteMessage(chatId, messageId) {
 async function sendError(chatId, error) {
 	await bot.sendMessage(chatId, `❌ ${JSON.stringify(error)}`);
 }
-
 
 async function getUserProfilePhoto(userId) {
 	try {
@@ -70,5 +120,12 @@ async function getUserProfilePhoto(userId) {
 	}
 }
 
-
-module.exports = { sendThinkingMessage, sendMessage, editMessage, deleteMessage, sendError, getUserProfilePhoto };
+module.exports = { 
+	sendThinkingMessage, 
+	sendMessage, 
+	editMessage, 
+	deleteMessage, 
+	sendError, 
+	getUserProfilePhoto, 
+	addMessageToHistory 
+};
