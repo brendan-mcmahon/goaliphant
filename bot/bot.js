@@ -2,6 +2,7 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const token = process.env.BOT_TOKEN;
 const userRepo = require('./common/userRepository.js');
+const { config } = require('./common/configs.js');
 
 const bot = new TelegramBot(token);
 
@@ -34,11 +35,10 @@ async function sendMessage(chatId, message, options) {
 
 			chatHistory.push(userMsg);
 
-			const MAX_HISTORY_LENGTH = 10;
-			if (chatHistory.length > MAX_HISTORY_LENGTH) {
-				chatHistory.splice(0, chatHistory.length - MAX_HISTORY_LENGTH);
+			if (chatHistory.length > config.MAX_HISTORY_LENGTH) {
+				chatHistory.splice(0, chatHistory.length - config.MAX_HISTORY_LENGTH);
 			}
-			
+
 			await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
 		}
 		

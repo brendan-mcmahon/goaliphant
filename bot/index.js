@@ -20,7 +20,7 @@ const { addNote, showGoalDetails } = require('./handlers/noteHandler.js');
 const { makeGoalRecurring } = require('./handlers/recurringGoalsHandler.js');
 const { handleAIMessage } = require('./handlers/aiHandler');
 const userRepo = require('./common/userRepository.js');
-
+const { config } = require('./common/configs.js');
 exports.handler = async (event) => {
 	const body = JSON.parse(event.body);
 	console.log("body:", body);
@@ -50,9 +50,8 @@ exports.handler = async (event) => {
 
 			chatHistory.push(userMsg);
 
-			const MAX_HISTORY_LENGTH = 10;
-			if (chatHistory.length > MAX_HISTORY_LENGTH) {
-				chatHistory.splice(0, chatHistory.length - MAX_HISTORY_LENGTH);
+			if (chatHistory.length > config.MAX_HISTORY_LENGTH) {
+				chatHistory.splice(0, chatHistory.length - config.MAX_HISTORY_LENGTH);
 			}
 		}
 
