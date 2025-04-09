@@ -82,6 +82,7 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
      - [x] Every time the bot responds to a message, add the message to the user's chat history.
      - [x] Every time the bot sends a message, add the message to the user's chat history.
      - [x] Every time the bot receives a message, add the message to the user's chat history.
+   - [ ] Finish the request reward flow 
 11. **Priority Scoring System**
    - [ ] Something similar to Eisenhower Matrix but with three dimensions
 12. **Goal Notes**

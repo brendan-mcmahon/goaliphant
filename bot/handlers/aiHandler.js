@@ -41,7 +41,6 @@ const availableFunctions = {
 	},
 
 	completeGoal: async (chatId, goalDescription) => {
-		// first, find the goal index with a separate openAI call
 		const goalIndex = await tryMatchGoalByDescription(chatId, goalDescription);
 
 		console.log("completeGoal", chatId, goalIndex);
@@ -128,7 +127,6 @@ const availableFunctions = {
 			return `You only have ${goals.length} goals. Please specify valid goal numbers.`;
 		}
 		
-		// Swap the goals
 		[goals[index1 - 1], goals[index2 - 1]] = [goals[index2 - 1], goals[index1 - 1]];
 		
 		await goalRepo.updateGoals(chatId, goals);
@@ -607,7 +605,7 @@ const tools = [
 					},
 					scheduledTime: {
 						type: "string",
-						description: "When to schedule the goal (e.g., 'tomorrow at 3pm', 'Monday morning')"
+						description: "When to schedule the goal (e.g., 'tomorrow at 3pm', 'Monday morning')" 
 					}
 				},
 				required: ["goalIndex", "scheduledTime"]
@@ -734,12 +732,16 @@ const tools = [
 						type: "string",
 						description: "The name of the reward"
 					},
+					description: {
+						type: "string",
+						description: "The description of the reward"
+					},
 					cost: {
 						type: "string",
 						description: "How many tickets the reward costs"
 					}
 				},
-				required: ["name", "cost"]
+				required: ["name", "cost", "description"]
 			}
 		}
 	},
@@ -899,6 +901,8 @@ When users ask you to perform actions like adding or completing goals, use the a
 Respond naturally as if you're having a conversation, but handle the user's requests efficiently.
 
 Don't ask for confirmation if you believe the user's request is clear and unambiguous.
+
+If you make changes to the user's goals, send an updated list of goals to the user.
 
 If the user sends a message that isn't an explicit request, let them know and ask them to try again.
 
