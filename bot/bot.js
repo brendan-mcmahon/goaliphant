@@ -26,7 +26,7 @@ async function sendMessage(chatId, message, options) {
 		const user = await userRepo.getUser(chatId);	
 		if (user) {
 			const userMsg = {
-				role: "user",
+				role: "assistant",
 				content: message
 			};
 

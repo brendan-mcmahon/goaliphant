@@ -56,7 +56,6 @@ exports.handler = async (event) => {
 			await userRepo.updateUserField(chatId, 'chatHistory', chatHistory);
 		}
 
-
 		if (body.message && body.message.chat && body.message.chat.type === 'group') {
 			console.log("group chat", body.message.chat.id);
 			ticketRecipientId = body.message.from.id;
