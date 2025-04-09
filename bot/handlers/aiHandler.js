@@ -158,7 +158,10 @@ Don't ask for confirmation if you believe the user's request is clear and unambi
 
 If the user sends a message that isn't an explicit request, let them know and ask them to try again.
 
-Don't ask follow up questions.`;
+Don't ask follow up questions.
+
+You are seeing the last 10 messages in the chat history.
+`;
 
 async function handleAIMessage(chatId, userMessage) {
 	try {
