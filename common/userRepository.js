@@ -190,20 +190,3 @@ async function updateUserField(chatId, fieldName, fieldValue) {
 	}
 }
 exports.updateUserField = updateUserField;
-
-async function getChatHistory(chatId) {
-	const params = {
-		TableName: userTable,
-		Key: { ChatId: chatId.toString() },
-		ProjectionExpression: 'ChatHistory',
-	};
-
-	try {
-		const result = await dynamoDb.get(params).promise();
-		return result.Item.ChatHistory;
-	} catch (err) {
-		console.error('Error fetching chat history:', err);
-		throw err;
-	}
-}
-exports.getChatHistory = getChatHistory;

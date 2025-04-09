@@ -166,7 +166,7 @@ You are seeing the last 10 messages in the chat history.
 async function handleAIMessage(chatId, userMessage) {
 	try {
 
-		const chatHistory = await userRepo.getChatHistory(chatId);
+		const chatHistory = (await userRepo.getUser(chatId)).chatHistory;
 
 		const messages = [
 			{
