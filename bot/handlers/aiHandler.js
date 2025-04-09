@@ -16,7 +16,45 @@ async function getChatHistory(chatId) {
   if (!user || !user.chatHistory) {
     return [];
   }
-  return user.chatHistory;
+  
+  // Filter out any unpaired tool messages
+  const history = user.chatHistory;
+  const validatedHistory = [];
+  
+  // First, add the system message if it exists
+  const systemMessage = history.find(msg => msg.role === "system");
+  if (systemMessage) {
+    validatedHistory.push(systemMessage);
+  }
+  
+  // Then add non-tool messages and properly paired tool messages
+  for (let i = 0; i < history.length; i++) {
+    const message = history[i];
+    
+    // Skip system message (already added) and tool messages (will handle separately)
+    if (message.role === "system" || message.role === "tool") {
+      continue;
+    }
+    
+    // Add user and assistant messages
+    validatedHistory.push(message);
+    
+    // If this message has tool_calls, add any corresponding tool responses
+    if (message.tool_calls) {
+      const toolCallIds = message.tool_calls.map(tc => tc.id);
+      
+      // Find and add corresponding tool messages
+      for (let j = i + 1; j < history.length; j++) {
+        if (history[j].role === "tool" && 
+            history[j].tool_call_id && 
+            toolCallIds.includes(history[j].tool_call_id)) {
+          validatedHistory.push(history[j]);
+        }
+      }
+    }
+  }
+  
+  return validatedHistory;
 }
 
 async function addMessageToHistory(chatId, message) {
@@ -198,15 +236,19 @@ Don't ask follow up questions.`;
 
 async function handleAIMessage(chatId, userMessage) {
   try {
+    // Get validated chat history
     let messages = await getChatHistory(chatId);
     
-    if (messages.length === 0) {
-      messages.push({
+    // Add system message if none exists
+    if (!messages.find(msg => msg.role === "system")) {
+      messages.unshift({
         role: "system",
         content: SYSTEM_PROMPT
       });
+      await addMessageToHistory(chatId, messages[0]);
     }
     
+    // Add user message
     const userMsg = {
       role: "user",
       content: userMessage
@@ -214,6 +256,8 @@ async function handleAIMessage(chatId, userMessage) {
     
     messages.push(userMsg);
     await addMessageToHistory(chatId, userMsg);
+    
+    console.log("Sending to OpenAI:", JSON.stringify(messages, null, 2));
     
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -223,16 +267,17 @@ async function handleAIMessage(chatId, userMessage) {
     });
     
     const responseMessage = response.choices[0].message;
-    console.log("first response", responseMessage);
+    console.log("First response:", JSON.stringify(responseMessage, null, 2));
     
+    // Add AI response to history
     await addMessageToHistory(chatId, responseMessage);
     
-    if (responseMessage.tool_calls) {
-      const toolCalls = responseMessage.tool_calls;
-      
-      for (const toolCall of toolCalls) {
+    // Handle tool calls if any
+    if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+      // Process each tool call
+      for (const toolCall of responseMessage.tool_calls) {
         const functionName = toolCall.function.name;
-        console.log("functionName", functionName);
+        console.log("Function called:", functionName);
         const functionToCall = availableFunctions[functionName];
         
         if (functionToCall) {
@@ -244,24 +289,19 @@ async function handleAIMessage(chatId, userMessage) {
             continue;
           }
           
-          const functionHandlers = {
-            listGoals: async () => {
-              return await functionToCall(chatId);
-            },
-            addGoal: async () => {
-              const goalText = functionArgs.goalText;
-              return await functionToCall(chatId, goalText);
-            },
-            completeGoal: async () => {
-              const goalIndex = functionArgs.goalIndex;
-              return await functionToCall(chatId, goalIndex);
-            }
-          };
-
-          const functionResponse = await functionHandlers[functionName]();
+          // Handle different function types
+          let functionResponse;
+          if (functionName === "listGoals") {
+            functionResponse = await functionToCall(chatId);
+          } else if (functionName === "addGoal") {
+            functionResponse = await functionToCall(chatId, functionArgs.goalText);
+          } else if (functionName === "completeGoal") {
+            functionResponse = await functionToCall(chatId, functionArgs.goalIndex);
+          }
           
-          console.log("functionResponse", functionResponse);
+          console.log("Function response:", functionResponse);
           
+          // Create and add tool response message
           const toolResponseMsg = {
             role: "tool",
             tool_call_id: toolCall.id,
@@ -274,6 +314,7 @@ async function handleAIMessage(chatId, userMessage) {
         }
       }
       
+      // Get final response after tool calls
       const secondResponse = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: messages
@@ -284,11 +325,12 @@ async function handleAIMessage(chatId, userMessage) {
       
       await sendMessage(chatId, finalResponseMsg.content);
     } else {
-      console.log("no tool calls");
+      console.log("No tool calls");
       await sendMessage(chatId, responseMessage.content);
     }
   } catch (error) {
     console.error('Error in AI handler:', error);
+    console.error(error.stack);
     await sendMessage(chatId, "Sorry, I encountered an error while processing your message. Please try again later.");
   }
 }
@@ -351,17 +393,30 @@ Always return ONLY a number, nothing else.`
   }
 }
 
-async function clearChatHistory(chatId) {
+// Add a function to reset chat history properly
+async function resetChatHistory(chatId) {
   try {
-    await userRepo.updateUserField(chatId, 'chatHistory', []);
+    // Instead of just clearing, initialize with system message
+    const initialHistory = [{
+      role: "system",
+      content: SYSTEM_PROMPT
+    }];
+    
+    await userRepo.updateUserField(chatId, 'chatHistory', initialHistory);
     return true;
   } catch (error) {
-    console.error('Error clearing chat history:', error);
+    console.error('Error resetting chat history:', error);
     return false;
   }
 }
 
+// Keep original clear function but have it call reset
+async function clearChatHistory(chatId) {
+  return await resetChatHistory(chatId);
+}
+
 module.exports = {
   handleAIMessage,
-  clearChatHistory
+  clearChatHistory,
+  resetChatHistory
 }; 
