@@ -3,6 +3,10 @@ const { sendMessage } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
 const { swapGoals } = require('./swapGoalsHandler.js');
 const { scheduleGoal, unscheduleGoal } = require('./scheduleHandler.js');
+const { listRewards, createReward, redeemReward } = require('./rewardsHandler.js');
+const { addGoals, addHoney } = require('./addGoalsHandler.js');
+const { listPartner } = require('./listHandler.js');
+const { addNote, showGoalDetails } = require('./noteHandler.js');
 const goalRepo = require('../common/goalRepository.js');
 const userRepo = require('../common/userRepository.js');
 const { v4: uuidv4 } = require('uuid');
@@ -120,21 +124,21 @@ const availableFunctions = {
 	},
 	
 	swap: async (chatId, goalIndex1, goalIndex2) => {
-		swapGoals(chatId, goalIndex1, goalIndex2);
+		await swapGoals(chatId, goalIndex1, goalIndex2);
 		return {
 			sendMessage: false,
 		};
 	},
 	
 	schedule: async (chatId, goalIndex, scheduledTime) => {
-		scheduleGoal(chatId, goalIndex, scheduledTime);
+		await scheduleGoal(chatId, goalIndex, scheduledTime);
 		return {
 			sendMessage: false,
 		};
 	},
 	
 	unschedule: async (chatId, goalIndex) => {
-		unscheduleGoal(chatId, goalIndex);
+		await unscheduleGoal(chatId, goalIndex);
 		return {
 			sendMessage: false,
 		};
@@ -214,20 +218,10 @@ const availableFunctions = {
 	},
 	
 	rewards: async (chatId) => {
-		console.log("rewards", chatId);
-		// This is not how this works. There is a separate rewards table.
-		// But in the end, we don't necessarily want to get it from there, we really just need to trigger the same thing 
-		const user = await userRepo.getUser(chatId);
-		
-		if (!user.rewards || user.rewards.length === 0) {
-			return "You don't have any rewards yet. Create one with the createreward command!";
-		}
-
-		// Call rewardsHandler.listRewards instead of sending a message to the user.
-		
-		return user.rewards.map((reward, index) =>
-			`${index + 1}. ${reward.name} (${reward.cost} tickets)`
-		).join('\n');
+		await listRewards(chatId);
+		return {
+			sendMessage: false,
+		};
 	},
 	
 	createreward: async (chatId, name, cost) => {
@@ -251,111 +245,38 @@ const availableFunctions = {
 	},
 	
 	redeem: async (chatId, rewardIndex) => {
-		console.log("redeem", chatId, rewardIndex);
-		const index = parseInt(rewardIndex);
-		
-		if (isNaN(index) || index < 1) {
-			return "Please provide a valid reward number.";
-		}
-		
-		const user = await userRepo.getUser(chatId);
-		
-		if (!user.rewards || index > user.rewards.length) {
-			return `You only have ${user.rewards ? user.rewards.length : 0} rewards. Please specify a valid reward number.`;
-		}
-		
-		const reward = user.rewards[index - 1];
-		
-		if ((user.tickets || 0) < reward.cost) {
-			return `You don't have enough tickets to redeem "${reward.name}". You have ${user.tickets || 0} tickets, but need ${reward.cost}.`;
-		}
-		
-		await userRepo.useTickets(chatId, reward.cost);
-		
-		return `Redeemed reward: ${reward.name}! You have ${(user.tickets || 0) - reward.cost} tickets remaining.`;
+		await redeemReward(chatId, rewardIndex);
+		return {
+			sendMessage: false,
+		};
 	},
 	
-	honey: async (chatId, message) => {
-		console.log("honey", chatId, message);
-		const user = await userRepo.getUser(chatId);
-		
-		if (!user.partner) {
-			return "You don't have a partner set up yet. Use the partner command to set one up!";
-		}
-		
-		await sendMessage(user.partner, `💌 Message from your partner: ${message}`);
-		
-		return "Message sent to your partner! 💕";
+	addHoney: async (chatId, message) => {
+		await addHoney(chatId, message);
+		return {
+			sendMessage: false,
+		};
 	},
 	
 	partner: async (chatId, partnerId) => {
-		console.log("partner", chatId, partnerId);
-		
-		if (!partnerId || partnerId.trim() === '') {
-			const user = await userRepo.getUser(chatId);
-			return user.partner ? 
-				`Your partner ID is: ${user.partner}` : 
-				"You don't have a partner set up yet. Use 'partner [ID]' to set one up!";
-		}
-		
-		await userRepo.setPartner(chatId, partnerId);
-		
-		return `Partner set to ID: ${partnerId}. They will need to set you as their partner too!`;
+		await listPartner(chatId);
+		return {
+			sendMessage: false,
+		};
 	},
 	
 	note: async (chatId, goalIndex, noteText) => {
-		console.log("note", chatId, goalIndex, noteText);
-		const index = parseInt(goalIndex);
-		
-		if (isNaN(index) || index < 1) {
-			return "Please provide a valid goal number.";
-		}
-		
-		let goals = await goalRepo.getGoals(chatId);
-		
-		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
-		}
-		
-		goals[index - 1].note = noteText;
-		
-		await goalRepo.updateGoals(chatId, goals);
-		
-		return `Added note to goal "${goals[index - 1].text}": ${noteText}`;
+		await addNote(chatId, goalIndex, noteText);
+		return {
+			sendMessage: false,
+		};
 	},
 	
 	details: async (chatId, goalIndex) => {
-		console.log("details", chatId, goalIndex);
-		const index = parseInt(goalIndex);
-		
-		if (isNaN(index) || index < 1) {
-			return "Please provide a valid goal number.";
-		}
-		
-		let goals = await goalRepo.getGoals(chatId);
-		
-		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
-		}
-		
-		const goal = goals[index - 1];
-		let details = `Goal ${index}: ${goal.text}\n`;
-		details += `Status: ${goal.completed ? 'Completed ✅' : 'Not completed ⬜'}\n`;
-		details += `Created: ${new Date(goal.created).toLocaleString()}\n`;
-		
-		if (goal.scheduledTime) {
-			details += `Scheduled for: ${goal.scheduledTime}\n`;
-		}
-		
-		if (goal.recurring) {
-			details += `Recurring: ${goal.recurrencePattern}\n`;
-		}
-		
-		if (goal.note) {
-			details += `Note: ${goal.note}\n`;
-		}
-		
-		return details;
+		await showGoalDetails(chatId, goalIndex);
+		return {
+			sendMessage: false,
+		};
 	},
 	
 	dashboard: async (chatId) => {
@@ -733,17 +654,17 @@ const tools = [
 	{
 		type: "function",
 		function: {
-			name: "honey",
-			description: "Send a message to your accountability partner",
+			name: "addHoney",
+			description: "Add a goal to your partner's list",
 			parameters: {
 				type: "object",
 				properties: {
-					message: {
+					goalText: {
 						type: "string",
-						description: "The message to send to your partner"
+						description: "The text of the goal to add"
 					}
 				},
-				required: ["message"]
+				required: ["goalText"]
 			}
 		}
 	},
@@ -874,9 +795,9 @@ If you make changes to the user's goals, send an updated list of goals to the us
 
 If the user sends a message that isn't an explicit request, let them know and ask them to try again.
 
-Don't ask follow up questions.
+Feel free to ask follow-up questions.
 
-You are seeing the last 10 messages in the chat history.
+You are only seeing (up to) the last 20 messages in the chat history.
 `;
 
 async function handleAIMessage(chatId, userMessage) {
