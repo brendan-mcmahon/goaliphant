@@ -44,3 +44,18 @@ async function scheduleGoal(chatId, args) {
 }
 
 exports.scheduleGoal = scheduleGoal;
+
+async function unscheduleGoal(chatId, goalIndex) {
+	const goals = await getGoals(chatId);
+	const goal = goals[goalIndex];
+	if (!goal) {
+		await sendMessage(chatId, "Invalid goal index.");
+		return;
+	}
+
+	goal.scheduled = null;
+	await updateGoals(chatId, goals);
+	await sendMessage(chatId, `Goal unscheduled: ${goal.text}`);
+}
+
+exports.unscheduleGoal = unscheduleGoal;

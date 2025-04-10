@@ -1,6 +1,8 @@
 const { OpenAI } = require('openai');
 const { sendMessage } = require('../bot.js');
-
+const { listGoals } = require('./listHandler.js');
+const { swapGoals } = require('./swapGoalsHandler.js');
+const { scheduleGoal, unscheduleGoal } = require('./scheduleHandler.js');
 const goalRepo = require('../common/goalRepository.js');
 const userRepo = require('../common/userRepository.js');
 const { v4: uuidv4 } = require('uuid');
@@ -9,14 +11,18 @@ const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY
 });
 
+// function response definition:
+// {
+// 	sendMessage: true,
+// 	message: "Hello, world!"
+// }
+
 const availableFunctions = {
-	// TODO: Let's just call listHandler and don't send the response from the bot.
 	listGoals: async (chatId) => {
-		console.log("listGoals", chatId);
-		const goals = await goalRepo.getGoals(chatId);
-		return goals.map((goal, index) =>
-			`${index + 1}. ${goal.completed ? '✅' : '⬜'} ${goal.text}`
-		).join('\n');
+		listGoals(chatId);
+		return {
+			sendMessage: false,
+		};
 	},
 
 	addGoal: async (chatId, goalText) => {
@@ -113,73 +119,25 @@ const availableFunctions = {
 		return `Goal updated: ${goalText}`;
 	},
 	
-	// Update to use the handler. Do not respond.
 	swap: async (chatId, goalIndex1, goalIndex2) => {
-		console.log("swap", chatId, goalIndex1, goalIndex2);
-		const index1 = parseInt(goalIndex1);
-		const index2 = parseInt(goalIndex2);
-		
-		if (isNaN(index1) || isNaN(index2) || index1 < 1 || index2 < 1) {
-			return "Please provide valid goal numbers.";
-		}
-		
-		let goals = await goalRepo.getGoals(chatId);
-		
-		if (index1 > goals.length || index2 > goals.length) {
-			return `You only have ${goals.length} goals. Please specify valid goal numbers.`;
-		}
-		
-		[goals[index1 - 1], goals[index2 - 1]] = [goals[index2 - 1], goals[index1 - 1]];
-		
-		await goalRepo.updateGoals(chatId, goals);
-		
-		return `Swapped goals:\n1. ${goals[index1 - 1].text}\n2. ${goals[index2 - 1].text}`;
+		swapGoals(chatId, goalIndex1, goalIndex2);
+		return {
+			sendMessage: false,
+		};
 	},
 	
 	schedule: async (chatId, goalIndex, scheduledTime) => {
-		console.log("schedule", chatId, goalIndex, scheduledTime);
-		const index = parseInt(goalIndex);
-		
-		if (isNaN(index) || index < 1) {
-			return "Please provide a valid goal number.";
-		}
-		
-		let goals = await goalRepo.getGoals(chatId);
-		
-		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
-		}
-		
-		goals[index - 1].scheduledTime = scheduledTime;
-		
-		await goalRepo.updateGoals(chatId, goals);
-		
-		return `Scheduled goal "${goals[index - 1].text}" for ${scheduledTime}`;
+		scheduleGoal(chatId, goalIndex, scheduledTime);
+		return {
+			sendMessage: false,
+		};
 	},
 	
 	unschedule: async (chatId, goalIndex) => {
-		console.log("unschedule", chatId, goalIndex);
-		const index = parseInt(goalIndex);
-		
-		if (isNaN(index) || index < 1) {
-			return "Please provide a valid goal number.";
-		}
-		
-		let goals = await goalRepo.getGoals(chatId);
-		
-		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
-		}
-		
-		if (!goals[index - 1].scheduledTime) {
-			return `Goal "${goals[index - 1].text}" is not scheduled.`;
-		}
-		
-		delete goals[index - 1].scheduledTime;
-		
-		await goalRepo.updateGoals(chatId, goals);
-		
-		return `Removed schedule from goal: ${goals[index - 1].text}`;
+		unscheduleGoal(chatId, goalIndex);
+		return {
+			sendMessage: false,
+		};
 	},
 	
 	recurring: async (chatId, goalIndex, recurrencePattern) => {
@@ -484,8 +442,7 @@ Thanks for using Goaliphant! 🐘
 	requestreward: async (chatId, rewardDescription) => {
 		console.log("requestreward", chatId, rewardDescription);
 		
-		// This would typically send a notification to an admin or create a pending request
-		// For now, we'll just acknowledge the request
+		// TODO: Implement 
 		
 		return `Your reward request "${rewardDescription}" has been submitted for review. We'll notify you when it's available!`;
 	}
@@ -1025,6 +982,9 @@ async function handleAIMessage(chatId, userMessage) {
 			}
 
 			// Is there a way to avoid sending a second message if we don't need to? (e.g. if the tool call is just to list goals?)
+			// Just return a flag that says whether we want the AI to send a message to the user or not.
+
+
 
 			const secondResponse = await openai.chat.completions.create({
 				model: "gpt-4o-mini",

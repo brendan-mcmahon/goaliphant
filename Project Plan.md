@@ -109,6 +109,7 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [ ] New Bot command `/setticketvalue {#}` that sets the ticket value for a goal.
    - [ ] New Bot command `/editticketvalue {#}` that edits the ticket value for a goal.
    - [ ] Goals without an explicit ticket value should have a default value of 1.
+17. **
 ---
 
 ## Technical Requirements
