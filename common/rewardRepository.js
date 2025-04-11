@@ -88,6 +88,7 @@ exports.insertReward = insertReward;
 
 const addReward = async (chatId, reward) => {
 	const rewardId = uuidv4();
+	console.log("adding reward", chatId, reward);
 	const params = {
 		TableName: rewardsTable,
 		Item: {
