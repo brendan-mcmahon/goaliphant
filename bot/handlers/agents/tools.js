@@ -16,11 +16,16 @@ const tools = [
 		type: "function",
 		function: {
 			name: "listGoals",
-			description: "Get the list of today's goals for the user",
+			description: "Get the list of goals for the user with optional filtering",
 			parameters: {
 				type: "object",
-				// TODO: add options for "todo," "all," "scheduled", etc...
-				properties: {},
+				properties: {
+					filter: {
+						type: "string",
+						description: "Filter type: 'todo' (incomplete goals only), 'all' (all goals), 'done' (completed goals), 'scheduled' (future goals), or 'today' (default - today's goals)",
+						enum: ["todo", "all", "done", "scheduled", "today"]
+					}
+				},
 				required: []
 			}
 		}
@@ -368,18 +373,6 @@ const tools = [
 	{
 		type: "function",
 		function: {
-			name: "dashboard",
-			description: "Get an overview of the user's goals and rewards",
-			parameters: {
-				type: "object",
-				properties: {},
-				required: []
-			}
-		}
-	},
-	{
-		type: "function",
-		function: {
 			name: "requestreward",
 			description: "Request a new reward to be added to the system",
 			parameters: {
@@ -397,8 +390,8 @@ const tools = [
 ];
 
 const availableFunctions = {
-	listGoals: async (chatId) => {
-		listGoals(chatId);
+	listGoals: async (chatId, args) => {
+		listGoals(chatId, args?.filter);
 		return {
 			sendMessage: false,
 		};
@@ -659,40 +652,7 @@ const availableFunctions = {
 			sendMessage: false,
 		};
 	},
-	
-	dashboard: async (chatId) => {
-		console.log("dashboard", chatId);
-		const goals = await goalRepo.getGoals(chatId);
-		const user = await userRepo.getUser(chatId);
-		
-		let dashboard = "📊 Your Dashboard 📊\n\n";
-		
-		// Goals summary
-		const completedGoals = goals.filter(g => g.completed).length;
-		dashboard += `Goals: ${completedGoals}/${goals.length} completed\n`;
-		
-		// Tickets
-		dashboard += `Tickets: ${user.tickets || 0}\n`;
-		
-		// Recent goals
-		if (goals.length > 0) {
-			dashboard += "\nRecent Goals:\n";
-			goals.slice(0, 3).forEach((goal, index) => {
-				dashboard += `${index + 1}. ${goal.completed ? '✅' : '⬜'} ${goal.text}\n`;
-			});
-		}
-		
-		// Rewards
-		if (user.rewards && user.rewards.length > 0) {
-			dashboard += "\nAvailable Rewards:\n";
-			user.rewards.slice(0, 3).forEach((reward, index) => {
-				dashboard += `${index + 1}. ${reward.name} (${reward.cost} tickets)\n`;
-			});
-		}
-		
-		return dashboard;
-	},
-		
+			
 	requestreward: async (chatId, args) => {
 		console.log("requestreward", chatId, args.rewardDescription);
 		
