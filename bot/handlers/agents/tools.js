@@ -259,9 +259,9 @@ const tools = [
 			parameters: {
 				type: "object",
 				properties: {
-					name: {
+					title: {
 						type: "string",
-						description: "The name of the reward"
+						description: "The title of the reward"
 					},
 					description: {
 						type: "string",
@@ -272,7 +272,7 @@ const tools = [
 						description: "How many tickets the reward costs"
 					}
 				},
-				required: ["name", "cost", "description"]
+				required: ["title", "cost", "description"]
 			}
 		}
 	},
@@ -609,7 +609,8 @@ const availableFunctions = {
 		
 		const newReward = {
 			id: uuidv4(),
-			name: args.name,
+			title: args.title,
+			description: args.description,
 			cost: rewardCost,
 			created: new Date().toISOString()
 		};
