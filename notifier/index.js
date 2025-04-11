@@ -8,8 +8,8 @@ const bot = new TelegramBot(process.env.BOT_TOKEN);
 async function sendNightlyPrompt(chatId) {
 	try {
 		const goals = await getGoals(chatId);
-		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
-		const message = `Good evening! Here's what you accomplished today:\n${goalsList || 'No goals set for today.'}`;
+		const goalsList = goals.filter(g => g.completed).map((g, i) => `${i + 1}. ✅${g.text}`).join('\n');
+		const message = `Good evening! Here's what you accomplished today:\n${goalsList || 'Nothing :('}`;
 		await bot.sendMessage(chatId, message);
 	} catch (error) {
 		console.error('Error sending nightly prompt:', error);
