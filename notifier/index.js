@@ -2,6 +2,7 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const { getChatIds } = require('./common/userRepository');
 const { getGoals } = require('./common/goalRepository');
+const userRepo = require('./common/userRepository');
 
 const bot = new TelegramBot(process.env.BOT_TOKEN);
 
@@ -11,6 +12,12 @@ async function sendNightlyPrompt(chatId) {
 		const goalsList = goals.filter(g => g.completed).map((g, i) => `${i + 1}. ✅${g.text}`).join('\n');
 		const message = `Good evening! Here's what you accomplished today:\n${goalsList || 'Nothing :('}`;
 		await bot.sendMessage(chatId, message);
+
+		// Here's where we check to see if they have 3 or more completed goals. If so, we add a bonus ticket.
+		if (goals.filter(g => g.completed).length >= 3) {
+			await bot.sendMessage(chatId, 'You got a bonus ticket for completing 3 or more goals today!');
+			await userRepo.addTicket(chatId, 1);
+		}
 	} catch (error) {
 		console.error('Error sending nightly prompt:', error);
 	}
