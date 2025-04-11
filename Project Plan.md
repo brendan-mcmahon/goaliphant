@@ -110,7 +110,7 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [ ] New Bot command `/editticketvalue {#}` that edits the ticket value for a goal.
    - [ ] Goals without an explicit ticket value should have a default value of 1.
 17. **Bonus Tickets**
-   - [ ] At the end of each day, check the user's completed goals. If they have 3 or more, add 1 bonus ticket to their count and let them know they got it.
+   - [x] At the end of each day, check the user's completed goals. If they have 3 or more, add 1 bonus ticket to their count and let them know they got it.
 ---
 
 ## Technical Requirements

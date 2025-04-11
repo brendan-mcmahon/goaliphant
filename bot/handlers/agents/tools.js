@@ -7,6 +7,7 @@ const { listPartner } = require('../listHandler.js');
 const { addNote, showGoalDetails } = require('../noteHandler.js');
 const goalRepo = require('../../common/goalRepository.js');
 const userRepo = require('../../common/userRepository.js');
+const rewardRepo = require('../../common/rewardRepository.js');
 
 const { v4: uuidv4 } = require('uuid');
 
@@ -613,7 +614,7 @@ const availableFunctions = {
 			created: new Date().toISOString()
 		};
 		
-		await userRepo.addReward(chatId, newReward);
+		await rewardRepo.addReward(chatId, newReward);
 		
 		return `Created new reward: ${args.name} (${args.cost} tickets)`;
 	},
