@@ -601,6 +601,9 @@ const availableFunctions = {
 	
 	createreward: async (chatId, args) => {
 		console.log("createreward", chatId, args.name, args.cost);
+		const user = await userRepo.getUser(chatId);
+		const partnerId = user.PartnerId;
+
 		const rewardCost = parseInt(args.cost);
 		
 		if (isNaN(rewardCost) || rewardCost < 1) {
@@ -615,7 +618,9 @@ const availableFunctions = {
 			created: new Date().toISOString()
 		};
 		
-		await rewardRepo.addReward(chatId, newReward);
+		await rewardRepo.addReward(partnerId, newReward);
+
+		// sendMessage(partnerId, `Your partner ${user.name} has created a new reward: ${args.title} (${args.cost} tickets)`);
 		
 		return getResponseMessage(`Created new reward: ${args.name} (${args.cost} tickets)`);
 	},
