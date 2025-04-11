@@ -86,7 +86,7 @@ async function handleAIMessage(chatId, userMessage) {
 						role: "tool",
 						tool_call_id: toolCall.id,
 						name: functionName,
-						content: functionResponse
+						content: functionResponse.message
 					});
 				}
 			}

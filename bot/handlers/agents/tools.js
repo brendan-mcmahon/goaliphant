@@ -407,7 +407,7 @@ const availableFunctions = {
 	addGoal: async (chatId, args) => {
 		console.log("addGoal", chatId, args.goalText);
 		if (!args.goalText || args.goalText.trim() === '') {
-			return "Goal text cannot be empty.";
+			return getResponseMessage("Goal text cannot be empty.");
 		}
 
 		let goals = await goalRepo.getGoals(chatId);
@@ -423,7 +423,7 @@ const availableFunctions = {
 
 		await goalRepo.updateGoals(chatId, goals);
 
-		return `Goal added: ${args.goalText}`;
+		return getResponseMessage(`Goal added: ${args.goalText}`);
 	},
 
 	completeGoal: async (chatId, args) => {
@@ -432,19 +432,19 @@ const availableFunctions = {
 		console.log("completeGoal", chatId, args.goalDescription);
 		const index = parseInt(goalIndex);
 		if (isNaN(index) || index < 1) {
-			return "Please provide a valid goal number.";
+			return getResponseMessage("Please provide a valid goal number.");
 		}
 
 		let goals = await goalRepo.getGoals(chatId);
 
 		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
+			return getResponseMessage(`You only have ${goals.length} goals. Please specify a valid goal number.`);
 		}
 
 		const goal = goals[index - 1];
 
 		if (goal.completed) {
-			return `Goal "${goal.text}" is already completed.`;
+			return getResponseMessage(`Goal "${goal.text}" is already completed.`);
 		}
 
 		goal.completed = true;
@@ -453,20 +453,20 @@ const availableFunctions = {
 
 		await userRepo.addTicket(chatId);
 
-		return `Completed goal: ${goal.text}\nYou earned 1 ticket!`;
+		return getResponseMessage(`Completed goal: ${goal.text}\nYou earned 1 ticket!`);
 	},
 
 	deleteGoal: async (chatId, args) => {
 		console.log("deleteGoal", chatId, args.goalIndex);
 		const index = parseInt(args.goalIndex);
 		if (isNaN(index) || index < 1) {
-			return "Please provide a valid goal number.";
+			return getResponseMessage("Please provide a valid goal number.");
 		}
 
 		let goals = await goalRepo.getGoals(chatId);
 
 		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
+			return getResponseMessage(`You only have ${goals.length} goals. Please specify a valid goal number.`);
 		}
 
 		goals.splice(index - 1, 1);
@@ -475,27 +475,27 @@ const availableFunctions = {
 
 		console.log("Goal deleted: ", goals[index - 1]);
 
-		return `Goal deleted:`; // ${goals[index - 1].text}`;
+		return getResponseMessage(`Goal deleted:`); // ${goals[index - 1].text}`;
 	},
 
 	editGoal: async (chatId, args) => {
 		console.log("editGoal", chatId, args.goalIndex, args.goalText);
 		const index = parseInt(args.goalIndex);
 		if (isNaN(index) || index < 1) {
-			return "Please provide a valid goal number.";
+			return getResponseMessage("Please provide a valid goal number.");
 		}
 
 		let goals = await goalRepo.getGoals(chatId);
 
 		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
+			return getResponseMessage(`You only have ${goals.length} goals. Please specify a valid goal number.`);
 		}
 
 		goals[index - 1].text = args.goalText;
 
 		await goalRepo.updateGoals(chatId, goals);
 
-		return `Goal updated: ${args.goalText}`;
+		return getResponseMessage(`Goal updated: ${args.goalText}`);
 	},
 	
 	swap: async (chatId, args) => {
@@ -524,13 +524,13 @@ const availableFunctions = {
 		const index = parseInt(args.goalIndex);
 		
 		if (isNaN(index) || index < 1) {
-				return "Please provide a valid goal number.";
+			return getResponseMessage("Please provide a valid goal number.");
 		}
 		
 		let goals = await goalRepo.getGoals(chatId);
 		
 		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
+			return getResponseMessage(`You only have ${goals.length} goals. Please specify a valid goal number.`);
 		}
 		
 		goals[index - 1].recurring = true;
@@ -538,7 +538,7 @@ const availableFunctions = {
 		
 		await goalRepo.updateGoals(chatId, goals);
 		
-		return `Set goal "${goals[index - 1].text}" to recur ${args.recurrencePattern}`;
+		return getResponseMessage(`Set goal "${goals[index - 1].text}" to recur ${args.recurrencePattern}`);
 	},
 	
 	unrecurring: async (chatId, args) => {
@@ -546,17 +546,17 @@ const availableFunctions = {
 		const index = parseInt(args.goalIndex);
 		
 		if (isNaN(index) || index < 1) {
-			return "Please provide a valid goal number.";
+			return getResponseMessage("Please provide a valid goal number.");
 		}
 		
 		let goals = await goalRepo.getGoals(chatId);
 		
 		if (index > goals.length) {
-			return `You only have ${goals.length} goals. Please specify a valid goal number.`;
+			return getResponseMessage(`You only have ${goals.length} goals. Please specify a valid goal number.`);
 		}
 		
 		if (!goals[index - 1].recurring) {
-			return `Goal "${goals[index - 1].text}" is not recurring.`;
+			return getResponseMessage(`Goal "${goals[index - 1].text}" is not recurring.`);
 		}
 		
 		goals[index - 1].recurring = false;
@@ -564,13 +564,13 @@ const availableFunctions = {
 		
 		await goalRepo.updateGoals(chatId, goals);
 		
-		return `Removed recurrence from goal: ${goals[index - 1].text}`;
+		return getResponseMessage(`Removed recurrence from goal: ${goals[index - 1].text}`);
 	},
 	
 	ticketvalue: async (chatId) => {
 			console.log("ticketvalue", chatId);
 		const user = await userRepo.getUser(chatId);
-		return `The current ticket value is ${user.ticketValue || 1} points.`;
+		return getResponseMessage(`The current ticket value is ${user.ticketValue || 1} points.`);
 	},
 	
 	setticketvalue: async (chatId, args) => {
@@ -578,18 +578,18 @@ const availableFunctions = {
 		const ticketValue = parseInt(args.value);
 		
 		if (isNaN(ticketValue) || ticketValue < 1) {
-			return "Please provide a valid ticket value (must be a positive number).";
+			return getResponseMessage("Please provide a valid ticket value (must be a positive number).");
 		}
 		
 		await userRepo.setTicketValue(chatId, ticketValue);
 		
-		return `Ticket value set to ${ticketValue} points.`;
+		return getResponseMessage(`Ticket value set to ${ticketValue} points.`);
 	},
 	
 	wallet: async (chatId) => {
 		console.log("wallet", chatId);
 		const user = await userRepo.getUser(chatId);
-		return `You have ${user.TicketWallet || 0} tickets in your wallet.`;
+		return getResponseMessage(`You have ${user.TicketWallet || 0} tickets in your wallet.`);
 	},
 	
 	rewards: async (chatId) => {
@@ -604,7 +604,7 @@ const availableFunctions = {
 		const rewardCost = parseInt(args.cost);
 		
 		if (isNaN(rewardCost) || rewardCost < 1) {
-			return "Please provide a valid cost (must be a positive number).";
+			return getResponseMessage("Please provide a valid cost (must be a positive number).");
 		}
 		
 		const newReward = {
@@ -616,7 +616,7 @@ const availableFunctions = {
 		
 		await rewardRepo.addReward(chatId, newReward);
 		
-		return `Created new reward: ${args.name} (${args.cost} tickets)`;
+		return getResponseMessage(`Created new reward: ${args.name} (${args.cost} tickets)`);
 	},
 	
 	redeem: async (chatId, args) => {
@@ -692,7 +692,7 @@ const availableFunctions = {
 		
 		// TODO: Implement 
 		
-		return `Your reward request "${args.rewardDescription}" has been submitted for review. We'll notify you when it's available!`;
+		return getResponseMessage(`Your reward request "${args.rewardDescription}" has been submitted for review. We'll notify you when it's available!`);
 	}
 };
 
@@ -753,5 +753,12 @@ Always return ONLY a number, nothing else.`
 		return "-1"; // Error case
 	}
 }
+
+const getResponseMessage = (message) => {
+	return {
+		sendMessage: true,
+		message: message
+	};
+};	
 
 module.exports = { tools, availableFunctions };
