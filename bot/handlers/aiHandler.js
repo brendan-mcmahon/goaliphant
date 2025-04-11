@@ -32,14 +32,20 @@ You are only seeing (up to) the last 20 messages in the chat history.
 async function handleAIMessage(chatId, userMessage) {
 	try {
 
-		const chatHistory = (await userRepo.getUser(chatId)).chatHistory;
+		const user = await userRepo.getUser(chatId);
+		const partnerId = user.PartnerId;
+		const partner = await userRepo.getUser(partnerId);
 
 		const messages = [
 			{
 				role: "system",
 				content: SYSTEM_PROMPT
 			},
-			...chatHistory,
+			{
+				role: "system",
+				content: `This user's partner is ${partner.name}.`
+			},
+			...user.chatHistory,
 			{
 				role: "user",
 				content: userMessage
