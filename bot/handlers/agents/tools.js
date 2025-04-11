@@ -620,7 +620,7 @@ const availableFunctions = {
 		
 		await rewardRepo.addReward(partnerId, newReward);
 
-		// sendMessage(partnerId, `Your partner ${user.name} has created a new reward: ${args.title} (${args.cost} tickets)`);
+		sendMessage(partnerId, `Your partner ${user.name} has created a new reward: ${args.title} (${args.cost} tickets)`);
 		
 		return getResponseMessage(`Created new reward: ${args.name} (${args.cost} tickets)`);
 	},
