@@ -16,7 +16,6 @@ async function listGoals(chatId, args) {
 		let filteredGoals = goals;
 		let messagePrefix = '';
 
-		// Filter based on command arguments
 		switch (filter) {
 			case 'all':
 				console.log("listing all goals");
@@ -28,7 +27,7 @@ async function listGoals(chatId, args) {
 				filteredGoals = goals.filter(g => !g.completed);
 				filteredGoals = filteredGoals.filter(g => 
 					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduled)) ||
-					(g.isRecurring && shouldShowRecurringGoalToday(g))
+					(g.recurring && shouldShowRecurringGoalToday(g))
 				);
 				messagePrefix = 'To-do goals:';
 				break;
@@ -53,7 +52,7 @@ async function listGoals(chatId, args) {
 				console.log("listing today's goals");
 				filteredGoals = goals.filter(g => 
 					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduled)) ||
-					(g.isRecurring && shouldShowRecurringGoalToday(g))
+					(g.recurring && shouldShowRecurringGoalToday(g))
 				);
 				messagePrefix = 'Today\'s goals:';
 		}
@@ -61,13 +60,11 @@ async function listGoals(chatId, args) {
 		const goalsList = filteredGoals.map((g, i) => { 
 			let goalText = g.completed ? '✅' : '⬜';
 			
-			// Add scheduled indicator if applicable
 			if (g.scheduled) {
 				goalText = `${goalText} 🗓️ ${g.scheduled}`;
 			}
 			
-			// Add recurring indicator if applicable
-			if (g.isRecurring) {
+			if (g.recurring) {
 				goalText = `${goalText} 🔄`;
 			}
 			

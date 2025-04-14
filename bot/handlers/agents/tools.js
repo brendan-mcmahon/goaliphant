@@ -37,11 +37,36 @@ const tools = [
 			description: "Add a new goal for the user",
 			parameters: {
 				type: "object",
-				// TODO: add options for "schedule," "recurring," "note," etc...
 				properties: {
 					goalText: {
 						type: "string",
 						description: "The text of the goal to add"
+					},
+					isRecurring: {
+						type: "boolean",
+						description: "If the goal is recurring"
+					},
+					frequency: {
+						type: "string",
+						description: "If the goal is recurring, indicates whether the recurrence is weekly (W) or monthly (M)"
+					},
+					interval: {
+						type: "string",
+						description: "If the goal is recurring, the interval for the recurrence pattern. 1 for every period, 2 for every other period, 3 for every third, etc."
+					},
+					daySpec: {
+						type: "string",
+					},
+					isScheduled: {
+						type: "boolean",
+						description: "If the goal is scheduled, this will be true"
+					},
+					scheduledDate: {
+						type: "string",
+					},
+					note: {
+						type: "string",
+						description: "If the goal has a note, this will be the note"
 					}
 				},
 				required: ["goalText"]
@@ -398,7 +423,7 @@ const availableFunctions = {
 	},
 
 	addGoal: async (chatId, args) => {
-		console.log("addGoal", chatId, args.goalText);
+		console.log("addGoal", chatId, args);
 		if (!args.goalText || args.goalText.trim() === '') {
 			return getResponseMessage("Goal text cannot be empty.");
 		}
@@ -412,11 +437,39 @@ const availableFunctions = {
 			created: new Date().toISOString()
 		};
 
+		if (args.isScheduled) {
+			newGoal.scheduled = true;
+			if (args.scheduledDate) {
+				newGoal.scheduledDate = args.scheduledDate;
+			}
+		}
+
+		if (args.note) {
+			newGoal.note = args.note;
+		}
+
+		
+		if (args.isRecurring && args.frequency && args.interval && args.daySpec) {
+			newGoal.recurring = true;
+			newGoal.recurrencePattern = `${args.frequency}:${args.interval}:${args.daySpec}`;
+		}
+
 		goals.push(newGoal);
 
 		await goalRepo.updateGoals(chatId, goals);
 
-		return getResponseMessage(`Goal added: ${args.goalText}`);
+		let responseMessage = `Goal added: ${args.goalText}`;
+		
+		if (args.isScheduled && args.scheduledDate) {
+			responseMessage += `\nScheduled for: ${args.scheduledDate}`;
+		}
+		
+		if (args.note) {
+			responseMessage += `\nNote: ${args.note}`;
+		}
+
+
+		return getResponseMessage(responseMessage);
 	},
 
 	completeGoal: async (chatId, args) => {

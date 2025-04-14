@@ -3,6 +3,34 @@ const { getUser } = require('../common/userRepository.js');
 const { listGoals } = require('./listHandler.js');
 const { sendMessage, sendError } = require('../bot.js');
 
+async function addGoal(goalText, chatId, options = {}) {
+	try {
+		const user = await getUser(chatId);
+		const partnerId = user.PartnerId;
+
+		const newGoal = {
+			text: goalText,
+			completed: false,
+			createdAt: new Date().toISOString()
+		};
+
+		if (options.schedule) {
+			newGoal.scheduled = options.schedule;
+		}
+
+		if (options.recurring) {
+			newGoal.recurring = true;
+			newGoal.recurrencePattern = options.recurrencePattern;
+		}
+
+		await saveGoalsAndList(newGoal, chatId, partnerId);
+	} catch (error) {
+		console.error('Error adding goal:', error);
+		await sendError(chatId, error);
+	}
+}
+exports.addGoal = addGoal;
+
 async function addGoals(goalsText, chatId) {
 	try {
 		if (!goalsText || goalsText.trim() === '') {

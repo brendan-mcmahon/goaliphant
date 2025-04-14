@@ -1,91 +1,133 @@
-/**
- * Utility functions for working with cron expressions
- */
+// FREQ:INTERVAL:DAY_SPEC
+// • FREQ – indicates whether the recurrence is weekly (W) or monthly (M).
+// • INTERVAL – is a positive integer: 1 for every period, 2 for every other period, 3 for every third, etc.
+// • DAY_SPEC – identifies the day. For weekly patterns, this might be one or more weekdays (or a range such as "Mon-Fri"). For monthly patterns, DAY_SPEC can be either:
+//   – A simple number (e.g. "5" for the 5th day of the month)
+//   – Or an ordinal weekday in the form "<ordinal><Weekday>" where the ordinal comes first. For instance, "2Wed" represents "the second Wednesday of the month."
 
-/**
- * Determines if a cron expression matches the current date (ignoring time)
- * @param {string} cronExpression - Cron expression in format "* * day month weekday"
- * @param {Date} dateToCheck - Date to check against (defaults to today)
- * @returns {boolean} - Whether the cron expression matches the date
- */
-function isCronMatchingDate(cronExpression, dateToCheck = new Date()) {
-    if (!cronExpression) return false;
-    
-    // Parse the cron expression
-    const parts = cronExpression.trim().split(/\s+/);
-    if (parts.length < 5) return false;
-    
-    // We only care about day, month, weekday for daily goals
-    // Ignore minute and hour parts (index 0 and 1)
-    const [, , dayOfMonth, month, dayOfWeek] = parts;
-    
-    // Get date components
-    const currentDayOfMonth = dateToCheck.getDate();     // 1-31
-    const currentMonth = dateToCheck.getMonth() + 1;     // 1-12
-    const currentDayOfWeek = dateToCheck.getDay();       // 0-6 (Sunday = 0)
-    
-    // For daily recurring goals, we only check date parts
-    if (!matchesCronPart(dayOfMonth, currentDayOfMonth)) return false;
-    if (!matchesCronPart(month, currentMonth)) return false;
-    if (!matchesCronPart(dayOfWeek, currentDayOfWeek)) return false;
-    
-    return true;
+// example:
+const rule = {
+	FREQ: 'W',
+	INTERVAL: 1,
+	DAY_SPEC: 'Mon-Fri'
 }
 
-/**
- * Check if a specific date component matches a cron part
- * @param {string} cronPart - The cron part to check (e.g. "1,15" or "*" or "1-5")
- * @param {number} dateComponent - The date component to check against
- * @returns {boolean} - Whether the date component matches the cron part
- */
-function matchesCronPart(cronPart, dateComponent) {
-    // Handle "*" (any value)
-    if (cronPart === '*') return true;
-    
-    // Handle lists (e.g. "1,3,5")
-    if (cronPart.includes(',')) {
-        return cronPart.split(',').some(part => matchesCronPart(part, dateComponent));
-    }
-    
-    // Handle ranges (e.g. "1-5")
-    if (cronPart.includes('-')) {
-        const [start, end] = cronPart.split('-').map(Number);
-        return dateComponent >= start && dateComponent <= end;
-    }
-    
-    // Handle steps (e.g. "*/5")
-    if (cronPart.includes('/')) {
-        const [range, step] = cronPart.split('/');
-        const numStep = parseInt(step);
-        
-        if (range === '*') {
-            return dateComponent % numStep === 0;
+function matchesRecurrence(date, rule) {
+  if (!(date instanceof Date)) {
+    throw new Error("First argument must be a Date");
+  }
+  const parts = rule.split(':');
+  if (parts.length !== 3) {
+    throw new Error("Invalid rule format. Expected format: FREQ:INTERVAL:DAY_SPEC");
+  }
+  const freq = parts[0]; const interval = parseInt(parts[1], 10);
+  const daySpec = parts[2];
+  if (isNaN(interval) || interval < 1) {
+    throw new Error("Invalid interval in rule");
+  }
+
+  // Properly define the dayMap
+  const dayMap = { 
+    "Sun": 0, "Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6 
+  };
+
+  if (freq === 'W') { // Weekly recurrence. // Use a fixed baseline date – January 4, 1970 is a Sunday. const baseline = new Date(1970, 0, 4); const msPerWeek = 7 * 24 * 60 * 60 * 1000; const weekDiff = Math.floor((date - baseline) / msPerWeek); // Normalize modulo for negatives const weekRemainder = ((weekDiff % interval) + interval) % interval; if (weekRemainder !== 0) { return false; }
+
+    // Parse the daySpec into an array of allowed weekday numbers.
+    let allowedDays = [];
+    if (daySpec.indexOf('-') !== -1) {
+      // e.g. "Mon-Fri"
+      const [startStr, endStr] = daySpec.split('-');
+      const start = dayMap[startStr];
+      const end = dayMap[endStr];
+      if (start === undefined || end === undefined) {
+        throw new Error("Invalid weekday range in rule: " + daySpec);
+      }
+      // Generate range (assumes start <= end)
+      for (let i = start; i <= end; i++) {
+        allowedDays.push(i);
+      }
+    } else if (daySpec.indexOf(',') !== -1) {
+      // e.g. "Tue,Thu"
+      const partsDays = daySpec.split(',');
+      for (let d of partsDays) {
+        let trimmed = d.trim();
+        const dayVal = dayMap[trimmed];
+        if (dayVal === undefined) {
+          throw new Error("Invalid weekday abbreviation in rule: " + trimmed);
         }
-        
-        // Handle range with step
-        if (range.includes('-')) {
-            const [start, end] = range.split('-').map(Number);
-            if (dateComponent < start || dateComponent > end) return false;
-            return (dateComponent - start) % numStep === 0;
-        }
+        allowedDays.push(dayVal);
+      }
+    } else {
+      // Single weekday abbreviation, e.g. "Tue"
+      const dayVal = dayMap[daySpec];
+      if (dayVal === undefined) {
+        throw new Error("Invalid weekday abbreviation in rule: " + daySpec);
+      }
+      allowedDays.push(dayVal);
     }
-    
-    // Simple value
-    return parseInt(cronPart) === dateComponent;
+    return allowedDays.includes(date.getDay());
+  } else if (freq === 'M') { // Monthly recurrence. // Use a fixed baseline date – January 1, 1970. const baseline = new Date(1970, 0, 1); const monthDiff = (date.getFullYear() - baseline.getFullYear()) * 12 + (date.getMonth() - baseline.getMonth()); const monthRemainder = ((monthDiff % interval) + interval) % interval; if (monthRemainder !== 0) { return false; }
+
+    // If daySpec is only digits, then it is a fixed day-of-month.
+    if (/^\d+$/.test(daySpec)) {
+      return date.getDate() === parseInt(daySpec, 10);
+    }
+    // Otherwise assume it is an ordinal weekday like "2Wed" (the second Wednesday)
+    else if (/^(\d+)([A-Za-z]{3})$/.test(daySpec)) {
+      const match = daySpec.match(/^(\d+)([A-Za-z]{3})$/);
+      if (!match) {
+        throw new Error("Invalid ordinal daySpec: " + daySpec);
+      }
+      const ordinal = parseInt(match[1], 10);
+      const weekdayAbbr = match[2];
+      const targetDayOfWeek = dayMap[weekdayAbbr];
+      if (targetDayOfWeek === undefined) {
+        throw new Error("Invalid weekday abbreviation in ordinal rule: " + weekdayAbbr);
+      }
+      // Compute the nth occurrence of targetDayOfWeek in this month.
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const firstOfMonth = new Date(year, month, 1);
+      const firstDayWeek = firstOfMonth.getDay();
+      // Calculate offset (in days) from the first of the month to the first occurrence of targetDayOfWeek.
+      const offset = (targetDayOfWeek - firstDayWeek + 7) % 7;
+      // The nth occurrence will be:
+      const nthDate = 1 + offset + (ordinal - 1) * 7;
+      // Validate the computed day exists in this month
+      const lastDate = new Date(year, month + 1, 0).getDate();
+      if (nthDate > lastDate) {
+        return false;
+      }
+      return (date.getDate() === nthDate && date.getDay() === targetDayOfWeek);
+    } else {
+      throw new Error("Invalid daySpec in monthly rule: " + daySpec);
+    }
+  } else { throw new Error("Invalid frequency type in rule: " + freq); }
 }
 
-/**
- * Determines if a goal with a recurring schedule should be shown today
- * @param {Object} goal - The goal object with recurringSchedule
- * @returns {boolean} - Whether the goal should be shown today
- */
+// -------------------------- // Example usage:
+
+// Example rules: // "W:1:Tue" => Every Tuesday // "W:2:Tue" => Every other Tuesday (using the week count since Jan 4, 1970) // "W:1:Mon-Fri" => Monday through Friday, every week // "M:1:5" => Every month on the 5th // "M:2:5" => Every other month on the 5th // "M:1:2Wed" => Every month on the second Wednesday // "M:2:2Wed" => Every other month on the second Wednesday
+
+// Testing a date. const testDate = new Date(2025, 3, 9); // April 9, 2025 const rule = "W:1:Wed"; // Every Wednesday weekly
+
+console.log("Does", testDate.toDateString(), "match rule", rule, "?", matchesRecurrence(testDate, rule));
+
+// Add this function to the cronUtils.js file to handle recurring goal filtering
 function shouldShowRecurringGoalToday(goal) {
-    if (!goal.isRecurring || !goal.recurringSchedule) return false;
-    
-    return isCronMatchingDate(goal.recurringSchedule);
+  if (!goal.isRecurring || !goal.recurrencePattern) {
+    return false;
+  }
+  
+  try {
+    const today = new Date();
+    return matchesRecurrence(today, goal.recurrencePattern);
+  } catch (error) {
+    console.error(`Error evaluating recurrence pattern for goal: ${goal.text}`, error);
+    return false; // Default to not showing if there's an error
+  }
 }
 
-module.exports = {
-    isCronMatchingDate,
-    shouldShowRecurringGoalToday
-}; 
+// Export the function
+exports.shouldShowRecurringGoalToday = shouldShowRecurringGoalToday;

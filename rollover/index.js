@@ -1,6 +1,8 @@
 const { getGoals, createNewDayWithGoals } = require('./common/goalRepository');
 const { getChatIds, getUser } = require('./common/userRepository');
 const { getLocalDate } = require('./common/utilities');
+const { shouldShowRecurringGoalToday } = require('./handlers/cronUtils');
+
 
 async function rolloverGoals(chatId) {
 	const yesterday = getLocalDate(-1);
@@ -11,8 +13,13 @@ async function rolloverGoals(chatId) {
 		const previousGoals = await getGoals(chatId, yesterday);
 		const todayGoals = await getGoals(chatId, today);
 
-		const incompleteGoals = previousGoals.filter(goal => !goal.completed);
+		const incompleteGoals = previousGoals.filter(goal => (goal.recurring && shouldShowRecurringGoalToday(goal)) || !goal.completed);
+		
 		const newGoals = [...incompleteGoals, ...todayGoals];
+
+		newGoals.forEach(goal => {
+			goal.completed = false;
+		});
 
 		await createNewDayWithGoals(chatId, user.Name, newGoals);
 	} catch (error) {
