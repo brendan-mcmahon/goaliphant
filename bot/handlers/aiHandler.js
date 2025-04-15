@@ -33,7 +33,9 @@ async function handleAIMessage(chatId, userMessage) {
 	try {
 
 		const user = await userRepo.getUser(chatId);
+		console.log("User:", user);
 		const partnerId = user.PartnerId;
+		console.log("Partner Id:", partnerId);
 		const partner = await userRepo.getUser(partnerId);
 
 		const messages = [
