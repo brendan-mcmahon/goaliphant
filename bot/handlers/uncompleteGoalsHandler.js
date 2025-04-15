@@ -9,7 +9,7 @@ async function uncompleteGoals(text, chatId) {
 	const indexes = indexText.split(' ').map(n => parseInt(n.trim()) - 1);
 	try {
 		const goals = (await getGoals(chatId))
-			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
+			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate));
 		let updated = false;
 		indexes.forEach(index => {
 			if (index >= 0 && index < goals.length && goals[index].completed) {

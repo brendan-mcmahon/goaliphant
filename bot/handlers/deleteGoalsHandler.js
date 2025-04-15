@@ -16,7 +16,7 @@ exports.deleteGoals = deleteGoals;
 
 async function removeGoals(indexes, chatId) {
 	try {
-		const goals = (await getGoals(chatId)).filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
+		const goals = (await getGoals(chatId)).filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate));
 		let updated = false;
 		indexes.sort((a, b) => b - a).forEach(index => {
 			if (index >= 0 && index < goals.length) {

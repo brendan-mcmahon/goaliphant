@@ -26,7 +26,7 @@ async function listGoals(chatId, args) {
 				console.log("listing todo goals");
 				filteredGoals = goals.filter(g => !g.completed);
 				filteredGoals = filteredGoals.filter(g => 
-					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduled)) ||
+					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate)) ||
 					(g.recurring && shouldShowRecurringGoalToday(g))
 				);
 				messagePrefix = 'To-do goals:';
@@ -36,14 +36,14 @@ async function listGoals(chatId, args) {
 				console.log("listing done goals");
 				filteredGoals = goals.filter(g => g.completed);
 				filteredGoals = filteredGoals.filter(g => 
-					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduled))
+					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate))
 				);
 				messagePrefix = 'Completed goals:';
 				break;
 
 			case 'scheduled':
 				console.log("listing scheduled goals");
-				filteredGoals = goals.filter(g => g.scheduled && isScheduledDateInTheFuture(g.scheduled));
+				filteredGoals = goals.filter(g => g.scheduled && isScheduledDateInTheFuture(g.scheduledDate));
 				messagePrefix = 'Scheduled goals:';
 				break;
 
@@ -51,7 +51,7 @@ async function listGoals(chatId, args) {
 			default:
 				console.log("listing today's goals");
 				filteredGoals = goals.filter(g => 
-					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduled)) ||
+					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate)) ||
 					(g.recurring && shouldShowRecurringGoalToday(g))
 				);
 				messagePrefix = 'Today\'s goals:';
@@ -88,7 +88,7 @@ async function listPartner(chatId) {
 		console.log("partnerId:", partnerId);
 		const goals = await getGoals(partnerId);
 		const goalsList = goals
-			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled))
+			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate))
 			.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
 		await sendMessage(chatId, goalsList || 'No goals set for partner today.');
 	} catch (error) {

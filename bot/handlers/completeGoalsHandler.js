@@ -22,7 +22,7 @@ async function markGoalsAsComplete(indexes, chatId, ticketRecipientId) {
 		const user = await getUser(chatId);
 		const partnerId = user.PartnerId;
 		const goals = (await getGoals(chatId))
-			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
+			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate));
 		let updated = false;
 		indexes.forEach(index => {
 			if (index >= 0 && index < goals.length && !goals[index].completed) {

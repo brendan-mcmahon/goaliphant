@@ -1,5 +1,6 @@
 function isScheduledDateInTheFuture(date) {
 	// date is in the format mm/dd/yyyy
+	console.log("isScheduledDateInTheFuture", date);
 	if (!date) return false;
 	const [month, day, year] = date.split('/').map(x => parseInt(x));
 	console.log("month:", month, "day:", day, "year:", year);

@@ -24,7 +24,7 @@ async function scheduleGoal(chatId, args) {
 
 	const goals = await getGoals(chatId);
 
-	const visibleGoals = goals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduled));
+	const visibleGoals = goals.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate));
 
 	if (goalIndex < 0 || goalIndex >= visibleGoals.length) {
 		await sendMessage(chatId, "Invalid goal index.");
