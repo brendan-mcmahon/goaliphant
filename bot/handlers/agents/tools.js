@@ -59,10 +59,11 @@ const tools = [
 					},
 					isScheduled: {
 						type: "boolean",
-						description: "If the goal is scheduled, this will be true"
+						description: "If the user wants the goal on a different date other than today, this will be true"
 					},
 					scheduledDate: {
 						type: "string",
+						description: "The date the goal is scheduled for (if the user wants the goal on a different date other than today)"
 					},
 					note: {
 						type: "string",
