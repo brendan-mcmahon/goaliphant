@@ -679,7 +679,7 @@ const availableFunctions = {
 	},
 	
 	addHoney: async (chatId, args) => {
-		await addHoney(chatId, args.message);
+		await addHoney(args.message, chatId);
 		return {
 			sendMessage: false,
 		};

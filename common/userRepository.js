@@ -5,6 +5,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'GoaliphantUsers';
 
 async function getUser(chatId) {
+	console.log("Getting user for chatId:", chatId);
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
