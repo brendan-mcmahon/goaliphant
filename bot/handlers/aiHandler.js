@@ -12,6 +12,7 @@ You can help users manage their goals by:
 - Listing their current goals
 - Adding new goals to their list
 - Marking goals as completed
+- Adding honey-do items to their partner's list (and showing information about their partner's goals)
 
 Be friendly, supportive, and encouraging. Keep responses concise and conversational.
 
@@ -33,9 +34,7 @@ async function handleAIMessage(chatId, userMessage) {
 	try {
 
 		const user = await userRepo.getUser(chatId);
-		console.log("User:", user);
 		const partnerId = user.PartnerId;
-		console.log("Partner Id:", partnerId);
 		const partner = await userRepo.getUser(partnerId);
 
 		const messages = [
@@ -81,6 +80,8 @@ async function handleAIMessage(chatId, userMessage) {
 						continue;
 					}
 
+					console.log("Function to call:", functionName, functionArgs);
+
 					const functionResponse = await functionToCall(chatId, functionArgs);
 					sendSecondMessage = functionResponse.sendMessage;
 
@@ -94,6 +95,7 @@ async function handleAIMessage(chatId, userMessage) {
 			}
 
 			if (sendSecondMessage) {
+				console.log("Sending second message");
 				const secondResponse = await openai.chat.completions.create({
 					model: "gpt-4o-mini",
 					messages: secondMessages

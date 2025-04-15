@@ -680,7 +680,7 @@ const availableFunctions = {
 	
 	addHoney: async (chatId, args) => {
 		console.log("addHoney", chatId, args);
-		await addHoney(chatId, args.message);
+		await addHoney(chatId, args.goalText);
 		return {
 			sendMessage: false,
 		};
