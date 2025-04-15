@@ -87,7 +87,7 @@ async function saveGoalsAndList(newGoal, chatId, fromPartner = false) {
 }
 exports.saveGoalsAndList = saveGoalsAndList;
 
-async function addHoney(honeyText, chatId) {
+async function addHoney(chatId, honeyText) {
 	try {
 		const user = await getUser(chatId);
 		const partner = await getUser(user.PartnerId);

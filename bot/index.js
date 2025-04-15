@@ -125,7 +125,7 @@ exports.handler = async (event) => {
 			// DEFINITION: /honey {honey: text}
 			case 'honey':
 				const honeyToAdd = text.replace('honey', '').trim();
-				await addHoney(honeyToAdd, chatId);
+				await addHoney(chatId, honeyToAdd);
 				break;
 			// DEFINITION: /partner
 			case 'partner':
