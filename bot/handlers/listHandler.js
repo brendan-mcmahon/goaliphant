@@ -6,7 +6,7 @@ const { shouldShowRecurringGoalToday } = require('./cronUtils.js');
 
 async function listGoals(chatId, args) {
 	try {
-		console.log("listing...", args);
+		console.log("listing goals for ...", chatId, args);
 		const goals = await getGoals(chatId);
 		console.log("goals:", goals);
 
