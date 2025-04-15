@@ -106,15 +106,7 @@ function matchesRecurrence(date, rule) {
   } else { throw new Error("Invalid frequency type in rule: " + freq); }
 }
 
-// -------------------------- // Example usage:
 
-// Example rules: // "W:1:Tue" => Every Tuesday // "W:2:Tue" => Every other Tuesday (using the week count since Jan 4, 1970) // "W:1:Mon-Fri" => Monday through Friday, every week // "M:1:5" => Every month on the 5th // "M:2:5" => Every other month on the 5th // "M:1:2Wed" => Every month on the second Wednesday // "M:2:2Wed" => Every other month on the second Wednesday
-
-// Testing a date. const testDate = new Date(2025, 3, 9); // April 9, 2025 const rule = "W:1:Wed"; // Every Wednesday weekly
-
-console.log("Does", testDate.toDateString(), "match rule", rule, "?", matchesRecurrence(testDate, rule));
-
-// Add this function to the cronUtils.js file to handle recurring goal filtering
 function shouldShowRecurringGoalToday(goal) {
   if (!goal.isRecurring || !goal.recurrencePattern) {
     return false;
