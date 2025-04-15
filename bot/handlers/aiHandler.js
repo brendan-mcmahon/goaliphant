@@ -45,7 +45,7 @@ async function handleAIMessage(chatId, userMessage) {
 			},
 			{
 				role: "system",
-				content: `This user's partner is ${partner.name}.`
+				content: `This user's partner is ${partner.name || partner.Name}.`
 			},
 			...user.chatHistory,
 			{
