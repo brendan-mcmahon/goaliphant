@@ -191,3 +191,9 @@ async function updateUserField(chatId, fieldName, fieldValue) {
 	}
 }
 exports.updateUserField = updateUserField;
+
+async function clearChat(chatId) {
+	await setChatState(chatId, 'chat', []);
+}
+exports.clearChat = clearChat;
+	

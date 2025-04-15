@@ -18,7 +18,7 @@ const { swapGoals } = require('./handlers/swapGoalsHandler.js');
 const { getHelp } = require('./handlers/helpHandler.js');
 const { addNote, showGoalDetails } = require('./handlers/noteHandler.js');
 const { makeGoalRecurring } = require('./handlers/recurringGoalsHandler.js');
-const { handleAIMessage } = require('./handlers/aiHandler');
+const { handleAIMessage, clearChat } = require('./handlers/aiHandler');
 const userRepo = require('./common/userRepository.js');
 const { config } = require('./common/configs.js');
 exports.handler = async (event) => {
@@ -164,6 +164,9 @@ exports.handler = async (event) => {
 				const goalNumber = args.split(' ')[0];
 				const cronExpression = args.substring(goalNumber.length).trim();
 				await makeGoalRecurring(goalNumber, cronExpression, chatId);
+				break;
+			case 'clearchat':
+				await clearChat(chatId);
 				break;
 			default:
 				// If it's not a recognized command, treat it as a message for the AI

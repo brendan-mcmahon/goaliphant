@@ -113,6 +113,12 @@ async function handleAIMessage(chatId, userMessage) {
 	}
 }
 
+async function clearChat(chatId) {
+	await userRepo.clearChat(chatId);
+	await sendMessage(chatId, "Chat history cleared.");
+}
+
 module.exports = {
-	handleAIMessage
+	handleAIMessage,
+	clearChat
 }; 
