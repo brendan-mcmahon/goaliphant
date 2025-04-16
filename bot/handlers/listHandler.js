@@ -2,7 +2,7 @@ const { getGoals } = require('../common/goalRepository.js');
 const { getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
-const { shouldShowRecurringGoalToday } = require('./cronUtils.js');
+const { shouldShowRecurringGoalToday } = require('../common/cronUtils.js');
 
 async function listGoals(chatId, args) {
 	try {
