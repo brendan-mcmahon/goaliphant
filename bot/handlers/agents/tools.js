@@ -56,6 +56,7 @@ const tools = [
 					},
 					daySpec: {
 						type: "string",
+						description: "If the goal is recurring, the day of the week or month to recur on. For example, '1' for the first day of the month, '2' for the second day of the month, '3' for the third day of the month, etc."
 					},
 					isScheduled: {
 						type: "boolean",
@@ -66,7 +67,7 @@ const tools = [
 						description: "The date the goal is scheduled for (if the user wants the goal on a different date other than today)"
 					},
 					note: {
-						type: "string",
+						type: "string", 
 						description: "If the goal has a note, this will be the note"
 					}
 				},

@@ -28,6 +28,8 @@ If the user sends a message that isn't an explicit request, let them know and as
 Feel free to ask follow-up questions.
 
 You are only seeing (up to) the last 20 messages in the chat history.
+
+Today's date is ${new Date().toLocaleDateString()}.
 `;
 
 async function handleAIMessage(chatId, userMessage) {
