@@ -1,7 +1,7 @@
 const { getGoals, createNewDayWithGoals } = require('./common/goalRepository');
 const { getChatIds, getUser } = require('./common/userRepository');
 const { getLocalDate } = require('./common/utilities');
-const { shouldShowRecurringGoalToday } = require('../common/cronUtils.js');
+const { shouldShowRecurringGoalToday } = require('./common/cronUtils.js');
 
 
 async function rolloverGoals(chatId) {
