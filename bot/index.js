@@ -96,6 +96,10 @@ exports.handler = async (event) => {
 				const indices = args.split(' ');
 				await swapGoals(indices[0], indices[1], chatId);
 				break;
+			case 'move':
+				const goalToMove = text.replace('move', '').trim();
+				await moveGoal(goalToMove, chatId);
+				break;
 			// DEFINITION: /complete {index: number}
 			case 'complete':
 				const goalToComplete = text.replace('complete', '').trim();
