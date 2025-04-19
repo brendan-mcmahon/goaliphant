@@ -1,5 +1,6 @@
 const { listGoals } = require('../listHandler.js');
 const { swapGoals } = require('../swapGoalsHandler.js');
+const { moveGoals } = require('../moveHandler.js');
 const { scheduleGoal, unscheduleGoal } = require('../scheduleHandler.js');
 const { listRewards, redeemReward } = require('../rewardsHandler.js');
 const { addHoney } = require('../addGoalsHandler.js');
@@ -151,6 +152,28 @@ const tools = [
 			}
 		}
 	},
+	{
+		type: "function",
+		function: {
+			name: "move",
+			description: "Move a goal to a new position in the user's list",
+			parameters: {
+				type: "object",
+				properties: {
+					goalIndex: {
+						type: "string",
+						description: "The number of the goal to move (1-based)"
+					},
+					newIndex: {
+						type: "string",
+						description: "The new position for the goal (1-based)"
+					}
+				},
+				required: ["goalIndex", "newIndex"]
+			}
+		}
+	},
+	
 	{
 		type: "function",
 		function: {
@@ -552,6 +575,13 @@ const availableFunctions = {
 			sendMessage: false,
 		};
 	},
+
+	move: async (chatId, args) => {
+		await moveGoals(chatId, args.goalIndex, args.newIndex);
+		return {
+			sendMessage: false,
+		};
+	},	
 	
 	schedule: async (chatId, args) => {
 		await scheduleGoal(chatId, args.goalIndex, args.scheduledTime);
