@@ -19,6 +19,7 @@ const { getHelp } = require('./handlers/helpHandler.js');
 const { addNote, showGoalDetails } = require('./handlers/noteHandler.js');
 const { makeGoalRecurring } = require('./handlers/recurringGoalsHandler.js');
 const { handleAIMessage, clearChat } = require('./handlers/aiHandler');
+const { moveGoal } = require('./handlers/moveHandler.js');
 const userRepo = require('./common/userRepository.js');
 const { config } = require('./common/configs.js');
 exports.handler = async (event) => {
