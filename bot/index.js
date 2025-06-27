@@ -19,7 +19,7 @@ const { getHelp } = require('./handlers/helpHandler.js');
 const { addNote, showGoalDetails } = require('./handlers/noteHandler.js');
 const { makeGoalRecurring } = require('./handlers/recurringGoalsHandler.js');
 const { handleAIMessage, clearChat } = require('./handlers/aiHandler');
-const { moveGoal } = require('./handlers/moveHandler.js');
+const { moveGoals } = require('./handlers/moveHandler.js');
 const userRepo = require('./common/userRepository.js');
 const { config } = require('./common/configs.js');
 exports.handler = async (event) => {
@@ -98,8 +98,8 @@ exports.handler = async (event) => {
 				await swapGoals(indices[0], indices[1], chatId);
 				break;
 			case 'move':
-				const goalToMove = text.replace('move', '').trim();
-				await moveGoal(goalToMove, chatId);
+				const goalsToMove = args.split(' ');
+				await moveGoals(goalsToMove[0], goalsToMove[1], chatId);
 				break;
 			// DEFINITION: /complete {index: number}
 			case 'complete':
