@@ -25,9 +25,9 @@ async function listGoals(chatId, args) {
 			case 'todo':
 				console.log("listing todo goals");
 				filteredGoals = goals.filter(g => !g.completed);
-				filteredGoals = filteredGoals.filter(g => 
+				filteredGoals = filteredGoals.filter(g =>
 					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate)) ||
-					(g.recurring && shouldShowRecurringGoalToday(g))
+					(g.isRecurring && shouldShowRecurringGoalToday(g))
 				);
 				messagePrefix = 'To-do goals:';
 				break;
@@ -35,7 +35,7 @@ async function listGoals(chatId, args) {
 			case 'done':
 				console.log("listing done goals");
 				filteredGoals = goals.filter(g => g.completed);
-				filteredGoals = filteredGoals.filter(g => 
+				filteredGoals = filteredGoals.filter(g =>
 					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate))
 				);
 				messagePrefix = 'Completed goals:';
@@ -50,24 +50,24 @@ async function listGoals(chatId, args) {
 			case 'today':
 			default:
 				console.log("listing today's goals");
-				filteredGoals = goals.filter(g => 
+				filteredGoals = goals.filter(g =>
 					(!g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate)) ||
-					(g.recurring && shouldShowRecurringGoalToday(g))
+					(g.isRecurring && shouldShowRecurringGoalToday(g))
 				);
 				messagePrefix = 'Today\'s goals:';
 		}
 
-		const goalsList = filteredGoals.map((g, i) => { 
+		const goalsList = filteredGoals.map((g, i) => {
 			let goalText = g.completed ? '✅' : '⬜';
-			
+
 			if (g.scheduled) {
 				goalText = `${goalText} 🗓️ ${g.scheduled}`;
 			}
-			
-			if (g.recurring) {
+
+			if (g.isRecurring) {
 				goalText = `${goalText} 🔄`;
 			}
-			
+
 			return `${i + 1}. ${goalText} ${g.text}`;
 		}).join('\n');
 		console.log("goalsList:", goalsList);
@@ -86,6 +86,12 @@ async function listPartner(chatId) {
 		const user = await getUser(chatId);
 		const partnerId = user.PartnerId;
 		console.log("partnerId:", partnerId);
+		
+		if (!partnerId) {
+			await sendMessage(chatId, 'No partner set up. Ask your partner to share their chat ID.');
+			return;
+		}
+		
 		const goals = await getGoals(partnerId);
 		const goalsList = goals
 			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate))

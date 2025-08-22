@@ -65,6 +65,7 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
    - [x] Make sure to hide rewards from the user that don't have ticket values on them. That way we can go ahead and make the new record without having to worry about it. Or maybe we show them but just say *"pending ticket price"* or something?
 7. **Rearrange Goals**
    - [x] New Bot command: `/swap {#} {#}` which just does a simple swap of two goals in the order
+   - [x] New Bot command: `/move {#} {#}` which moves a goal to a new position in the list
 8. **Edit Goal**
    - [x] New Bot command `/edit {#} {new text}` which swaps the text of a goal for new text the user enters
 9. **List params**
@@ -83,8 +84,15 @@ This project is a Telegram bot called "Goaliphant" designed to help my wife Jami
      - [x] Every time the bot sends a message, add the message to the user's chat history.
      - [x] Every time the bot receives a message, add the message to the user's chat history.
    - [ ] Finish the request reward flow 
-11. **Priority Scoring System**
-   - [ ] Something similar to Eisenhower Matrix but with three dimensions
+11. **Priority Scoring System**\
+    * This might be easiest just to let the AI handle and provide it a function to set the priority fields.
+      * Tell the AI you want to set the priority of a goal. It should ask for your input on the three dimensions and then save the values.
+      * Something similar to Eisenhower Matrix but with three dimensions
+    - [ ] Add a new field to the goals table called `priority` that is an array of three numbers.
+    - [ ] Add a new handler to set the priority of a goal.
+    - [ ] Add a new function to the AI to set the priority of a goal.
+    - [ ] In the list command, add an option to list goals by priority. (Maybe this should be by default? Just not sure what that would mean for the rearrange commands)
+      - [ ] There should also be a way to display the priority for each goal (including a "not prioritized" label)
 12. **Goal Notes**
    - [x] New Bot command `/note {#} {note text}` that adds to a notes array on the record for that goal
    - [x] New Bot command `/details {#}` that lists the text and details of the selected goal

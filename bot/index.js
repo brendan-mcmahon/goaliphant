@@ -15,19 +15,26 @@ const { scheduleGoal } = require('./handlers/scheduleHandler.js');
 const { handleRequestRewardStep } = require('./handlers/requestRewardHandler.js');
 const { editGoal } = require('./handlers/editGoalHandler.js');
 const { swapGoals } = require('./handlers/swapGoalsHandler.js');
+const { moveGoals } = require('./handlers/moveHandler.js');
 const { getHelp } = require('./handlers/helpHandler.js');
 const { addNote, showGoalDetails } = require('./handlers/noteHandler.js');
 const { makeGoalRecurring } = require('./handlers/recurringGoalsHandler.js');
 const { handleAIMessage, clearChat } = require('./handlers/aiHandler');
 const userRepo = require('./common/userRepository.js');
 const { config } = require('./common/configs.js');
-exports.handler = async (event) => {
-	const body = JSON.parse(event.body);
-	console.log("body:", body);
 
-	if (body.message) {
-		const chatId = body.message.chat.id;
-		await sendThinkingMessage(chatId);
+exports.handler = async (event) => {
+	let chatId;
+	let thinkingMessageSent = false;
+	
+	try {
+		const body = JSON.parse(event.body);
+		console.log("body:", body);
+
+		if (body.message) {
+			chatId = body.message.chat.id;
+			await sendThinkingMessage(chatId);
+			thinkingMessageSent = true;
 
 		let text = body.message.text;
 		let ticketRecipientId = chatId;
@@ -97,8 +104,8 @@ exports.handler = async (event) => {
 				await swapGoals(indices[0], indices[1], chatId);
 				break;
 			case 'move':
-				const goalToMove = text.replace('move', '').trim();
-				await moveGoal(goalToMove, chatId);
+				const moveArgs = args.split(' ');
+				await moveGoals(moveArgs[0], moveArgs[1], chatId);
 				break;
 			// DEFINITION: /complete {index: number}
 			case 'complete':
@@ -176,6 +183,21 @@ exports.handler = async (event) => {
 				// If it's not a recognized command, treat it as a message for the AI
 				await handleAIMessage(chatId, text);
 		}
+	}
+	} catch (error) {
+		console.error('Lambda execution error:', error);
+		
+		// If we sent a thinking message, convert it to an error message
+		if (thinkingMessageSent && chatId) {
+			try {
+				await sendMessage(chatId, '❌ Sorry, something went wrong. Please try again.');
+			} catch (sendError) {
+				console.error('Failed to send error message:', sendError);
+			}
+		}
+		
+		// Return success to prevent AWS Lambda retries for known errors
+		return { statusCode: 200, body: JSON.stringify({ error: 'Handled error', details: error.message }) };
 	}
 
 	return { statusCode: 200, body: 'OK' };

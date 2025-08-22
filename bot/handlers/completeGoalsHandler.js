@@ -27,7 +27,7 @@ async function markGoalsAsComplete(indexes, chatId, ticketRecipientId) {
 		indexes.forEach(index => {
 			if (index >= 0 && index < goals.length && !goals[index].completed) {
 				goals[index].completed = true;
-				if (goals[index][0] === "🐝") {
+				if (partnerId && goals[index].text && goals[index].text[0] === "🐝") {
 					sendMessage(partnerId, `Your partner has completed a 🐝 task: ${goals[index].text}`);
 				}
 				updated = true;

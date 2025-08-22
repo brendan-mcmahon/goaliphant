@@ -2,7 +2,7 @@ const { getChatState, clearChatState } = require('../common/userRepository.js');
 const { saveGoalsAndList } = require('./addGoalsHandler.js');
 const { sendMessage } = require('../bot.js');
 const { handleCreateRewardStep } = require('./createRewardHandler.js');
-const { handleRequestRewardStep } = require('./requestRewardHandler.js');
+const { handleRequestRewardStep, handlePricingReward } = require('./requestRewardHandler.js');
 
 const cancelWords = [
 	'cancel',
@@ -13,7 +13,7 @@ const cancelWords = [
 
 const isExpired = (date) => {
 	const fiveMinutes = 300000;
-	!date || new Date(date) < new Date(Date.now() - fiveMinutes);
+	return !date || new Date(date) < new Date(Date.now() - fiveMinutes);
 }
 
 
@@ -51,10 +51,13 @@ async function handleChatState(text, chatId) {
 		console.log("passing args", args);
 		await handleCreateRewardStep(chatId, step, args[0], args[1], text);
 	}
-
 	if (state.startsWith('requestReward')) {
 		const step = parseInt(state.split('-')[1]);
 		await handleRequestRewardStep(chatId, step, args[0], args[1], text);
+	}
+
+	if (state === 'pricingReward') {
+		await handlePricingReward(chatId, args[0], args[1], text);
 	}
 
 	return true;

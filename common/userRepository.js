@@ -13,6 +13,10 @@ async function getUser(chatId) {
 
 	try {
 		const result = await dynamoDb.get(params).promise();
+		if (!result.Item) {
+			console.log("User not found for chatId:", chatId);
+			return null;
+		}
 		return result.Item;
 	} catch (err) {
 		console.error('Error fetching user:', err);
@@ -21,7 +25,7 @@ async function getUser(chatId) {
 }
 exports.getUser = getUser;
 
-async function saveUser(chatId) {
+async function saveUser(chatId, name = null) {
 	const params = {
 		TableName: userTable,
 		Item: {
@@ -29,6 +33,10 @@ async function saveUser(chatId) {
 			ChatState: 'chat',
 		},
 	};
+
+	if (name) {
+		params.Item.Name = name;
+	}
 
 	try {
 		await dynamoDb.put(params).promise();

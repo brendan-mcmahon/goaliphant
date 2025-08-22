@@ -37,24 +37,32 @@ async function handleAIMessage(chatId, userMessage) {
 
 		const user = await userRepo.getUser(chatId);
 		const partnerId = user.PartnerId;
-		const partner = await userRepo.getUser(partnerId);
-		console.log("Partner:", partner);
-
+		
 		const messages = [
 			{
 				role: "system",
 				content: SYSTEM_PROMPT
-			},
-			{
-				role: "system",
-				content: `This user's partner is ${partner.name || partner.Name}.`
-			},
-			...user.chatHistory,
+			}
+		];
+		
+		if (partnerId) {
+			const partner = await userRepo.getUser(partnerId);
+			console.log("Partner:", partner);
+			if (partner) {
+				messages.push({
+					role: "system",
+					content: `This user's partner is ${partner.name || partner.Name}.`
+				});
+			}
+		}
+		
+		messages.push(
+			...(user.chatHistory || []),
 			{
 				role: "user",
 				content: userMessage
 			}
-		];
+		);
 
 		const response = await openai.chat.completions.create({
 			model: "gpt-4o-mini",

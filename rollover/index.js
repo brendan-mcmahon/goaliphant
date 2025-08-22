@@ -1,8 +1,11 @@
-const { getGoals, createNewDayWithGoals } = require('./common/goalRepository');
-const { getChatIds, getUser } = require('./common/userRepository');
-const { getLocalDate } = require('./common/utilities');
-const { shouldShowRecurringGoalToday } = require('./common/cronUtils.js');
-
+const {
+	getGoals,
+	createNewDayWithGoals,
+	getChatIds,
+	getUser,
+	getLocalDate,
+	shouldShowRecurringGoalToday
+} = require('goaliphant-common');
 
 async function rolloverGoals(chatId) {
 	const yesterday = getLocalDate(-1);
@@ -13,8 +16,11 @@ async function rolloverGoals(chatId) {
 		const previousGoals = await getGoals(chatId, yesterday);
 		const todayGoals = await getGoals(chatId, today);
 
-		const incompleteGoals = previousGoals.filter(goal => (goal.recurring && shouldShowRecurringGoalToday(goal)) || !goal.completed);
-		
+		const incompleteGoals = previousGoals.filter(goal => {
+			const should = shouldShowRecurringGoalToday(goal);
+			return (goal.isRecurring && shouldShowRecurringGoalToday(goal)) || !goal.completed;
+		});
+
 		const newGoals = [...incompleteGoals, ...todayGoals];
 
 		newGoals.forEach(goal => {
@@ -27,6 +33,8 @@ async function rolloverGoals(chatId) {
 		throw error;
 	}
 }
+
+exports.rolloverGoals = rolloverGoals;
 
 exports.handler = async () => {
 	console.log('Rollover triggered');

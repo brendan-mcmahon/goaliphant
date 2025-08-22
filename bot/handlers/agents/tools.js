@@ -68,7 +68,7 @@ const tools = [
 						description: "The date the goal is scheduled for (if the user wants the goal on a different date other than today)"
 					},
 					note: {
-						type: "string", 
+						type: "string",
 						description: "If the goal has a note, this will be the note"
 					}
 				},
@@ -173,7 +173,7 @@ const tools = [
 			}
 		}
 	},
-	
+
 	{
 		type: "function",
 		function: {
@@ -189,7 +189,7 @@ const tools = [
 					// TODO: This is not right. We need a specific format for the scheduled time that we can parse. Right now we're using {day/month}
 					scheduledTime: {
 						type: "string",
-						description: "When to schedule the goal (e.g., 'tomorrow at 3pm', 'Monday morning')" 
+						description: "When to schedule the goal (e.g., 'tomorrow at 3pm', 'Monday morning')"
 					}
 				},
 				required: ["goalIndex", "scheduledTime"]
@@ -473,9 +473,9 @@ const availableFunctions = {
 			newGoal.note = args.note;
 		}
 
-		
+
 		if (args.isRecurring && args.frequency && args.interval && args.daySpec) {
-			newGoal.recurring = true;
+			newGoal.isRecurring = true;
 			newGoal.recurrencePattern = `${args.frequency}:${args.interval}:${args.daySpec}`;
 		}
 
@@ -484,11 +484,11 @@ const availableFunctions = {
 		await goalRepo.updateGoals(chatId, goals);
 
 		let responseMessage = `Goal added: ${args.goalText}`;
-		
+
 		if (args.isScheduled && args.scheduledDate) {
 			responseMessage += `\nScheduled for: ${args.scheduledDate}`;
 		}
-		
+
 		if (args.note) {
 			responseMessage += `\nNote: ${args.note}`;
 		}
@@ -568,7 +568,7 @@ const availableFunctions = {
 
 		return getResponseMessage(`Goal updated: ${args.goalText}`);
 	},
-	
+
 	swap: async (chatId, args) => {
 		await swapGoals(chatId, args.goalIndex1, args.goalIndex2);
 		return {
@@ -581,113 +581,113 @@ const availableFunctions = {
 		return {
 			sendMessage: false,
 		};
-	},	
-	
+	},
+
 	schedule: async (chatId, args) => {
 		await scheduleGoal(chatId, args.goalIndex, args.scheduledTime);
 		return {
 			sendMessage: false,
 		};
 	},
-	
+
 	unschedule: async (chatId, args) => {
 		await unscheduleGoal(chatId, args.goalIndex);
 		return {
 			sendMessage: false,
 		};
 	},
-	
+
 	recurring: async (chatId, args) => {
 		console.log("recurring", chatId, args.goalIndex, args.recurrencePattern);
 		const index = parseInt(args.goalIndex);
-		
+
 		if (isNaN(index) || index < 1) {
 			return getResponseMessage("Please provide a valid goal number.");
 		}
-		
+
 		let goals = await goalRepo.getGoals(chatId);
-		
+
 		if (index > goals.length) {
 			return getResponseMessage(`You only have ${goals.length} goals. Please specify a valid goal number.`);
 		}
-		
-		goals[index - 1].recurring = true;
+
+		goals[index - 1].isRecurring = true;
 		goals[index - 1].recurrencePattern = args.recurrencePattern;
-		
+
 		await goalRepo.updateGoals(chatId, goals);
-		
+
 		return getResponseMessage(`Set goal "${goals[index - 1].text}" to recur ${args.recurrencePattern}`);
 	},
-	
+
 	unrecurring: async (chatId, args) => {
 		console.log("unrecurring", chatId, args.goalIndex);
 		const index = parseInt(args.goalIndex);
-		
+
 		if (isNaN(index) || index < 1) {
 			return getResponseMessage("Please provide a valid goal number.");
 		}
-		
+
 		let goals = await goalRepo.getGoals(chatId);
-		
+
 		if (index > goals.length) {
 			return getResponseMessage(`You only have ${goals.length} goals. Please specify a valid goal number.`);
 		}
-		
-		if (!goals[index - 1].recurring) {
+
+		if (!goals[index - 1].isRecurring) {
 			return getResponseMessage(`Goal "${goals[index - 1].text}" is not recurring.`);
 		}
-		
-		goals[index - 1].recurring = false;
+
+		goals[index - 1].isRecurring = false;
 		delete goals[index - 1].recurrencePattern;
-		
+
 		await goalRepo.updateGoals(chatId, goals);
-		
+
 		return getResponseMessage(`Removed recurrence from goal: ${goals[index - 1].text}`);
 	},
-	
+
 	ticketvalue: async (chatId) => {
-			console.log("ticketvalue", chatId);
+		console.log("ticketvalue", chatId);
 		const user = await userRepo.getUser(chatId);
 		return getResponseMessage(`The current ticket value is ${user.ticketValue || 1} points.`);
 	},
-	
+
 	setticketvalue: async (chatId, args) => {
 		console.log("setticketvalue", chatId, args.value);
 		const ticketValue = parseInt(args.value);
-		
+
 		if (isNaN(ticketValue) || ticketValue < 1) {
 			return getResponseMessage("Please provide a valid ticket value (must be a positive number).");
 		}
-		
+
 		await userRepo.setTicketValue(chatId, ticketValue);
-		
+
 		return getResponseMessage(`Ticket value set to ${ticketValue} points.`);
 	},
-	
+
 	wallet: async (chatId) => {
 		console.log("wallet", chatId);
 		const user = await userRepo.getUser(chatId);
 		return getResponseMessage(`You have ${user.TicketWallet || 0} tickets in your wallet.`);
 	},
-	
+
 	rewards: async (chatId) => {
 		await listRewards(chatId);
 		return {
 			sendMessage: false,
 		};
 	},
-	
+
 	createreward: async (chatId, args) => {
 		console.log("createreward", chatId, args.name, args.cost);
 		const user = await userRepo.getUser(chatId);
 		const partnerId = user.PartnerId;
 
 		const rewardCost = parseInt(args.cost);
-		
+
 		if (isNaN(rewardCost) || rewardCost < 1) {
 			return getResponseMessage("Please provide a valid cost (must be a positive number).");
 		}
-		
+
 		const newReward = {
 			id: uuidv4(),
 			title: args.title,
@@ -695,21 +695,21 @@ const availableFunctions = {
 			cost: rewardCost,
 			created: new Date().toISOString()
 		};
-		
+
 		await rewardRepo.addReward(partnerId, newReward);
 
 		sendMessage(partnerId, `Your partner ${user.name} has created a new reward: ${args.title} (${args.cost} tickets)`);
-		
+
 		return getResponseMessage(`Created new reward: ${args.name} (${args.cost} tickets)`);
 	},
-	
+
 	redeem: async (chatId, args) => {
 		await redeemReward(chatId, args.rewardIndex);
 		return {
 			sendMessage: false,
 		};
 	},
-	
+
 	addHoney: async (chatId, args) => {
 		console.log("addHoney", chatId, args);
 		await addHoney(chatId, args.goalText);
@@ -717,33 +717,33 @@ const availableFunctions = {
 			sendMessage: false,
 		};
 	},
-	
+
 	partner: async (chatId, args) => {
 		await listPartner(chatId, args.partnerId);
 		return {
 			sendMessage: false,
 		};
 	},
-	
+
 	note: async (chatId, args) => {
 		await addNote(chatId, args.goalIndex, args.noteText);
 		return {
 			sendMessage: false,
 		};
 	},
-	
+
 	details: async (chatId, args) => {
 		await showGoalDetails(chatId, args.goalIndex);
 		return {
 			sendMessage: false,
 		};
 	},
-			
+
 	requestreward: async (chatId, args) => {
 		console.log("requestreward", chatId, args.rewardDescription);
-		
+
 		// TODO: Implement 
-		
+
 		return getResponseMessage(`Your reward request "${args.rewardDescription}" has been submitted for review. We'll notify you when it's available!`);
 	}
 };
@@ -811,6 +811,6 @@ const getResponseMessage = (message) => {
 		sendMessage: true,
 		message: message
 	};
-};	
+};
 
 module.exports = { tools, availableFunctions };

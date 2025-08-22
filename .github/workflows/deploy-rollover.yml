@@ -24,10 +24,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-2
 
-    - name: Copy common folder
-      run: |
-        cp -r common rollover/common
-
     - name: Install dependencies
       run: |
         cd rollover
@@ -37,9 +33,5 @@ jobs:
       run: |
         cd rollover
         zip -r function.zip .
-        aws lambda update-function-code --function-name goaliphant-rollover --zip-file fileb://function.zip
-
-    - name: Clean up
-      run: |
-        rm -rf rollover/common
+        aws lambda update-function-code --function-name goaliphant-rollover --zip-file fileb://function.zip	
   

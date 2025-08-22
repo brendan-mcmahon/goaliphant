@@ -1,9 +1,9 @@
 {
-	"name": "notifier",
+	"name": "goaliphant-rollover",
 	"version": "1.0.0",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "jest --runInBand"
 	},
 	"keywords": [],
 	"author": "",
@@ -12,6 +12,10 @@
 	"dependencies": {
 		"aws-sdk": "^2.1692.0",
 		"dotenv": "^16.4.7",
-		"node-telegram-bot-api": "^0.66.0"
+		"node-telegram-bot-api": "^0.66.0",
+		"goaliphant-common": "file:../common"
+	},
+	"devDependencies": {
+		"jest": "^29.0.0"
 	}
 }

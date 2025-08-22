@@ -35,7 +35,8 @@ async function scheduleGoal(chatId, args) {
 	const actualIndex = goals.findIndex(g => g === targetGoal);
 
 	if (actualIndex !== -1) {
-		goals[actualIndex].scheduled = longDate;
+		goals[actualIndex].scheduledDate = longDate;
+		goals[actualIndex].scheduled = true;
 		await updateGoals(chatId, goals);
 		await sendMessage(chatId, `Goal scheduled for ${longDate}.`);
 	} else {
@@ -54,6 +55,7 @@ async function unscheduleGoal(chatId, goalIndex) {
 	}
 
 	goal.scheduled = null;
+	goal.scheduledDate = null;
 	await updateGoals(chatId, goals);
 	await sendMessage(chatId, `Goal unscheduled: ${goal.text}`);
 }

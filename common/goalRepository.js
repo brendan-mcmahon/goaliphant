@@ -67,7 +67,7 @@ exports.updateGoals = updateGoals;
 
 async function createNewDayWithGoals(chatId, username, goals, date = null) {
 	date = date ?? getLocalDate();
-	const formattedGoals = goals.map(goal => ({ text: goal.text, scheduled: goal.scheduled, completed: false }));
+	const formattedGoals = goals.map(goal => ({ ...goal, text: goal.text, scheduled: goal.scheduled }));
 
 	const params = {
 		TableName: goalsTable,
@@ -88,3 +88,56 @@ async function createNewDayWithGoals(chatId, username, goals, date = null) {
 	}
 }
 exports.createNewDayWithGoals = createNewDayWithGoals;
+
+async function deleteGoals(chatId, date) {
+	const params = {
+		TableName: goalsTable,
+		Key: {
+			chatId: chatId.toString(),
+			date: date,
+		},
+	};
+
+	try {
+		await dynamoDb.delete(params).promise();
+		console.log('Goals deleted successfully');
+	} catch (err) {
+		console.error('Error deleting goals:', err);
+		throw err;
+	}
+}
+exports.deleteGoals = deleteGoals;
+
+async function deleteAllGoalsForUser(chatId) {
+	try {
+		const queryParams = {
+			TableName: goalsTable,
+			KeyConditionExpression: 'chatId = :chatId',
+			ExpressionAttributeValues: {
+				':chatId': chatId.toString()
+			}
+		};
+
+		const queryResult = await dynamoDb.query(queryParams).promise();
+
+		const deletePromises = queryResult.Items.map(item => {
+			return dynamoDb.delete({
+				TableName: goalsTable,
+				Key: {
+					chatId: chatId.toString(),
+					date: item.date
+				}
+			}).promise();
+		});
+
+		await Promise.all(deletePromises);
+
+		console.log(`Deleted all ${deletePromises.length} goal records for user ${chatId}`);
+		return deletePromises.length;
+	} catch (err) {
+		console.error(`Failed to delete goal records for user ${chatId}:`, err);
+		throw err;
+	}
+}
+exports.deleteAllGoalsForUser = deleteAllGoalsForUser;
+

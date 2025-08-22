@@ -18,8 +18,8 @@ async function addGoal(goalText, chatId, options = {}) {
 			newGoal.scheduled = options.schedule;
 		}
 
-		if (options.recurring) {
-			newGoal.recurring = true;
+		if (options.isRecurring) {
+			newGoal.isRecurring = true;
 			newGoal.recurrencePattern = options.recurrencePattern;
 		}
 
@@ -39,13 +39,13 @@ async function addGoals(goalsText, chatId) {
 		}
 
 		let goals = await getGoals(chatId);
-		
+
 		if (!goals) {
 			goals = [];
 		}
 
 		const now = new Date().toISOString();
-		
+
 		const newGoals = goalsText.split('\n')
 			.filter(text => text.trim() !== '')
 			.map(text => ({
@@ -55,14 +55,14 @@ async function addGoals(goalsText, chatId) {
 			}));
 
 		goals = [...goals, ...newGoals];
-		
+
 		await updateGoals(chatId, goals);
-		
+
 		let message = '✅ Added:';
 		newGoals.forEach((goal, i) => {
 			message += `\n${goals.length - newGoals.length + i + 1}. ${goal.text}`;
 		});
-		
+
 		await sendMessage(chatId, message);
 	} catch (error) {
 		console.error('Error adding goals:', error);
@@ -94,7 +94,7 @@ async function addHoney(chatId, honeyText) {
 		const goalsText = honeyText.replace('/honey', '').trim();
 		const newGoal = `🐝 ${goalsText.trim()}`;
 		const now = new Date().toISOString();
-		
+
 		// Create new honey-do goal with timestamp and any special properties
 		const newHoneyGoal = {
 			text: newGoal,
@@ -103,7 +103,7 @@ async function addHoney(chatId, honeyText) {
 			createdAt: now, // Add creation timestamp
 			from: chatId    // Assuming you track who sent the honey-do
 		};
-		
+
 		const updatedGoals = [...await getGoals(partner.ChatId), newHoneyGoal];
 		await updateGoals(partner.ChatId, updatedGoals);
 		await sendMessage(partner.ChatId, `Your partner added the following honey-do item: ${newGoal}`);
