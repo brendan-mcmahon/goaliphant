@@ -247,45 +247,35 @@ describe('API Integration Tests - Core Functionality', () => {
     });
   });
 
-  describe('Legacy Endpoints', () => {
-    test('should support legacy getAllData endpoint', async () => {
-      const event = createEvent('GET', '/getAllData');
+  describe('Get All Users', () => {
+    test('should get all users', async () => {
+      const event = createEvent('GET', '/api/v1/users');
 
       const response = await handler(event);
       const { statusCode, data } = parseResponse(response);
 
       expect(statusCode).toBe(200);
-      expect(data.goals).toBeDefined();
-      expect(data.rewards).toBeDefined();
-      expect(data.userGoals).toBeDefined();
-      expect(Array.isArray(data.goals)).toBe(true);
-      expect(Array.isArray(data.rewards)).toBe(true);
-      expect(Array.isArray(data.userGoals)).toBe(true);
+      expect(data.users).toBeDefined();
+      expect(data.count).toBeDefined();
+      expect(Array.isArray(data.users)).toBe(true);
+      expect(data.count).toBe(data.users.length);
+      // Should have the test user we created
+      expect(data.users.length).toBeGreaterThan(0);
+      expect(data.users.some(u => u.ChatId === testChatId)).toBe(true);
     });
 
-    test('should support legacy getUserData endpoint', async () => {
-      const event = createEvent('GET', '/getUserData', { chatId: testChatId });
+    test('should support filtering users', async () => {
+      // Test with a filter that won't match any users
+      const event = createEvent('GET', '/api/v1/users', { minTickets: 1000 });
 
       const response = await handler(event);
       const { statusCode, data } = parseResponse(response);
 
       expect(statusCode).toBe(200);
-      expect(data.user).toBeDefined();
-      expect(data.user.ChatId).toBe(testChatId);
-    });
-
-    test('should support legacy addGoal endpoint', async () => {
-      const goalText = 'Legacy goal test';
-      const event = createEvent('POST', '/addGoal', {}, {
-        chatId: testChatId,
-        text: goalText
-      });
-
-      const response = await handler(event);
-      const { statusCode, data } = parseResponse(response);
-
-      expect(statusCode).toBe(200);
-      expect(data.success).toBe(true);
+      expect(data.users).toBeDefined();
+      expect(Array.isArray(data.users)).toBe(true);
+      // High ticket filter should return no users
+      expect(data.users.length).toBe(0);
     });
   });
 

@@ -743,6 +743,42 @@ paths:
 
   # ============ USER ENDPOINTS ============
   /api/v1/users:
+    get:
+      summary: Get all users
+      description: Retrieve all users with optional filtering
+      tags:
+        - Users
+      parameters:
+        - name: hasPartner
+          in: query
+          description: Filter by partner status
+          schema:
+            type: boolean
+        - name: minTickets
+          in: query
+          description: Minimum ticket balance filter
+          schema:
+            type: integer
+        - name: notificationsEnabled
+          in: query
+          description: Filter by notification preferences
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: List of users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  count:
+                    type: integer
+                    description: Total number of users returned
     post:
       summary: Create user
       description: Register a new user

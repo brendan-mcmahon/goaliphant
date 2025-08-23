@@ -3,7 +3,6 @@ const { matchGoalRoute } = require('./routes/goals');
 const { matchRewardRoute } = require('./routes/rewards');
 const { matchUserRoute } = require('./routes/users');
 const { matchSystemRoute } = require('./routes/system');
-const { matchLegacyRoute } = require('./routes/legacy');
 const { createResponse } = require('./routes/utils');
 
 // Main handler
@@ -44,10 +43,6 @@ async function routeRequest(method, path, event) {
 	
 	// 4. Try System routes
 	handler = matchSystemRoute(method, path);
-	if (handler) return await handler(event);
-	
-	// 5. Try Legacy routes (for backward compatibility)
-	handler = matchLegacyRoute(method, path);
 	if (handler) return await handler(event);
 	
 	// No matching route found

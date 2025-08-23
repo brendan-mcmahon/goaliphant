@@ -96,12 +96,26 @@ const userRoutes = {
 		
 		const result = await userService.clearChatHistory(chatId);
 		return createResponse(200, result);
+	},
+
+	// Get all users - GET /api/v1/users
+	async getAllUsers(event) {
+		const filters = event.queryStringParameters || {};
+		
+		// Support filtering options from query params
+		// e.g., ?hasPartner=true&minTickets=5&notificationsEnabled=true
+		const users = await userService.getAllUsers(filters);
+		return createResponse(200, { 
+			users,
+			count: users.length 
+		});
 	}
 };
 
 // Route matching function
 const matchUserRoute = (method, path) => {
 	// Exact path matches
+	if (method === 'GET' && path === '/api/v1/users') return userRoutes.getAllUsers;
 	if (method === 'POST' && path === '/api/v1/users') return userRoutes.createUser;
 	
 	// Pattern matches
