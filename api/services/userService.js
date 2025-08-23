@@ -1,17 +1,8 @@
-const { 
-  getUser, 
-  saveUser, 
-  getAllUsers, 
-  addTicket, 
-  getTicketCount,
-  setChatState,
-  getChatState,
-  clearChatState
-} = require('../common/userRepository');
+const userRepo = require('../common/userRepository');
 
 class UserService {
   async createUser(chatId, username, options = {}) {
-    const existingUser = await getUser(chatId);
+    const existingUser = await userRepo.getUser(chatId);
     
     if (existingUser) {
       throw new Error('User already exists');
@@ -25,12 +16,12 @@ class UserService {
       ...options
     };
     
-    await saveUser(user);
+    await userRepo.saveUser(user);
     return user;
   }
 
   async getUser(chatId) {
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
@@ -40,7 +31,7 @@ class UserService {
   }
 
   async updateUser(chatId, updates) {
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
@@ -55,13 +46,13 @@ class UserService {
     // Don't allow direct ticket updates through this method
     delete updatedUser.Tickets;
     
-    await saveUser(updatedUser);
+    await userRepo.saveUser(updatedUser);
     return updatedUser;
   }
 
   async linkPartner(chatId1, chatId2) {
-    const user1 = await getUser(chatId1);
-    const user2 = await getUser(chatId2);
+    const user1 = await userRepo.getUser(chatId1);
+    const user2 = await userRepo.getUser(chatId2);
     
     if (!user1) {
       throw new Error(`User not found: ${chatId1}`);
@@ -82,14 +73,14 @@ class UserService {
     user1.Partner = chatId2;
     user2.Partner = chatId1;
     
-    await saveUser(user1);
-    await saveUser(user2);
+    await userRepo.saveUser(user1);
+    await userRepo.saveUser(user2);
     
     return { user1, user2 };
   }
 
   async unlinkPartner(chatId) {
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
@@ -99,22 +90,22 @@ class UserService {
       throw new Error('User has no partner');
     }
     
-    const partner = await getUser(user.Partner);
+    const partner = await userRepo.getUser(user.Partner);
     
     // Unlink both users
     delete user.Partner;
     if (partner) {
       delete partner.Partner;
-      await saveUser(partner);
+      await userRepo.saveUser(partner);
     }
     
-    await saveUser(user);
+    await userRepo.saveUser(user);
     
     return { user, partner };
   }
 
   async getTicketBalance(chatId) {
-    const count = await getTicketCount(chatId);
+    const count = await userRepo.getTicketCount(chatId);
     return { 
       chatId, 
       tickets: count || 0 
@@ -126,14 +117,14 @@ class UserService {
       throw new Error('Amount must be non-zero');
     }
     
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
     }
     
-    await addTicket(chatId, amount);
+    await userRepo.addTicket(chatId, amount);
     
-    const newBalance = await getTicketCount(chatId);
+    const newBalance = await userRepo.getTicketCount(chatId);
     
     return {
       chatId,
@@ -147,20 +138,20 @@ class UserService {
       throw new Error('Amount must be positive');
     }
     
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
     }
     
-    const currentBalance = await getTicketCount(chatId);
+    const currentBalance = await userRepo.getTicketCount(chatId);
     
     if (currentBalance < amount) {
       throw new Error(`Insufficient tickets. Need ${amount}, have ${currentBalance}`);
     }
     
-    await addTicket(chatId, -amount);
+    await userRepo.addTicket(chatId, -amount);
     
-    const newBalance = await getTicketCount(chatId);
+    const newBalance = await userRepo.getTicketCount(chatId);
     
     return {
       chatId,
@@ -170,7 +161,7 @@ class UserService {
   }
 
   async getChatHistory(chatId) {
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
@@ -180,20 +171,20 @@ class UserService {
   }
 
   async updateChatHistory(chatId, messages) {
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
     }
     
     user.chatHistory = messages;
-    await saveUser(user);
+    await userRepo.saveUser(user);
     
     return messages;
   }
 
   async appendToChatHistory(chatId, message) {
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
@@ -213,40 +204,40 @@ class UserService {
       user.chatHistory = user.chatHistory.slice(-50);
     }
     
-    await saveUser(user);
+    await userRepo.saveUser(user);
     
     return user.chatHistory;
   }
 
   async clearChatHistory(chatId) {
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
     }
     
     user.chatHistory = [];
-    await saveUser(user);
+    await userRepo.saveUser(user);
     
     return { cleared: true };
   }
 
   async getChatState(chatId) {
-    return await getChatState(chatId);
+    return await userRepo.getChatState(chatId);
   }
 
   async setChatState(chatId, state, data = {}) {
-    await setChatState(chatId, state, data);
+    await userRepo.setChatState(chatId, state, data);
     return { state, data };
   }
 
   async clearChatState(chatId) {
-    await clearChatState(chatId);
+    await userRepo.clearChatState(chatId);
     return { cleared: true };
   }
 
   async getAllUsers(filters = {}) {
-    const allUsers = await getAllUsers();
+    const allUsers = await userRepo.getAllUsers();
     let filteredUsers = [...allUsers];
     
     // Filter by partner status
@@ -274,7 +265,7 @@ class UserService {
   }
 
   async getPartnerInfo(chatId) {
-    const user = await getUser(chatId);
+    const user = await userRepo.getUser(chatId);
     
     if (!user) {
       throw new Error(`User not found: ${chatId}`);
@@ -284,12 +275,12 @@ class UserService {
       return null;
     }
     
-    const partner = await getUser(user.Partner);
+    const partner = await userRepo.getUser(user.Partner);
     
     if (!partner) {
       // Partner was deleted or doesn't exist
       delete user.Partner;
-      await saveUser(user);
+      await userRepo.saveUser(user);
       return null;
     }
     
@@ -301,7 +292,7 @@ class UserService {
   }
 
   async getUsersForNotification(criteria = {}) {
-    const users = await getAllUsers();
+    const users = await userRepo.getAllUsers();
     
     return users.filter(user => {
       // Check if user has incomplete goals (would need goal service)

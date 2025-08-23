@@ -4,7 +4,9 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "jest tests/",
+		"test:watch": "jest tests/ --watch",
+		"test:coverage": "jest tests/ --coverage"
 	},
 	"keywords": [],
 	"author": "",
@@ -14,5 +16,13 @@
 		"dotenv": "^16.4.7",
 		"node-telegram-bot-api": "^0.66.0",
 		"uuid": "^11.0.5"
+	},
+	"devDependencies": {
+		"jest": "^29.7.0"
+	},
+	"jest": {
+		"testEnvironment": "node",
+		"setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+		"testMatch": ["<rootDir>/tests/**/*.test.js"]
 	}
 }

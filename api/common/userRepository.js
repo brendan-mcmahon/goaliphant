@@ -25,17 +25,32 @@ async function getUser(chatId) {
 }
 exports.getUser = getUser;
 
-async function saveUser(chatId, name = null) {
-	const params = {
-		TableName: userTable,
-		Item: {
-			ChatId: chatId.toString(),
-			ChatState: 'chat',
-		},
-	};
-
-	if (name) {
-		params.Item.Name = name;
+async function saveUser(userOrChatId, name = null) {
+	let params;
+	
+	// Handle both user object and legacy chatId/name parameters
+	if (typeof userOrChatId === 'object' && userOrChatId.ChatId) {
+		// New interface: save full user object
+		params = {
+			TableName: userTable,
+			Item: {
+				...userOrChatId,
+				ChatId: userOrChatId.ChatId.toString()
+			}
+		};
+	} else {
+		// Legacy interface: save with chatId and optional name
+		params = {
+			TableName: userTable,
+			Item: {
+				ChatId: userOrChatId.toString(),
+				ChatState: 'chat',
+			},
+		};
+		
+		if (name) {
+			params.Item.Name = name;
+		}
 	}
 
 	try {
@@ -126,7 +141,7 @@ const addTicket = async (chatId, ticket = 1) => {
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
-		UpdateExpression: 'ADD TicketWallet :ticket',
+		UpdateExpression: 'ADD Tickets :ticket',
 		ExpressionAttributeValues: {
 			':ticket': ticket,
 		},
@@ -148,13 +163,13 @@ const getTicketCount = async (chatId) => {
 	const params = {
 		TableName: userTable,
 		Key: { ChatId: chatId.toString() },
-		ProjectionExpression: 'TicketWallet',
+		ProjectionExpression: 'Tickets',
 	};
 
 	try {
 		const result = await dynamoDb.get(params).promise();
 		console.log('Tickets fetched successfully');
-		return result.Item.TicketWallet;
+		return result.Item?.Tickets || 0;
 	} catch (err) {
 		console.error('Error fetching tickets:', err);
 		throw err;
