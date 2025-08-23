@@ -3,6 +3,25 @@ const { getUser } = require('../common/userRepository');
 const { shouldShowRecurringGoalToday } = require('../common/cronUtils');
 const { isScheduledDateInTheFuture } = require('../common/utilities');
 
+/*
+ * INDEXING CONVENTION: 
+ * 
+ * This service uses 0-BASED indexing throughout (fixed December 2024).
+ * 
+ * API CALLS:
+ * - POST /api/v1/goals/0/complete   // Complete first goal
+ * - DELETE /api/v1/goals/0          // Delete first goal
+ * - PUT /api/v1/goals/0             // Edit first goal
+ * 
+ * UI CONVERSION:
+ * - Bot handlers convert user input: parseInt(userInput) - 1
+ * - Web UI should do the same: goalNumber - 1
+ * - Users see 1-based, API uses 0-based
+ * 
+ * ALL METHODS NOW USE CONSISTENT 0-BASED VALIDATION:
+ * - if (index < 0 || index >= goals.length)
+ */
+
 class GoalService {
 	async addGoal(chatId, text, options = {}) {
 		const goals = await getGoals(chatId);
@@ -45,7 +64,7 @@ class GoalService {
 	async editGoal(chatId, index, text) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -58,7 +77,7 @@ class GoalService {
 	async deleteGoal(chatId, index) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -87,7 +106,7 @@ class GoalService {
 	async completeGoal(chatId, index) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -126,7 +145,7 @@ class GoalService {
 	async uncompleteGoal(chatId, index) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -198,7 +217,7 @@ class GoalService {
 	async scheduleGoal(chatId, index, date) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -210,7 +229,7 @@ class GoalService {
 	async unscheduleGoal(chatId, index) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -222,7 +241,7 @@ class GoalService {
 	async addNoteToGoal(chatId, index, note) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -242,7 +261,7 @@ class GoalService {
 	async makeGoalRecurring(chatId, index, cronExpression) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -254,7 +273,7 @@ class GoalService {
 	async removeRecurring(chatId, index) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
@@ -320,7 +339,7 @@ class GoalService {
 	async getGoalDetails(chatId, index) {
 		const goals = await getGoals(chatId);
 
-		if (index < 1 || index >= goals.length + 1) {
+		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
