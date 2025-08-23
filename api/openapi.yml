@@ -1,18 +1,67 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
   title: Goaliphant API
-  description: API for managing daily goals via Goaliphant.
-  version: 1.0.0
+  description: |
+    Comprehensive API for managing daily goals, rewards, and partner accountability via Goaliphant.
+    
+    ## Features
+    - Goal management (CRUD, scheduling, recurring)
+    - Reward system with partner requests
+    - User management and partner linking
+    - Ticket-based gamification
+    - System operations (rollover, notifications)
+    
+    ## Authentication
+    All endpoints require authentication via API key in header: `X-API-Key`
+  version: 2.0.0
+  contact:
+    name: Goaliphant Support
+    email: support@goaliphant.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
 servers:
   - url: https://5fxpi3bue4dkhwv4kf5re3vcyi0cowqn.lambda-url.us-east-2.on.aws
+    description: Production server
+
 paths:
-  /getAllData:
+  # ============ GOAL ENDPOINTS ============
+  /api/v1/goals:
     get:
-      summary: Get all goals and rewards
-      operationId: getAllData
+      summary: List goals
+      description: Retrieve goals for a user with optional filtering
+      tags: [Goals]
+      parameters:
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: User's chat ID
+        - name: completed
+          in: query
+          schema:
+            type: boolean
+          description: Filter by completion status
+        - name: today
+          in: query
+          schema:
+            type: boolean
+          description: Show only today's goals (excluding scheduled future goals)
+        - name: scheduled
+          in: query
+          schema:
+            type: boolean
+          description: Filter by scheduled status
+        - name: recurring
+          in: query
+          schema:
+            type: boolean
+          description: Filter by recurring status
       responses:
-        "200":
-          description: Successful response
+        '200':
+          description: Goals retrieved successfully
           content:
             application/json:
               schema:
@@ -21,25 +70,987 @@ paths:
                   goals:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        text:
-                          type: string
-                        completed:
-                          type: boolean
+                      $ref: '#/components/schemas/Goal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      summary: Add goal
+      description: Create a new goal
+      tags: [Goals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, text]
+              properties:
+                chatId:
+                  type: string
+                  description: User's chat ID
+                text:
+                  type: string
+                  description: Goal text
+                isHoney:
+                  type: boolean
+                  description: Whether this is a honey-do task for partner
+                scheduledDate:
+                  type: string
+                  format: date
+                  description: Optional scheduled date
+                recurring:
+                  type: string
+                  description: Optional cron expression for recurring goals
+      responses:
+        '201':
+          description: Goal created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal:
+                    $ref: '#/components/schemas/Goal'
+                  addedTo:
+                    type: string
+                    enum: [self, partner]
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/goals/batch:
+    post:
+      summary: Add multiple goals
+      description: Create multiple goals at once
+      tags: [Goals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, goals]
+              properties:
+                chatId:
+                  type: string
+                goals:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of goal texts
+      responses:
+        '201':
+          description: Goals created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Goal'
+
+  /api/v1/goals/{index}:
+    put:
+      summary: Edit goal
+      description: Update goal text
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Goal index in user's list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, text]
+              properties:
+                chatId:
+                  type: string
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Goal updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal:
+                    $ref: '#/components/schemas/Goal'
+
+    delete:
+      summary: Delete goal
+      description: Remove a goal from user's list
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Goal deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    $ref: '#/components/schemas/Goal'
+
+  /api/v1/goals/{index}/complete:
+    post:
+      summary: Complete goal
+      description: Mark goal as completed and award ticket if applicable
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId]
+              properties:
+                chatId:
+                  type: string
+      responses:
+        '200':
+          description: Goal completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal:
+                    $ref: '#/components/schemas/Goal'
+                  ticketAwarded:
+                    type: boolean
+
+    delete:
+      summary: Uncomplete goal
+      description: Mark goal as incomplete and deduct ticket if applicable
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Goal uncompleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal:
+                    $ref: '#/components/schemas/Goal'
+                  ticketDeducted:
+                    type: boolean
+
+  /api/v1/goals/{index}/position:
+    put:
+      summary: Move goal
+      description: Move goal to different position in list
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Current position
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, toIndex]
+              properties:
+                chatId:
+                  type: string
+                toIndex:
+                  type: integer
+                  description: New position
+      responses:
+        '200':
+          description: Goal moved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movedGoal:
+                    $ref: '#/components/schemas/Goal'
+                  newPosition:
+                    type: integer
+
+  /api/v1/goals/swap:
+    put:
+      summary: Swap goals
+      description: Swap positions of two goals
+      tags: [Goals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, index1, index2]
+              properties:
+                chatId:
+                  type: string
+                index1:
+                  type: integer
+                index2:
+                  type: integer
+      responses:
+        '200':
+          description: Goals swapped successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  swapped:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Goal'
+
+  /api/v1/goals/{index}/schedule:
+    post:
+      summary: Schedule goal
+      description: Schedule goal for future date
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, date]
+              properties:
+                chatId:
+                  type: string
+                date:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Goal scheduled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal:
+                    $ref: '#/components/schemas/Goal'
+
+    delete:
+      summary: Unschedule goal
+      description: Remove scheduled date from goal
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Goal unscheduled successfully
+
+  /api/v1/goals/{index}/recurring:
+    post:
+      summary: Make goal recurring
+      description: Set up recurring pattern for goal
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, cronExpression]
+              properties:
+                chatId:
+                  type: string
+                cronExpression:
+                  type: string
+                  description: Cron expression (e.g., "0 9 * * 1-5" for weekdays at 9am)
+      responses:
+        '200':
+          description: Goal set to recurring successfully
+
+    delete:
+      summary: Remove recurring
+      description: Remove recurring pattern from goal
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recurring pattern removed
+
+  /api/v1/goals/{index}/notes:
+    post:
+      summary: Add note to goal
+      description: Add a note/comment to a goal
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, note]
+              properties:
+                chatId:
+                  type: string
+                note:
+                  type: string
+      responses:
+        '200':
+          description: Note added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal:
+                    $ref: '#/components/schemas/Goal'
+
+  /api/v1/goals/partner:
+    get:
+      summary: Get partner goals
+      description: Retrieve partner's current goals
+      tags: [Goals]
+      parameters:
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Partner goals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Goal'
+
+  # ============ REWARD ENDPOINTS ============
+  /api/v1/rewards:
+    get:
+      summary: List rewards
+      description: Get user's rewards with optional filtering
+      tags: [Rewards]
+      parameters:
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, redeemed, pending, rejected]
+        - name: affordable
+          in: query
+          schema:
+            type: boolean
+          description: Filter by whether user has enough tickets
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [cost, created]
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        '200':
+          description: Rewards retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
                   rewards:
                     type: array
                     items:
+                      $ref: '#/components/schemas/Reward'
+
+    post:
+      summary: Create reward
+      description: Create a new reward
+      tags: [Rewards]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, title, cost]
+              properties:
+                chatId:
+                  type: string
+                title:
+                  type: string
+                description:
+                  type: string
+                cost:
+                  type: integer
+                  minimum: 1
+      responses:
+        '201':
+          description: Reward created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reward:
+                    $ref: '#/components/schemas/Reward'
+
+  /api/v1/rewards/{rewardId}:
+    get:
+      summary: Get reward
+      description: Get reward by ID
+      tags: [Rewards]
+      parameters:
+        - name: rewardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reward retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reward:
+                    $ref: '#/components/schemas/Reward'
+
+    put:
+      summary: Update reward
+      description: Update reward details
+      tags: [Rewards]
+      parameters:
+        - name: rewardId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                cost:
+                  type: integer
+      responses:
+        '200':
+          description: Reward updated successfully
+
+    delete:
+      summary: Delete reward
+      description: Remove reward
+      tags: [Rewards]
+      parameters:
+        - name: rewardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reward deleted successfully
+
+  /api/v1/rewards/{rewardId}/redeem:
+    post:
+      summary: Redeem reward
+      description: Redeem reward using tickets
+      tags: [Rewards]
+      parameters:
+        - name: rewardId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId]
+              properties:
+                chatId:
+                  type: string
+      responses:
+        '200':
+          description: Reward redeemed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reward:
+                    $ref: '#/components/schemas/Reward'
+                  ticketsDeducted:
+                    type: integer
+                  remainingTickets:
+                    type: integer
+
+  /api/v1/rewards/request:
+    post:
+      summary: Request reward
+      description: Request a reward from partner
+      tags: [Rewards]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requesterId, recipientId, title]
+              properties:
+                requesterId:
+                  type: string
+                recipientId:
+                  type: string
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Reward request created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reward:
+                    $ref: '#/components/schemas/Reward'
+
+  /api/v1/rewards/request/{rewardId}:
+    put:
+      summary: Approve reward request
+      description: Approve partner's reward request and set cost
+      tags: [Rewards]
+      parameters:
+        - name: rewardId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cost]
+              properties:
+                cost:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Reward request approved successfully
+
+  # ============ USER ENDPOINTS ============
+  /api/v1/users:
+    post:
+      summary: Create user
+      description: Register a new user
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, username]
+              properties:
+                chatId:
+                  type: string
+                username:
+                  type: string
+                notificationsEnabled:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /api/v1/users/{chatId}:
+    get:
+      summary: Get user
+      description: Get user information
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+
+    put:
+      summary: Update user
+      description: Update user information
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                notificationsEnabled:
+                  type: boolean
+      responses:
+        '200':
+          description: User updated successfully
+
+  /api/v1/users/{chatId}/tickets:
+    get:
+      summary: Get ticket balance
+      description: Get user's current ticket balance
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ticket balance retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatId:
+                    type: string
+                  tickets:
+                    type: integer
+
+    post:
+      summary: Add/deduct tickets
+      description: Modify user's ticket balance
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount:
+                  type: integer
+                  description: Positive to add, negative to deduct
+      responses:
+        '200':
+          description: Ticket balance updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatId:
+                    type: string
+                  ticketsAdded:
+                    type: integer
+                  newBalance:
+                    type: integer
+
+  /api/v1/users/{chatId}/partner:
+    post:
+      summary: Link partner
+      description: Link two users as partners
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [partnerChatId]
+              properties:
+                partnerChatId:
+                  type: string
+      responses:
+        '200':
+          description: Partners linked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user1:
+                    $ref: '#/components/schemas/User'
+                  user2:
+                    $ref: '#/components/schemas/User'
+
+    delete:
+      summary: Unlink partner
+      description: Remove partner relationship
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Partner unlinked successfully
+
+  /api/v1/users/{chatId}/chat:
+    get:
+      summary: Get chat history
+      description: Get user's chat history for AI context
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chat history retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+
+    put:
+      summary: Update chat history
+      description: Replace entire chat history
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages]
+              properties:
+                messages:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChatMessage'
+      responses:
+        '200':
+          description: Chat history updated
+
+    delete:
+      summary: Clear chat history
+      description: Remove all chat history
+      tags: [Users]
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chat history cleared
+
+  # ============ SYSTEM ENDPOINTS ============
+  /api/v1/system/rollover:
+    post:
+      summary: Perform rollover
+      description: Execute daily rollover for all users
+      tags: [System]
+      responses:
+        '200':
+          description: Rollover completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  successful:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RolloverResult'
+                  failed:
+                    type: array
+                    items:
                       type: object
                       properties:
-                        name:
+                        chatId:
                           type: string
-                        cost:
-                          type: integer
-  /today:
+                        error:
+                          type: string
+                  stats:
+                    $ref: '#/components/schemas/RolloverStats'
+
+  /api/v1/system/rollover/status:
     get:
-      summary: Get today's goals for a user
-      operationId: getTodayGoals
+      summary: Get rollover status
+      description: Check when rollover was last run
+      tags: [System]
+      responses:
+        '200':
+          description: Rollover status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [never_run, recently_run, ready]
+                  lastRun:
+                    type: string
+                    format: date-time
+                  hoursSince:
+                    type: number
+                  message:
+                    type: string
+
+  /api/v1/system/rollover/simulate:
+    get:
+      summary: Simulate rollover
+      description: Preview what would happen during rollover for a user
+      tags: [System]
       parameters:
         - name: chatId
           in: query
@@ -47,8 +1058,134 @@ paths:
           schema:
             type: string
       responses:
-        "200":
-          description: Today's goals retrieved successfully
+        '200':
+          description: Rollover simulation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloverSimulation'
+
+  /api/v1/system/notifications/pending:
+    get:
+      summary: Get pending notifications
+      description: Get notifications waiting to be sent
+      tags: [System]
+      parameters:
+        - name: recipientId
+          in: query
+          schema:
+            type: string
+          description: Filter by recipient
+      responses:
+        '200':
+          description: Pending notifications retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+
+  /api/v1/system/notifications:
+    post:
+      summary: Queue notification
+      description: Add notification to queue
+      tags: [System]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipientId, notification]
+              properties:
+                recipientId:
+                  type: string
+                notification:
+                  type: object
+                  required: [type, message]
+                  properties:
+                    type:
+                      type: string
+                      enum: [info, warning, error, goal_completed, reward_request, daily_reminder]
+                    message:
+                      type: string
+                    priority:
+                      type: string
+                      enum: [low, normal, high]
+                      default: normal
+                    data:
+                      type: object
+      responses:
+        '201':
+          description: Notification queued successfully
+
+  /api/v1/system/notifications/{notificationId}/sent:
+    put:
+      summary: Mark notification sent
+      description: Mark notification as successfully sent
+      tags: [System]
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notification marked as sent
+
+  /api/v1/system/notifications/reminder-users:
+    get:
+      summary: Get users for daily reminder
+      description: Get users eligible for daily reminder notifications
+      tags: [System]
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '#/components/schemas/User'
+                        incompleteGoals:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Goal'
+
+  /api/v1/system/notifications/stats:
+    get:
+      summary: Get notification stats
+      description: Get notification queue statistics
+      tags: [System]
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationStats'
+
+  # ============ LEGACY ENDPOINTS ============
+  /getAllData:
+    get:
+      summary: Get all data (legacy)
+      description: Legacy endpoint for backward compatibility
+      tags: [Legacy]
+      deprecated: true
+      responses:
+        '200':
+          description: All data retrieved
           content:
             application/json:
               schema:
@@ -56,19 +1193,39 @@ paths:
                 properties:
                   goals:
                     type: array
-                    items:
-                      type: object
-                      properties:
-                        text:
-                          type: string
-                        completed:
-                          type: boolean
+                  rewards:
+                    type: array
+                  userGoals:
+                    type: array
+
+  /completeGoal:
+    get:
+      summary: Complete goal (legacy)
+      description: Legacy endpoint for completing goals
+      tags: [Legacy]
+      deprecated: true
+      parameters:
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: index
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Goal completed
+
   /addGoal:
     post:
-      summary: Add a new goal
-      operationId: addGoal
+      summary: Add goal (legacy)
+      description: Legacy endpoint for adding goals
+      tags: [Legacy]
+      deprecated: true
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -79,79 +1236,313 @@ paths:
                 text:
                   type: string
       responses:
-        "200":
-          description: Goal added successfully
-  /completeGoal:
-    post:
-      summary: Mark a goal as completed
-      operationId: completeGoal
-      parameters:
-        - name: chatId
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: index
-          in: query
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Goal marked as completed
-  /uncompleteGoal:
-    post:
-      summary: Mark a goal as incomplete
-      operationId: uncompleteGoal
-      parameters:
-        - name: chatId
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: index
-          in: query
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Goal marked as incomplete
-  /editGoal:
-    post:
-      summary: Edit a goal's text
-      operationId: editGoal
-      requestBody:
-        required: true
+        '200':
+          description: Goal added
+
+# ============ COMPONENTS ============
+components:
+  schemas:
+    Goal:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Goal text
+        completed:
+          type: boolean
+          description: Completion status
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        completedAt:
+          type: string
+          format: date-time
+          description: Completion timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        scheduledDate:
+          type: string
+          format: date
+          description: Scheduled date for future goals
+        recurring:
+          type: string
+          description: Cron expression for recurring goals
+        isHoney:
+          type: boolean
+          description: Whether this is a honey-do task from partner
+        fromPartner:
+          type: string
+          description: Chat ID of partner who assigned this honey-do
+        notes:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+
+    Reward:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique reward ID
+        ChatId:
+          type: string
+          description: Owner's chat ID
+        title:
+          type: string
+          description: Reward title
+        description:
+          type: string
+          description: Reward description
+        cost:
+          type: integer
+          description: Ticket cost
+        status:
+          type: string
+          enum: [active, redeemed, pending, approved, rejected]
+          description: Reward status
+        createdAt:
+          type: string
+          format: date-time
+        redeemedAt:
+          type: string
+          format: date-time
+          description: Redemption timestamp
+        type:
+          type: string
+          enum: [regular, request]
+          description: Whether this is a regular reward or partner request
+        requesterId:
+          type: string
+          description: Chat ID of person who requested this reward
+        requesterName:
+          type: string
+          description: Name of person who requested this reward
+
+    User:
+      type: object
+      properties:
+        ChatId:
+          type: string
+          description: Unique chat ID
+        Username:
+          type: string
+          description: User's display name
+        Tickets:
+          type: integer
+          description: Current ticket balance
+        Partner:
+          type: string
+          description: Partner's chat ID
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        notificationsEnabled:
+          type: boolean
+          description: Whether notifications are enabled
+        lastNotificationAt:
+          type: string
+          format: date-time
+          description: Last notification timestamp
+        chatHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system]
         content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                chatId:
-                  type: string
-                index:
-                  type: integer
-                text:
-                  type: string
-      responses:
-        "200":
-          description: Goal edited successfully
-  /deleteGoal:
-    post:
-      summary: Delete a goal
-      operationId: deleteGoal
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                chatId:
-                  type: string
-                index:
-                  type: integer
-      responses:
-        "200":
-          description: Goal deleted successfully
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        recipientId:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, failed]
+        priority:
+          type: string
+          enum: [low, normal, high]
+        createdAt:
+          type: string
+          format: date-time
+        sentAt:
+          type: string
+          format: date-time
+        data:
+          type: object
+
+    RolloverResult:
+      type: object
+      properties:
+        chatId:
+          type: string
+        date:
+          type: string
+          format: date-time
+        rolledOver:
+          type: integer
+          description: Goals carried over
+        archived:
+          type: integer
+          description: Goals archived
+        recurringCreated:
+          type: integer
+          description: New recurring instances created
+        original:
+          type: integer
+          description: Original goal count
+        final:
+          type: integer
+          description: Final goal count
+
+    RolloverStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        goalsRolledOver:
+          type: integer
+        goalsArchived:
+          type: integer
+        recurringGoalsCreated:
+          type: integer
+        duration:
+          type: integer
+          description: Process duration in milliseconds
+        successRate:
+          type: number
+          description: Percentage of successful rollover operations
+
+    RolloverSimulation:
+      type: object
+      properties:
+        chatId:
+          type: string
+        currentGoals:
+          type: integer
+        wouldArchive:
+          type: array
+          items:
+            type: string
+        wouldRollOver:
+          type: array
+          items:
+            type: string
+        wouldCreateRecurring:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              pattern:
+                type: string
+        scheduledGoals:
+          type: array
+          items:
+            type: string
+        summary:
+          type: object
+          properties:
+            finalGoalCount:
+              type: integer
+            archived:
+              type: integer
+            rolledOver:
+              type: integer
+            recurringCreated:
+              type: integer
+
+    NotificationStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        pending:
+          type: integer
+        sent:
+          type: integer
+        failed:
+          type: integer
+        byType:
+          type: object
+          additionalProperties:
+            type: integer
+        byPriority:
+          type: object
+          properties:
+            high:
+              type: integer
+            normal:
+              type: integer
+            low:
+              type: integer
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Goals
+    description: Goal management operations
+  - name: Rewards
+    description: Reward system operations
+  - name: Users
+    description: User management and partner operations
+  - name: System
+    description: System operations (rollover, notifications)
+  - name: Legacy
+    description: Legacy endpoints for backward compatibility
