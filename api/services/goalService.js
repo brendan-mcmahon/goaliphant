@@ -285,6 +285,7 @@ class GoalService {
 	async listGoals(chatId, options = {}) {
 		const goals = await getGoals(chatId);
 		let filteredGoals = [...goals];
+		console.log("filters:", options);
 
 		// Filter by completion status
 		if (options.completed !== undefined) {
