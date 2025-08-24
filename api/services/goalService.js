@@ -285,15 +285,16 @@ class GoalService {
 	async listGoals(chatId, options = {}) {
 		const goals = await getGoals(chatId);
 		let filteredGoals = [...goals];
-		console.log("filters:", options);
 
 		// Filter by completion status
 		if (options.completed !== undefined) {
-			filteredGoals = filteredGoals.filter(g => g.completed === options.completed);
+			// Convert string to boolean for comparison
+			const completedFilter = options.completed === 'true' || options.completed === true;
+			filteredGoals = filteredGoals.filter(g => g.completed === completedFilter);
 		}
 
 		// Filter for today's goals
-		if (options.today) {
+		if (options.today === 'true' || options.today === true) {
 			filteredGoals = filteredGoals.filter(goal => {
 				// Check if scheduled for future
 				if (goal.scheduledDate && isScheduledDateInTheFuture(goal.scheduledDate)) {
@@ -311,15 +312,17 @@ class GoalService {
 
 		// Filter by scheduled status
 		if (options.scheduled !== undefined) {
+			const scheduledFilter = options.scheduled === 'true' || options.scheduled === true;
 			filteredGoals = filteredGoals.filter(g =>
-				options.scheduled ? g.scheduledDate : !g.scheduledDate
+				scheduledFilter ? g.scheduledDate : !g.scheduledDate
 			);
 		}
 
 		// Filter by recurring status
 		if (options.recurring !== undefined) {
+			const recurringFilter = options.recurring === 'true' || options.recurring === true;
 			filteredGoals = filteredGoals.filter(g =>
-				options.recurring ? g.recurring : !g.recurring
+				recurringFilter ? g.recurring : !g.recurring
 			);
 		}
 
