@@ -105,6 +105,7 @@ class GoalService {
 
 	async completeGoal(chatId, index) {
 		const goals = await getGoals(chatId);
+		index--;
 
 		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
@@ -144,6 +145,7 @@ class GoalService {
 
 	async uncompleteGoal(chatId, index) {
 		const goals = await getGoals(chatId);
+		index--;
 
 		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
