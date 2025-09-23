@@ -103,7 +103,29 @@ async function showGoalDetails(goalIndex, chatId) {
             const scheduledDate = new Date(goal.scheduledDate).toLocaleDateString();
             messageText += `*Scheduled for:* ${scheduledDate}\n`;
         }
-        
+
+        if (goal.dueDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(goal.dueDate);
+            due.setHours(0, 0, 0, 0);
+            const diffTime = due - today;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            const dueDateStr = due.toLocaleDateString();
+
+            if (diffDays < 0) {
+                const daysPast = Math.abs(diffDays);
+                messageText += `*Due Date:* ${dueDateStr} ⚠️ (${daysPast} day${daysPast === 1 ? '' : 's'} overdue)\n`;
+            } else if (diffDays === 0) {
+                messageText += `*Due Date:* ${dueDateStr} 📅 (Due today!)\n`;
+            } else if (diffDays === 1) {
+                messageText += `*Due Date:* ${dueDateStr} 📅 (Due tomorrow)\n`;
+            } else {
+                messageText += `*Due Date:* ${dueDateStr} 📅 (${diffDays} days remaining)\n`;
+            }
+        }
+
         // Add recurring information if applicable
         if (goal.isRecurring) {
             messageText += `*Recurring:* Yes\n`;

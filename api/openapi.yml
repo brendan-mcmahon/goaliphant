@@ -101,6 +101,10 @@ paths:
                   type: string
                   format: date
                   description: Optional scheduled date
+                dueDate:
+                  type: string
+                  format: date
+                  description: Optional due date
                 recurring:
                   type: string
                   description: Optional cron expression for recurring goals
@@ -140,8 +144,24 @@ paths:
                 goals:
                   type: array
                   items:
-                    type: string
-                  description: Array of goal texts
+                    type: object
+                    required: [text]
+                    properties:
+                      text:
+                        type: string
+                        description: Goal text
+                      dueDate:
+                        type: string
+                        format: date
+                        description: Optional due date
+                      scheduledDate:
+                        type: string
+                        format: date
+                        description: Optional scheduled date
+                      isHoney:
+                        type: boolean
+                        description: Whether this is a honey-do task for partner
+                  description: Array of goal objects
       responses:
         '201':
           description: Goals created successfully
@@ -1303,6 +1323,10 @@ components:
           type: string
           format: date
           description: Scheduled date for future goals
+        dueDate:
+          type: string
+          format: date
+          description: Due date for this goal
         recurring:
           type: string
           description: Cron expression for recurring goals

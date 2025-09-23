@@ -177,9 +177,30 @@ const goalRoutes = {
 	async getPartnerGoals(event) {
 		const { chatId } = event.queryStringParameters || {};
 		validateRequired({ chatId }, ['chatId']);
-		
+
 		const goals = await goalService.listPartnerGoals(chatId);
 		return createResponse(200, { goals });
+	},
+
+	// Set due date - PUT /api/v1/goals/{index}/due-date
+	async setDueDate(event) {
+		const index = parseInt(extractPathParam(event.rawPath, 4));
+		const body = JSON.parse(event.body || '{}');
+		const { chatId, dueDate } = body;
+		validateRequired({ chatId, dueDate }, ['chatId', 'dueDate']);
+
+		const result = await goalService.setDueDate(chatId, index, dueDate);
+		return createResponse(200, { goal: result });
+	},
+
+	// Clear due date - DELETE /api/v1/goals/{index}/due-date
+	async clearDueDate(event) {
+		const index = parseInt(extractPathParam(event.rawPath, 4));
+		const { chatId } = event.queryStringParameters || {};
+		validateRequired({ chatId }, ['chatId']);
+
+		const result = await goalService.clearDueDate(chatId, index);
+		return createResponse(200, { goal: result });
 	}
 };
 
@@ -203,7 +224,9 @@ const matchGoalRoute = (method, path) => {
 	if (method === 'POST' && path.match(/^\/api\/v1\/goals\/(\d+)\/recurring$/)) return goalRoutes.makeGoalRecurring;
 	if (method === 'DELETE' && path.match(/^\/api\/v1\/goals\/(\d+)\/recurring$/)) return goalRoutes.removeRecurring;
 	if (method === 'POST' && path.match(/^\/api\/v1\/goals\/(\d+)\/notes$/)) return goalRoutes.addNoteToGoal;
-	
+	if (method === 'PUT' && path.match(/^\/api\/v1\/goals\/(\d+)\/due-date$/)) return goalRoutes.setDueDate;
+	if (method === 'DELETE' && path.match(/^\/api\/v1\/goals\/(\d+)\/due-date$/)) return goalRoutes.clearDueDate;
+
 	return null;
 };
 

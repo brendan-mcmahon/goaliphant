@@ -48,13 +48,20 @@ class GoalService {
 		return { goal: newGoal, addedTo: 'self' };
 	}
 
-	async addMultipleGoals(chatId, goalsText) {
+	async addMultipleGoals(chatId, goalObjects) {
 		const goals = await getGoals(chatId);
-		const newGoals = goalsText.map(text => ({
-			text: text.trim(),
-			completed: false,
-			createdAt: new Date().toISOString()
-		})).filter(g => g.text.length > 0);
+		const newGoals = goalObjects.map(goalData => {
+			// Support both string and object formats for backward compatibility
+			const goalText = typeof goalData === 'string' ? goalData : goalData.text;
+			const goalOptions = typeof goalData === 'string' ? {} : goalData;
+
+			return {
+				text: goalText.trim(),
+				completed: false,
+				createdAt: new Date().toISOString(),
+				...goalOptions
+			};
+		}).filter(g => g.text.length > 0);
 
 		goals.push(...newGoals);
 		await updateGoals(chatId, goals);
@@ -76,6 +83,7 @@ class GoalService {
 
 	async deleteGoal(chatId, index) {
 		const goals = await getGoals(chatId);
+		index--;
 
 		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
@@ -240,6 +248,32 @@ class GoalService {
 		return goals[index];
 	}
 
+	async setDueDate(chatId, index, dueDate) {
+		const goals = await getGoals(chatId);
+
+		if (index < 0 || index >= goals.length) {
+			throw new Error(`Invalid goal index: ${index}`);
+		}
+
+		goals[index].dueDate = dueDate;
+		goals[index].updatedAt = new Date().toISOString();
+		await updateGoals(chatId, goals);
+		return goals[index];
+	}
+
+	async clearDueDate(chatId, index) {
+		const goals = await getGoals(chatId);
+
+		if (index < 0 || index >= goals.length) {
+			throw new Error(`Invalid goal index: ${index}`);
+		}
+
+		delete goals[index].dueDate;
+		goals[index].updatedAt = new Date().toISOString();
+		await updateGoals(chatId, goals);
+		return goals[index];
+	}
+
 	async addNoteToGoal(chatId, index, note) {
 		const goals = await getGoals(chatId);
 
@@ -326,6 +360,43 @@ class GoalService {
 			filteredGoals = filteredGoals.filter(g =>
 				recurringFilter ? g.recurring : !g.recurring
 			);
+		}
+
+		// Filter by due date
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		if (options.dueBefore) {
+			const beforeDate = new Date(options.dueBefore);
+			filteredGoals = filteredGoals.filter(g =>
+				g.dueDate && new Date(g.dueDate) < beforeDate
+			);
+		}
+
+		if (options.dueAfter) {
+			const afterDate = new Date(options.dueAfter);
+			filteredGoals = filteredGoals.filter(g =>
+				g.dueDate && new Date(g.dueDate) > afterDate
+			);
+		}
+
+		if (options.overdue === 'true' || options.overdue === true) {
+			filteredGoals = filteredGoals.filter(g =>
+				g.dueDate && new Date(g.dueDate) < today && !g.completed
+			);
+		}
+
+		// Sort by due date if any due date filters are applied
+		if (options.dueBefore || options.dueAfter || options.overdue || options.sortByDueDate) {
+			filteredGoals.sort((a, b) => {
+				// Goals without due dates go to the end
+				if (!a.dueDate && !b.dueDate) return 0;
+				if (!a.dueDate) return 1;
+				if (!b.dueDate) return -1;
+
+				// Sort by due date ascending
+				return new Date(a.dueDate) - new Date(b.dueDate);
+			});
 		}
 
 		return filteredGoals;
