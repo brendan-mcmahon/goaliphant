@@ -503,6 +503,80 @@ paths:
                   goal:
                     $ref: '#/components/schemas/Goal'
 
+  /api/v1/goals/{index}/due-date:
+    put:
+      summary: Set due date
+      description: Set due date for a goal
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Goal index in user's list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, dueDate]
+              properties:
+                chatId:
+                  type: string
+                  description: User's chat ID
+                dueDate:
+                  type: string
+                  format: date
+                  description: Due date for the goal
+      responses:
+        '200':
+          description: Due date set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal:
+                    $ref: '#/components/schemas/Goal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      summary: Clear due date
+      description: Remove due date from a goal
+      tags: [Goals]
+      parameters:
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Goal index in user's list
+        - name: chatId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: User's chat ID
+      responses:
+        '200':
+          description: Due date cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal:
+                    $ref: '#/components/schemas/Goal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /api/v1/goals/partner:
     get:
       summary: Get partner goals

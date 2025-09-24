@@ -22,6 +22,16 @@ const { isScheduledDateInTheFuture } = require('../common/utilities');
  * - if (index < 0 || index >= goals.length)
  */
 
+// Helper function to normalize goal objects for consistent API responses
+function normalizeGoal(goal) {
+	return {
+		...goal,
+		dueDate: goal.dueDate || null,
+		scheduledDate: goal.scheduledDate || null,
+		recurring: goal.recurring || null
+	};
+}
+
 class GoalService {
 	async addGoal(chatId, text, options = {}) {
 		const goals = await getGoals(chatId);
@@ -78,12 +88,11 @@ class GoalService {
 		goals[index].text = text;
 		goals[index].updatedAt = new Date().toISOString();
 		await updateGoals(chatId, goals);
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async deleteGoal(chatId, index) {
 		const goals = await getGoals(chatId);
-		index--;
 
 		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
@@ -91,7 +100,7 @@ class GoalService {
 
 		const deletedGoal = goals.splice(index, 1)[0];
 		await updateGoals(chatId, goals);
-		return deletedGoal;
+		return normalizeGoal(deletedGoal);
 	}
 
 	async deleteMultipleGoals(chatId, indices) {
@@ -113,7 +122,6 @@ class GoalService {
 
 	async completeGoal(chatId, index) {
 		const goals = await getGoals(chatId);
-		index--;
 
 		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
@@ -125,7 +133,7 @@ class GoalService {
 
 		// Return the completed goal and ticket info
 		return {
-			goal: goals[index],
+			goal: normalizeGoal(goals[index]),
 			ticketAwarded: !goals[index].isHoney // Don't award tickets for honey-do tasks
 		};
 	}
@@ -153,7 +161,6 @@ class GoalService {
 
 	async uncompleteGoal(chatId, index) {
 		const goals = await getGoals(chatId);
-		index--;
 
 		if (index < 0 || index >= goals.length) {
 			throw new Error(`Invalid goal index: ${index}`);
@@ -165,7 +172,7 @@ class GoalService {
 		await updateGoals(chatId, goals);
 
 		return {
-			goal: goals[index],
+			goal: normalizeGoal(goals[index]),
 			ticketDeducted: wasCompleted && !goals[index].isHoney
 		};
 	}
@@ -221,7 +228,7 @@ class GoalService {
 		[goals[index1], goals[index2]] = [goals[index2], goals[index1]];
 		await updateGoals(chatId, goals);
 
-		return { swapped: [goals[index1], goals[index2]] };
+		return { swapped: [normalizeGoal(goals[index1]), normalizeGoal(goals[index2])] };
 	}
 
 	async scheduleGoal(chatId, index, date) {
@@ -233,7 +240,7 @@ class GoalService {
 
 		goals[index].scheduledDate = date;
 		await updateGoals(chatId, goals);
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async unscheduleGoal(chatId, index) {
@@ -245,7 +252,7 @@ class GoalService {
 
 		delete goals[index].scheduledDate;
 		await updateGoals(chatId, goals);
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async setDueDate(chatId, index, dueDate) {
@@ -258,7 +265,7 @@ class GoalService {
 		goals[index].dueDate = dueDate;
 		goals[index].updatedAt = new Date().toISOString();
 		await updateGoals(chatId, goals);
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async clearDueDate(chatId, index) {
@@ -271,7 +278,7 @@ class GoalService {
 		delete goals[index].dueDate;
 		goals[index].updatedAt = new Date().toISOString();
 		await updateGoals(chatId, goals);
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async addNoteToGoal(chatId, index, note) {
@@ -291,7 +298,7 @@ class GoalService {
 		});
 
 		await updateGoals(chatId, goals);
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async makeGoalRecurring(chatId, index, cronExpression) {
@@ -303,7 +310,7 @@ class GoalService {
 
 		goals[index].recurring = cronExpression;
 		await updateGoals(chatId, goals);
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async removeRecurring(chatId, index) {
@@ -315,7 +322,7 @@ class GoalService {
 
 		delete goals[index].recurring;
 		await updateGoals(chatId, goals);
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async listGoals(chatId, options = {}) {
@@ -399,7 +406,8 @@ class GoalService {
 			});
 		}
 
-		return filteredGoals;
+		// Normalize goals to ensure consistent API response format
+		return filteredGoals.map(normalizeGoal);
 	}
 
 	async listPartnerGoals(chatId) {
@@ -410,7 +418,7 @@ class GoalService {
 		}
 
 		const partnerGoals = await getGoals(user.Partner);
-		return partnerGoals.filter(g => !g.completed);
+		return partnerGoals.filter(g => !g.completed).map(normalizeGoal);
 	}
 
 	async getGoalDetails(chatId, index) {
@@ -420,7 +428,7 @@ class GoalService {
 			throw new Error(`Invalid goal index: ${index}`);
 		}
 
-		return goals[index];
+		return normalizeGoal(goals[index]);
 	}
 
 	async getAllUsersGoals() {
