@@ -117,7 +117,7 @@ class GoalService {
 		}
 
 		await updateGoals(chatId, goals);
-		return deletedGoals;
+		return deletedGoals.map(normalizeGoal);
 	}
 
 	async completeGoal(chatId, index) {
@@ -156,7 +156,7 @@ class GoalService {
 		}
 
 		await updateGoals(chatId, goals);
-		return { completedGoals, ticketsAwarded };
+		return { completedGoals: completedGoals.map(normalizeGoal), ticketsAwarded };
 	}
 
 	async uncompleteGoal(chatId, index) {
@@ -195,7 +195,7 @@ class GoalService {
 		}
 
 		await updateGoals(chatId, goals);
-		return { uncompletedGoals, ticketsDeducted };
+		return { uncompletedGoals: uncompletedGoals.map(normalizeGoal), ticketsDeducted };
 	}
 
 	async moveGoal(chatId, fromIndex, toIndex) {
@@ -212,7 +212,7 @@ class GoalService {
 		goals.splice(toIndex, 0, movedGoal);
 		await updateGoals(chatId, goals);
 
-		return { movedGoal, newPosition: toIndex };
+		return { movedGoal: normalizeGoal(movedGoal), newPosition: toIndex };
 	}
 
 	async swapGoals(chatId, index1, index2) {

@@ -3,6 +3,7 @@ const notificationService = require('../services/notificationService');
 const { createResponse, extractPathParam, validateRequired } = require('./utils');
 const fs = require('fs');
 const path = require('path');
+const yaml = require('js-yaml');
 
 // System route handlers
 const systemRoutes = {
@@ -70,21 +71,15 @@ const systemRoutes = {
 		try {
 			const yamlPath = path.join(__dirname, '..', 'openapi.yml');
 			const yamlContent = fs.readFileSync(yamlPath, 'utf8');
-			
-			// Simple YAML to JSON conversion for basic OpenAPI spec
-			// Note: This is a basic conversion - for production you'd want a proper YAML parser
-			const jsonSpec = yamlContent
-				.replace(/^(\s*)([^:\s]+):\s*(.*)$/gm, '$1"$2": $3')
-				.replace(/^(\s*)- (.*)$/gm, '$1$2,')
-				.replace(/\|[\s\S]*?(?=\n\S|\n$)/g, '""'); // Handle multiline descriptions
-			
+			const jsonSpec = yaml.load(yamlContent);
+
 			return {
 				statusCode: 200,
 				headers: {
 					'Content-Type': 'application/json',
 					'Access-Control-Allow-Origin': '*'
 				},
-				body: yamlContent // Return raw YAML for now - Swagger UI can parse it
+				body: JSON.stringify(jsonSpec)
 			};
 		} catch (error) {
 			return createResponse(500, { error: 'Failed to load OpenAPI spec' });

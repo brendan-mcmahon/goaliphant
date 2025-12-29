@@ -67,7 +67,7 @@ exports.updateGoals = updateGoals;
 
 async function createNewDayWithGoals(chatId, username, goals, date = null) {
 	date = date ?? getLocalDate();
-	const formattedGoals = goals.map(goal => ({ ...goal, text: goal.text, scheduled: goal.scheduled }));
+	const formattedGoals = goals.map(goal => ({ ...goal, text: goal.text }));
 
 	const params = {
 		TableName: goalsTable,
