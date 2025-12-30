@@ -32,6 +32,13 @@ paths:
       summary: List goals
       description: Retrieve goals for a user with optional filtering
       tags: [Goals]
+      x-bot-command:
+        command: /list
+        examples:
+          - "/list"
+          - "/list todo"
+          - "/list done"
+          - "/list scheduled"
       parameters:
         - name: chatId
           in: query
@@ -80,6 +87,12 @@ paths:
       summary: Add goal
       description: Create a new goal
       tags: [Goals]
+      x-bot-command:
+        command: /add
+        examples:
+          - "/add Buy groceries"
+          - "/add Call mom\nFinish report"
+          - "Just type a message without a command to add via AI"
       requestBody:
         required: true
         content:
@@ -131,6 +144,11 @@ paths:
       summary: Add multiple goals
       description: Create multiple goals at once
       tags: [Goals]
+      x-bot-command:
+        command: /add
+        examples:
+          - "/add Goal 1\nGoal 2\nGoal 3"
+        note: "Multi-line /add messages use this endpoint"
       requestBody:
         required: true
         content:
@@ -180,6 +198,11 @@ paths:
       summary: Edit goal
       description: Update goal text
       tags: [Goals]
+      x-bot-command:
+        command: /edit
+        examples:
+          - "/edit 1 Updated goal text"
+          - "/edit 3 New description for goal 3"
       parameters:
         - name: index
           in: path
@@ -214,6 +237,11 @@ paths:
       summary: Delete goal
       description: Remove a goal from user's list
       tags: [Goals]
+      x-bot-command:
+        command: /delete
+        examples:
+          - "/delete 1"
+          - "/delete 2 3 5"
       parameters:
         - name: index
           in: path
@@ -241,6 +269,12 @@ paths:
       summary: Complete goal
       description: Mark goal as completed and award ticket if applicable
       tags: [Goals]
+      x-bot-command:
+        command: /complete
+        examples:
+          - "/complete 1"
+          - "/complete 1 2 3"
+          - "/done 1"
       parameters:
         - name: index
           in: path
@@ -303,6 +337,10 @@ paths:
       summary: Move goal
       description: Move goal to different position in list
       tags: [Goals]
+      x-bot-command:
+        command: /move
+        examples:
+          - "/move 3 1"
       parameters:
         - name: index
           in: path
@@ -341,6 +379,10 @@ paths:
       summary: Swap goals
       description: Swap positions of two goals
       tags: [Goals]
+      x-bot-command:
+        command: /swap
+        examples:
+          - "/swap 1 3"
       requestBody:
         required: true
         content:
@@ -373,6 +415,11 @@ paths:
       summary: Schedule goal
       description: Schedule goal for future date
       tags: [Goals]
+      x-bot-command:
+        command: /schedule
+        examples:
+          - "/schedule 1 01 15"
+          - "/schedule 2 12 25"
       parameters:
         - name: index
           in: path
@@ -427,6 +474,12 @@ paths:
       summary: Make goal recurring
       description: Set up recurring pattern for goal
       tags: [Goals]
+      x-bot-command:
+        command: /recurring
+        examples:
+          - "/recurring 1 weekdays"
+          - "/recurring 2 daily"
+          - "/recurring 3 0 9 * * 1-5"
       parameters:
         - name: index
           in: path
@@ -474,6 +527,11 @@ paths:
       summary: Add note to goal
       description: Add a note/comment to a goal
       tags: [Goals]
+      x-bot-command:
+        command: /note
+        examples:
+          - "/note 1 Remember to check email first"
+          - "/note 2 Blocked by API issue"
       parameters:
         - name: index
           in: path
@@ -508,6 +566,11 @@ paths:
       summary: Set due date
       description: Set due date for a goal
       tags: [Goals]
+      x-bot-command:
+        command: /due
+        examples:
+          - "/due 1 01 15"
+          - "/due 2 tomorrow"
       parameters:
         - name: index
           in: path
@@ -582,6 +645,11 @@ paths:
       summary: Get partner goals
       description: Retrieve partner's current goals
       tags: [Goals]
+      x-bot-command:
+        command: /honey
+        examples:
+          - "/honey"
+          - "/honey Buy flowers"
       parameters:
         - name: chatId
           in: query
@@ -607,6 +675,10 @@ paths:
       summary: List rewards
       description: Get user's rewards with optional filtering
       tags: [Rewards]
+      x-bot-command:
+        command: /rewards
+        examples:
+          - "/rewards"
       parameters:
         - name: chatId
           in: query
@@ -746,6 +818,10 @@ paths:
       summary: Redeem reward
       description: Redeem reward using tickets
       tags: [Rewards]
+      x-bot-command:
+        command: /redeem
+        examples:
+          - "/redeem 1"
       parameters:
         - name: rewardId
           in: path
@@ -842,6 +918,8 @@ paths:
       description: Retrieve all users with optional filtering
       tags:
         - Users
+      x-bot-command:
+        note: "Admin only - not exposed via bot"
       parameters:
         - name: hasPartner
           in: query
@@ -877,6 +955,11 @@ paths:
       summary: Create user
       description: Register a new user
       tags: [Users]
+      x-bot-command:
+        command: /start
+        examples:
+          - "/start"
+        note: "Automatically called when user first messages the bot"
       requestBody:
         required: true
         content:
@@ -955,6 +1038,10 @@ paths:
       summary: Get ticket balance
       description: Get user's current ticket balance
       tags: [Users]
+      x-bot-command:
+        command: /wallet
+        examples:
+          - "/wallet"
       parameters:
         - name: chatId
           in: path
@@ -1015,6 +1102,11 @@ paths:
       summary: Link partner
       description: Link two users as partners
       tags: [Users]
+      x-bot-command:
+        command: /partner
+        examples:
+          - "/partner"
+          - "/partner 123456789"
       parameters:
         - name: chatId
           in: path

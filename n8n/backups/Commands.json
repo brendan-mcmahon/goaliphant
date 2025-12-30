@@ -1,0 +1,916 @@
+{
+  "name": "Commands",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        2208,
+        1792
+      ],
+      "id": "4f98edbb-3efb-4027-9294-9fca3b4c9cd6",
+      "name": "Telegram Trigger",
+      "webhookId": "edd54a6f-00d0-481b-8803-ef84f702d2f4",
+      "credentials": {
+        "telegramApi": {
+          "id": "SjQkP2SNa8sOZJA1",
+          "name": "Goaliphant Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "help-text-assignment",
+              "name": "text",
+              "value": "🐘 *Goaliphant Commands*|*Goals*/add {text} - Add a goal/list - Show today's goals/complete {n} - Mark done/uncomplete {n} - Mark undone/delete {n} - Remove goal*Info*/wallet - Check ticket balance/help - Show this message",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3264,
+        2336
+      ],
+      "id": "9582611e-92fe-4472-b6a1-e25371b86a92",
+      "name": "Set Help Text"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Extract Command').item.json.baseUrl }}/users/{{ $json.chatId }}/tickets",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3152,
+        2528
+      ],
+      "id": "62d47204-f99b-4124-8642-c06826d3edbc",
+      "name": "GET /users/tickets"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wallet-text-assignment",
+              "name": "text",
+              "value": "=💰 *Your Wallet*\n\nYou have *{{ $json.tickets }}* tickets 🎟️",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3376,
+        2528
+      ],
+      "id": "c923558e-fc8f-4bff-b02c-0d30a402c1e6",
+      "name": "Set Wallet Text"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "add",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "9bce4dd8-d9fb-4068-8e8f-be81b00249ff"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "add"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "acea4a94-fc5c-40a9-9dd6-0a4ec3ae2247",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "list",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "list"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e248efcd-3d52-4b5e-a063-6b408b977688",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "complete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "complete"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "15986a1f-0513-456b-b2b6-f5b4f44d91eb",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "uncomplete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "uncomplete"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "90668c5e-96db-443a-aeee-dfe29fc25efe",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "delete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delete"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "help-condition-id",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "help"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "wallet-condition-id",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "wallet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "wallet"
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2928,
+        1712
+      ],
+      "id": "9b616c5e-7140-4f2b-bffc-75e8de38c98c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $('Telegram Trigger').first().json.message;\nlet text = message.text\nif (text[0] === '/') {\n  text = text.substring(1).trim();\n}\n\nconst command = text.split(' ')[0].toLowerCase();\nconst args = text.substring(command.length).trim();\n\n// Convert 1-based user input to 0-based API index\nconst firstArg = args.split(' ')[0];\nconst argsAsIndex = firstArg ? parseInt(firstArg) - 1 : null;\n\nreturn {\n  baseUrl: \"https://5fxpi3bue4dkhwv4kf5re3vcyi0cowqn.lambda-url.us-east-2.on.aws/api/v1\",\n  name:  message.from.first_name,\n  chatId: message.chat.id.toString(),\n  date: new Date(message.date * 1000),\n  text,\n  command,\n  args,\n  argsAsIndex,\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2704,
+        1792
+      ],
+      "id": "ec2f3b1b-a47b-4727-850b-26305d81bea3",
+      "name": "Extract Command"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YaviUPj9bCI6EsJr",
+          "mode": "list",
+          "cachedResultName": "Send Telegram Markdown"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatId": "={{ $json.message.chat.id.toString() }}",
+            "text": "=Thinking... 🤔",
+            "bot": "goaliphant"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chatId",
+              "displayName": "chatId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "bot",
+              "displayName": "bot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2448,
+        1792
+      ],
+      "id": "bc9a7f3d-af2a-4ffa-9ab6-d590b61be715",
+      "name": "Send Thinking Message"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YaviUPj9bCI6EsJr",
+          "mode": "list",
+          "cachedResultName": "Send Telegram Markdown"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatId": "={{ $('Switch').item.json.chatId }}",
+            "text": "={{ $json.text }}",
+            "bot": "goaliphant",
+            "messageId": "={{ $('Send Thinking Message').item.json.result.message_id.toString() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chatId",
+              "displayName": "chatId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "bot",
+              "displayName": "bot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "messageId",
+              "displayName": "messageId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3696,
+        1760
+      ],
+      "id": "aab5a49a-da05-4216-898c-4ebc1626bd01",
+      "name": "Send Telegram Message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0a450c4c-fdb8-4fbb-b8ff-59f7f527eb38",
+              "name": "text",
+              "value": "=Successfully added goal: \\n> {{$json.goal.text }}\\nI believe in you!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3376,
+        1376
+      ],
+      "id": "a11687ea-4aad-45a4-a809-ba2863c42b3f",
+      "name": "Set Add Text"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const goals = $json.goals;\n\nlet response = \"Here are your goals for today:\\n\";\ngoals.forEach((goal, index) => {\n  response += `${index + 1}. ${goal.completed ? \"✅\" : \"⬜\"} ${goal.text}\\n`;\n})\n\nreturn {\n  text: response\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3376,
+        1568
+      ],
+      "id": "8f5f92f1-8518-4129-813b-755de5bb50a5",
+      "name": "Build List Text"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0449cc1a-2d59-4e47-8423-85fe69b4ee59",
+              "name": "text",
+              "value": "=Great work!\\\\n>{{$json.goal.text}}\\nhas been marked as complete!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3376,
+        1760
+      ],
+      "id": "f90baf3b-5305-4503-9bb9-7c98f729fc02",
+      "name": "Set Complete Text"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0449cc1a-2d59-4e47-8423-85fe69b4ee59",
+              "name": "text",
+              "value": "=Oops!\\\\n>{{$json.goal.text}}\\nhas been marked as incomplete. You'll get it though!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3376,
+        1952
+      ],
+      "id": "2afe7399-2ed4-4e67-9355-b69f81a4f4a7",
+      "name": "Set Complete Text2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8b30c366-1136-4a32-94be-4ec834df767f",
+              "name": "text",
+              "value": "=>{{$json.deleted.text}}\\nhas been deleted.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3376,
+        2144
+      ],
+      "id": "23a886fb-1bc6-4e14-ad78-7981f9a30a80",
+      "name": "Set Delete Text"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Extract Command').item.json.baseUrl }}/goals",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chatId\": \"{{ $('Extract Command').item.json.chatId }}\",\n  \"text\": {{ JSON.stringify($('Extract Command').item.json.args) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3152,
+        1376
+      ],
+      "id": "6070969c-4b04-4d00-a615-122e4c3995dc",
+      "name": "POST /goals"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Extract Command').item.json.baseUrl }}/goals",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3152,
+        1568
+      ],
+      "id": "75dfc0e3-2066-42b5-b132-1c527d12670b",
+      "name": "GET /goals"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Extract Command').item.json.baseUrl }}/goals/{{ $('Extract Command').item.json.argsAsIndex }}/complete",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3152,
+        1760
+      ],
+      "id": "ebc17129-9f4e-43a3-abd0-048e788df442",
+      "name": "POST /goals/{index}/complete"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $('Extract Command').item.json.baseUrl }}/goals/{{ $('Extract Command').item.json.argsAsIndex }}/complete",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3152,
+        1952
+      ],
+      "id": "4b40dd1c-b388-4ed2-8706-23d4834f8043",
+      "name": "DELETE /goals/{index}/complete"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $('Extract Command').item.json.baseUrl }}/goals/{{ $('Extract Command').item.json.argsAsIndex }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.chatId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3152,
+        2144
+      ],
+      "id": "748293fe-7bfc-49be-8703-a13c6e84646a",
+      "name": "DELETE /goals/{index}"
+    }
+  ],
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 345975226,
+          "message": {
+            "message_id": 9246,
+            "from": {
+              "id": 1397659260,
+              "is_bot": false,
+              "first_name": "Brendan",
+              "last_name": "McMahon",
+              "language_code": "en"
+            },
+            "chat": {
+              "id": 1397659260,
+              "first_name": "Brendan",
+              "last_name": "McMahon",
+              "type": "private"
+            },
+            "date": 1767017705,
+            "text": "help"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send Thinking Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Help Text": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /users/tickets": {
+      "main": [
+        [
+          {
+            "node": "Set Wallet Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Wallet Text": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "POST /goals",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET /goals",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "POST /goals/{index}/complete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DELETE /goals/{index}/complete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DELETE /goals/{index}",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Help Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET /users/tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Command": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Thinking Message": {
+      "main": [
+        [
+          {
+            "node": "Extract Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Message": {
+      "main": [
+        []
+      ]
+    },
+    "Set Add Text": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build List Text": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Complete Text": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Complete Text2": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Delete Text": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /goals": {
+      "main": [
+        [
+          {
+            "node": "Set Add Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /goals": {
+      "main": [
+        [
+          {
+            "node": "Build List Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /goals/{index}/complete": {
+      "main": [
+        [
+          {
+            "node": "Set Complete Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE /goals/{index}/complete": {
+      "main": [
+        [
+          {
+            "node": "Set Complete Text2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE /goals/{index}": {
+      "main": [
+        [
+          {
+            "node": "Set Delete Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dce4adcf-522e-437f-a0b9-a3797775eaee",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "844dfae675ead345de9506cef0f0726c6257947005b1cab3237fbcba92659e4d"
+  },
+  "id": "YnAkuie3F0qcqWTq",
+  "tags": []
+}
