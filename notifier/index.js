@@ -9,9 +9,12 @@ const bot = new TelegramBot(process.env.BOT_TOKEN);
 async function sendNightlyPrompt(chatId) {
 	try {
 		const goals = await getGoals(chatId);
-		const goalsList = goals.filter(g => g.completed).map((g, i) => `${i + 1}. ✅${g.text}`).join('\n');
-		const message = `Good evening! Here's what you accomplished today:\n${goalsList || 'Nothing :('}`;
-		await bot.sendMessage(chatId, message);
+		let goalsList = goals.filter(g => g.completed);
+		if (goalsList.length > 0) {
+			goalsList = goalsList.map((g, i) => `${i + 1}. ✅${g.text}`).join('\n');
+			const message = `Good evening! Here's what you accomplished today:\n${goalsList}`;
+			await bot.sendMessage(chatId, message);
+		}
 
 		// Here's where we check to see if they have 3 or more completed goals. If so, we add a bonus ticket.
 		if (goals.filter(g => g.completed).length >= 3) {
