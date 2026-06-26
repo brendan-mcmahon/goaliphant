@@ -1,24 +1,42 @@
 require('dotenv').config();
 const AWS = require('aws-sdk');
+const { randomUUID } = require('crypto');
 const { getLocalDate } = require('./utilities.js');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const goalsTable = 'GoaliphantGoals';
 
-async function getGoals(chatId, date = null) {
-	date = date ?? getLocalDate();
+const TIME_ZONE = 'America/Indiana/Indianapolis';
 
+function toLocalDateString(isoString) {
+	const local = new Date(isoString).toLocaleString('en-US', { timeZone: TIME_ZONE });
+	return new Date(local).toISOString().split('T')[0];
+}
+
+async function getGoals(chatId) {
 	const params = {
 		TableName: goalsTable,
-		Key: {
-			chatId: chatId.toString(),
-			date: date,
-		},
+		KeyConditionExpression: 'chatId = :chatId',
+		FilterExpression: '#s = :active',
+		ExpressionAttributeNames: { '#s': 'status' },
+		ExpressionAttributeValues: {
+			':chatId': chatId.toString(),
+			':active': 'active'
+		}
 	};
 
 	try {
-		const result = await dynamoDb.get(params).promise();
-		return result.Item ? result.Item.goals : [];
+		const result = await dynamoDb.query(params).promise();
+		const goals = result.Items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+		const today = getLocalDate();
+		return goals.map(goal => {
+			if (goal.isRecurring && goal.lastCompletedAt) {
+				const completedDate = toLocalDateString(goal.lastCompletedAt);
+				return { ...goal, completed: completedDate === today };
+			}
+			return goal;
+		});
 	} catch (err) {
 		console.error('Error fetching goals:', err);
 		throw err;
@@ -26,114 +44,116 @@ async function getGoals(chatId, date = null) {
 }
 exports.getGoals = getGoals;
 
-async function getAllGoals() {
-	const params = {
-		TableName: goalsTable,
+async function addGoal(chatId, goalData) {
+	const existing = await getGoals(chatId);
+	const maxOrder = existing.length > 0 ? Math.max(...existing.map(g => g.displayOrder || 0)) : 0;
+
+	const goal = {
+		chatId: chatId.toString(),
+		goalId: randomUUID(),
+		status: 'active',
+		completed: false,
+		displayOrder: maxOrder + 1,
+		createdAt: new Date().toISOString(),
+		...goalData
 	};
 
-	try {
-		const result = await dynamoDb.scan(params).promise();
-		return result.Items;
-	} catch (err) {
-		console.error('Error fetching goals:', err);
-		throw err;
-	}
-}
-exports.getAllGoals = getAllGoals;
-
-async function updateGoals(chatId, goals) {
-	const date = getLocalDate();
 	const params = {
 		TableName: goalsTable,
-		Key: {
-			chatId: chatId.toString(),
-			date: date,
-		},
-		UpdateExpression: 'set goals = :goals',
-		ExpressionAttributeValues: {
-			':goals': goals,
-		},
-	};
-
-	try {
-		await dynamoDb.update(params).promise();
-		console.log('Goals updated successfully');
-	} catch (err) {
-		console.error('Error updating goals:', err);
-		throw err;
-	}
-}
-exports.updateGoals = updateGoals;
-
-async function createNewDayWithGoals(chatId, username, goals, date = null) {
-	date = date ?? getLocalDate();
-	const formattedGoals = goals.map(goal => ({ ...goal, text: goal.text }));
-
-	const params = {
-		TableName: goalsTable,
-		Item: {
-			chatId: chatId.toString(),
-			date: date,
-			name: username,
-			goals: formattedGoals,
-		},
+		Item: goal
 	};
 
 	try {
 		await dynamoDb.put(params).promise();
-		console.log('Goals rolled over successfully');
+		return goal;
 	} catch (err) {
-		console.error('Error saving goals:', err);
+		console.error('Error adding goal:', err);
 		throw err;
 	}
 }
-exports.createNewDayWithGoals = createNewDayWithGoals;
+exports.addGoal = addGoal;
 
-async function deleteGoals(chatId, date) {
+async function updateGoal(chatId, goalId, updates) {
+	const setClauses = [];
+	const removeClauses = [];
+	const expressionAttributeNames = {};
+	const expressionAttributeValues = {};
+
+	for (const [key, value] of Object.entries(updates)) {
+		const nameKey = `#${key}`;
+		const valKey = `:${key}`;
+		expressionAttributeNames[nameKey] = key;
+		if (value === null || value === undefined) {
+			removeClauses.push(nameKey);
+		} else {
+			setClauses.push(`${nameKey} = ${valKey}`);
+			expressionAttributeValues[valKey] = value;
+		}
+	}
+
+	let updateExpression = '';
+	if (setClauses.length > 0) updateExpression += `SET ${setClauses.join(', ')}`;
+	if (removeClauses.length > 0) updateExpression += ` REMOVE ${removeClauses.join(', ')}`;
+
 	const params = {
 		TableName: goalsTable,
 		Key: {
 			chatId: chatId.toString(),
-			date: date,
+			goalId: goalId
 		},
+		UpdateExpression: updateExpression.trim(),
+		ExpressionAttributeNames: expressionAttributeNames
+	};
+
+	if (Object.keys(expressionAttributeValues).length > 0) {
+		params.ExpressionAttributeValues = expressionAttributeValues;
+	}
+
+	try {
+		await dynamoDb.update(params).promise();
+	} catch (err) {
+		console.error('Error updating goal:', err);
+		throw err;
+	}
+}
+exports.updateGoal = updateGoal;
+
+async function deleteGoal(chatId, goalId) {
+	const params = {
+		TableName: goalsTable,
+		Key: {
+			chatId: chatId.toString(),
+			goalId: goalId
+		}
 	};
 
 	try {
 		await dynamoDb.delete(params).promise();
-		console.log('Goals deleted successfully');
 	} catch (err) {
-		console.error('Error deleting goals:', err);
+		console.error('Error deleting goal:', err);
 		throw err;
 	}
 }
-exports.deleteGoals = deleteGoals;
+exports.deleteGoal = deleteGoal;
 
 async function deleteAllGoalsForUser(chatId) {
 	try {
 		const queryParams = {
 			TableName: goalsTable,
 			KeyConditionExpression: 'chatId = :chatId',
-			ExpressionAttributeValues: {
-				':chatId': chatId.toString()
-			}
+			ExpressionAttributeValues: { ':chatId': chatId.toString() }
 		};
 
 		const queryResult = await dynamoDb.query(queryParams).promise();
 
-		const deletePromises = queryResult.Items.map(item => {
-			return dynamoDb.delete({
+		await Promise.all(queryResult.Items.map(item =>
+			dynamoDb.delete({
 				TableName: goalsTable,
-				Key: {
-					chatId: chatId.toString(),
-					date: item.date
-				}
-			}).promise();
-		});
+				Key: { chatId: chatId.toString(), goalId: item.goalId }
+			}).promise()
+		));
 
-		await Promise.all(deletePromises);
-
-		console.log(`Deleted all ${deletePromises.length} goal records for user ${chatId}`);
-		return deletePromises.length;
+		return queryResult.Items.length;
 	} catch (err) {
 		console.error(`Failed to delete goal records for user ${chatId}:`, err);
 		throw err;
@@ -141,3 +161,26 @@ async function deleteAllGoalsForUser(chatId) {
 }
 exports.deleteAllGoalsForUser = deleteAllGoalsForUser;
 
+async function getGoalsCompletedToday(chatId) {
+	const today = getLocalDate();
+
+	const params = {
+		TableName: goalsTable,
+		KeyConditionExpression: 'chatId = :chatId',
+		ExpressionAttributeValues: { ':chatId': chatId.toString() }
+	};
+
+	try {
+		const result = await dynamoDb.query(params).promise();
+
+		return result.Items.filter(goal => {
+			const ts = goal.isRecurring ? goal.lastCompletedAt : goal.completedAt;
+			if (!ts) return false;
+			return toLocalDateString(ts) === today;
+		});
+	} catch (err) {
+		console.error('Error fetching completed goals:', err);
+		throw err;
+	}
+}
+exports.getGoalsCompletedToday = getGoalsCompletedToday;

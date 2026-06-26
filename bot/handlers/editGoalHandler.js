@@ -1,33 +1,28 @@
-const { getGoals, updateGoals } = require('../common/goalRepository.js');
-const { getUser } = require('../common/userRepository.js');
+const { getGoals, updateGoal } = require('../common/goalRepository.js');
 const { listGoals } = require('./listHandler.js');
 const { sendMessage, sendError } = require('../bot.js');
 
 async function editGoal(index, text, chatId) {
-	index--;
+	index = parseInt(index) - 1;
 	if (!text) {
 		await sendMessage(chatId, 'You must send new text to replace the existing text!');
-	} else {
-		await saveGoalsAndList(index, text.trim(), chatId);
+		return;
 	}
-}
-exports.editGoal = editGoal;
-
-async function saveGoalsAndList(index, newGoal, chatId) {
 	try {
-		const existingGoals = await getGoals(chatId);
-		if (index < 0 || index >= existingGoals.length) {
+		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) {
 			await sendMessage(chatId, 'Invalid goal index!');
 			return;
 		}
-		const updatedGoals = [...existingGoals];
-		updatedGoals[index] = { ...updatedGoals[index], text: newGoal };
-		await updateGoals(chatId, updatedGoals);
+		await updateGoal(chatId, goals[index].goalId, {
+			text: text.trim(),
+			updatedAt: new Date().toISOString()
+		});
 		await sendMessage(chatId, 'Goal updated successfully!');
 		await listGoals(chatId);
 	} catch (error) {
-		console.error('Error adding goals:', error);
+		console.error('Error editing goal:', error);
 		await sendError(chatId, error);
 	}
 }
-exports.saveGoalsAndList = saveGoalsAndList;
+exports.editGoal = editGoal;

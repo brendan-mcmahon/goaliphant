@@ -1,16 +1,5 @@
 // Jest setup for API tests - mocks AWS services
 
-// Mock AWS SDK
-const mockDynamoDB = {
-  get: jest.fn(),
-  put: jest.fn(),
-  update: jest.fn(),
-  delete: jest.fn(),
-  query: jest.fn(),
-  scan: jest.fn()
-};
-
-// Mock AWS SDK DocumentClient
 const mockDocumentClient = {
   get: jest.fn().mockReturnValue({ promise: () => Promise.resolve({ Item: null }) }),
   put: jest.fn().mockReturnValue({ promise: () => Promise.resolve({}) }),
@@ -20,7 +9,6 @@ const mockDocumentClient = {
   scan: jest.fn().mockReturnValue({ promise: () => Promise.resolve({ Items: [] }) })
 };
 
-// Mock the AWS SDK module
 jest.mock('aws-sdk', () => ({
   DynamoDB: {
     DocumentClient: jest.fn(() => mockDocumentClient)
@@ -33,98 +21,126 @@ jest.mock('aws-sdk', () => ({
 // In-memory storage for testing
 const testStorage = {
   users: {},
-  goals: {},
+  goals: {},  // { [chatId]: { [goalId]: goalObject } }
   rewards: {}
 };
 
-// Test data helper functions
 global.testHelpers = {
-  // Reset test storage
   resetStorage: () => {
     testStorage.users = {};
     testStorage.goals = {};
     testStorage.rewards = {};
   },
-  
-  // Get storage for inspection
   getStorage: () => testStorage,
-  
-  // Mock user operations
-  setUser: (chatId, user) => {
-    testStorage.users[chatId] = user;
-  },
-  
-  getUser: (chatId) => {
-    return testStorage.users[chatId] || null;
-  },
-  
-  // Mock goal operations
+  setUser: (chatId, user) => { testStorage.users[chatId] = user; },
+  getUser: (chatId) => testStorage.users[chatId] || null,
   setGoals: (chatId, goals) => {
-    testStorage.goals[chatId] = goals;
+    testStorage.goals[chatId] = {};
+    goals.forEach(g => { testStorage.goals[chatId][g.goalId] = g; });
   },
-  
-  getGoals: (chatId) => {
-    return testStorage.goals[chatId] || [];
-  }
+  getGoals: (chatId) => Object.values(testStorage.goals[chatId] || {})
 };
 
-// Mock repository functions with in-memory storage
 jest.mock('../common/userRepository', () => ({
-  getUser: jest.fn(async (chatId) => {
-    const user = testStorage.users[chatId];
-    // Return null for non-existent users - let the service layer handle the logic
-    return user || null;
-  }),
-  
+  getUser: jest.fn(async (chatId) => testStorage.users[chatId] || null),
+
   saveUser: jest.fn(async (user) => {
     testStorage.users[user.ChatId] = user;
     return user;
   }),
-  
-  getAllUsers: jest.fn(async () => {
-    return Object.values(testStorage.users);
-  }),
-  
+
+  getAllUsers: jest.fn(async () => Object.values(testStorage.users)),
+
   getTicketCount: jest.fn(async (chatId) => {
     const user = testStorage.users[chatId];
     return user ? (user.Tickets || 0) : 0;
   }),
-  
+
   addTicket: jest.fn(async (chatId, amount) => {
     const user = testStorage.users[chatId];
-    if (user) {
-      user.Tickets = (user.Tickets || 0) + amount;
-    }
+    if (user) user.Tickets = (user.Tickets || 0) + (amount ?? 1);
   }),
-  
+
+  addTickets: jest.fn(async (chatId, amount) => {
+    const user = testStorage.users[chatId];
+    if (user) user.Tickets = (user.Tickets || 0) + amount;
+  }),
+
+  deductTickets: jest.fn(async (chatId, amount) => {
+    const user = testStorage.users[chatId];
+    if (user) user.Tickets = Math.max(0, (user.Tickets || 0) - amount);
+  }),
+
   setChatState: jest.fn(async () => {}),
   getChatState: jest.fn(async () => null),
   clearChatState: jest.fn(async () => {})
 }));
 
-jest.mock('../common/goalRepository', () => ({
-  getGoals: jest.fn(async (chatId) => {
-    return testStorage.goals[chatId] || [];
-  }),
-  
-  updateGoals: jest.fn(async (chatId, goals) => {
-    testStorage.goals[chatId] = goals;
-  }),
-  
-  getAllGoals: jest.fn(async () => {
-    const allGoals = [];
-    for (const [chatId, goals] of Object.entries(testStorage.goals)) {
-      allGoals.push(...goals.map(g => ({ ...g, chatId })));
-    }
-    return allGoals;
-  })
-}));
+jest.mock('../common/goalRepository', () => {
+  const { randomUUID } = require('crypto');
+
+  return {
+    getGoals: jest.fn(async (chatId) => {
+      const all = Object.values(testStorage.goals[chatId] || {});
+      return all
+        .filter(g => g.status === 'active')
+        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    }),
+
+    addGoal: jest.fn(async (chatId, goalData) => {
+      if (!testStorage.goals[chatId]) testStorage.goals[chatId] = {};
+      const existing = Object.values(testStorage.goals[chatId]).filter(g => g.status === 'active');
+      const maxOrder = existing.length > 0 ? Math.max(...existing.map(g => g.displayOrder || 0)) : 0;
+      const goal = {
+        chatId: chatId.toString(),
+        goalId: randomUUID(),
+        status: 'active',
+        completed: false,
+        displayOrder: maxOrder + 1,
+        createdAt: new Date().toISOString(),
+        ...goalData
+      };
+      testStorage.goals[chatId][goal.goalId] = goal;
+      return goal;
+    }),
+
+    updateGoal: jest.fn(async (chatId, goalId, updates) => {
+      if (!testStorage.goals[chatId] || !testStorage.goals[chatId][goalId]) return;
+      const goal = testStorage.goals[chatId][goalId];
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null || value === undefined) {
+          delete goal[key];
+        } else {
+          goal[key] = value;
+        }
+      }
+    }),
+
+    deleteGoal: jest.fn(async (chatId, goalId) => {
+      if (testStorage.goals[chatId]) {
+        delete testStorage.goals[chatId][goalId];
+      }
+    }),
+
+    deleteAllGoalsForUser: jest.fn(async (chatId) => {
+      const count = Object.keys(testStorage.goals[chatId] || {}).length;
+      testStorage.goals[chatId] = {};
+      return count;
+    }),
+
+    getGoalsCompletedToday: jest.fn(async (chatId) => {
+      const today = new Date().toISOString().split('T')[0];
+      return Object.values(testStorage.goals[chatId] || {}).filter(g => {
+        const ts = g.isRecurring ? g.lastCompletedAt : g.completedAt;
+        return ts && ts.startsWith(today);
+      });
+    })
+  };
+});
 
 jest.mock('../common/rewardRepository', () => ({
-  getRewards: jest.fn(async (chatId) => {
-    return testStorage.rewards[chatId] || [];
-  }),
-  
+  getRewards: jest.fn(async (chatId) => testStorage.rewards[chatId] || []),
+
   getReward: jest.fn(async (rewardId) => {
     for (const rewards of Object.values(testStorage.rewards)) {
       const reward = rewards.find(r => r.id === rewardId);
@@ -132,14 +148,12 @@ jest.mock('../common/rewardRepository', () => ({
     }
     return null;
   }),
-  
+
   insertReward: jest.fn(async (reward) => {
-    if (!testStorage.rewards[reward.ChatId]) {
-      testStorage.rewards[reward.ChatId] = [];
-    }
+    if (!testStorage.rewards[reward.ChatId]) testStorage.rewards[reward.ChatId] = [];
     testStorage.rewards[reward.ChatId].push(reward);
   }),
-  
+
   updateReward: jest.fn(async (rewardId, updates) => {
     for (const rewards of Object.values(testStorage.rewards)) {
       const index = rewards.findIndex(r => r.id === rewardId);
@@ -149,25 +163,15 @@ jest.mock('../common/rewardRepository', () => ({
       }
     }
   }),
-  
+
   deleteReward: jest.fn(async (rewardId) => {
     for (const rewards of Object.values(testStorage.rewards)) {
       const index = rewards.findIndex(r => r.id === rewardId);
-      if (index !== -1) {
-        rewards.splice(index, 1);
-        return;
-      }
+      if (index !== -1) { rewards.splice(index, 1); return; }
     }
   }),
-  
+
   getAllRewards: jest.fn(async () => {
-    const allRewards = [];
-    for (const rewards of Object.values(testStorage.rewards)) {
-      allRewards.push(...rewards);
-    }
-    return allRewards;
+    return Object.values(testStorage.rewards).flat();
   })
 }));
-
-// Data persists within the same test suite for integration testing
-// Each test file gets a fresh setup due to Jest's module isolation

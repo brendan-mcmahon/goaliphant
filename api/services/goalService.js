@@ -1,438 +1,317 @@
-const { getGoals, updateGoals, getAllGoals } = require('../common/goalRepository');
+const { getGoals, addGoal, updateGoal, deleteGoal } = require('../common/goalRepository');
 const { getUser } = require('../common/userRepository');
 const { shouldShowRecurringGoalToday } = require('../common/cronUtils');
 const { isScheduledDateInTheFuture } = require('../common/utilities');
 
 /*
- * INDEXING CONVENTION: 
- * 
- * This service uses 0-BASED indexing throughout (fixed December 2024).
- * 
- * API CALLS:
- * - POST /api/v1/goals/0/complete   // Complete first goal
- * - DELETE /api/v1/goals/0          // Delete first goal
- * - PUT /api/v1/goals/0             // Edit first goal
- * 
- * UI CONVERSION:
- * - Bot handlers convert user input: parseInt(userInput) - 1
- * - Web UI should do the same: goalNumber - 1
- * - Users see 1-based, API uses 0-based
- * 
- * ALL METHODS NOW USE CONSISTENT 0-BASED VALIDATION:
- * - if (index < 0 || index >= goals.length)
+ * INDEXING CONVENTION:
+ * API uses 0-BASED indexing. Users see 1-based; callers subtract 1 before calling.
+ *
+ * All index-based operations operate on the sorted active goals array returned by getGoals().
  */
 
-// Helper function to normalize goal objects for consistent API responses
 function normalizeGoal(goal) {
 	return {
 		...goal,
 		dueDate: goal.dueDate || null,
 		scheduledDate: goal.scheduledDate || null,
-		recurring: goal.recurring || null
+		isRecurring: goal.isRecurring || false,
+		recurrencePattern: goal.recurrencePattern || null
 	};
 }
 
 class GoalService {
 	async addGoal(chatId, text, options = {}) {
-		const goals = await getGoals(chatId);
-		const newGoal = {
-			text,
-			completed: false,
-			createdAt: new Date().toISOString(),
-			...options
-		};
-
 		if (options.isHoney) {
 			const user = await getUser(chatId);
-			if (user.Partner) {
-				const partnerGoals = await getGoals(user.Partner);
-				partnerGoals.push({ ...newGoal, isHoney: true, fromPartner: chatId });
-				await updateGoals(user.Partner, partnerGoals);
-				return { goal: newGoal, addedTo: 'partner' };
-			}
-			throw new Error('No partner linked');
+			if (!user.Partner) throw new Error('No partner linked');
+			const goal = await addGoal(user.Partner, { text, isHoney: true, fromPartner: chatId.toString(), ...options });
+			return { goal: normalizeGoal(goal), addedTo: 'partner' };
 		}
 
-		goals.push(newGoal);
-		await updateGoals(chatId, goals);
-		return { goal: newGoal, addedTo: 'self' };
+		const goal = await addGoal(chatId, { text, ...options });
+		return { goal: normalizeGoal(goal), addedTo: 'self' };
 	}
 
 	async addMultipleGoals(chatId, goalObjects) {
-		const goals = await getGoals(chatId);
-		const newGoals = goalObjects.map(goalData => {
-			// Support both string and object formats for backward compatibility
-			const goalText = typeof goalData === 'string' ? goalData : goalData.text;
-			const goalOptions = typeof goalData === 'string' ? {} : goalData;
-
-			return {
-				text: goalText.trim(),
-				completed: false,
-				createdAt: new Date().toISOString(),
-				...goalOptions
-			};
-		}).filter(g => g.text.length > 0);
-
-		goals.push(...newGoals);
-		await updateGoals(chatId, goals);
-		return newGoals;
+		const added = [];
+		for (const goalData of goalObjects) {
+			const text = typeof goalData === 'string' ? goalData : goalData.text;
+			if (!text || !text.trim()) continue;
+			const opts = typeof goalData === 'string' ? {} : { ...goalData };
+			delete opts.text;
+			const goal = await addGoal(chatId, { text: text.trim(), ...opts });
+			added.push(normalizeGoal(goal));
+		}
+		return added;
 	}
 
 	async editGoal(chatId, index, text) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		goals[index].text = text;
-		goals[index].updatedAt = new Date().toISOString();
-		await updateGoals(chatId, goals);
-		return normalizeGoal(goals[index]);
+		await updateGoal(chatId, goals[index].goalId, { text, updatedAt: new Date().toISOString() });
+		return normalizeGoal({ ...goals[index], text });
 	}
 
 	async deleteGoal(chatId, index) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		const deletedGoal = goals.splice(index, 1)[0];
-		await updateGoals(chatId, goals);
-		return normalizeGoal(deletedGoal);
+		const goal = goals[index];
+		await deleteGoal(chatId, goal.goalId);
+		return normalizeGoal(goal);
 	}
 
 	async deleteMultipleGoals(chatId, indices) {
 		const goals = await getGoals(chatId);
-		const deletedGoals = [];
+		const deleted = [];
 
-		// Sort indices in descending order to avoid index shifting issues
-		const sortedIndices = [...indices].sort((a, b) => b - a);
-
-		for (const index of sortedIndices) {
-			if (index >= 0 && index < goals.length) {
-				deletedGoals.push(goals.splice(index, 1)[0]);
-			}
+		for (const index of [...indices].sort((a, b) => b - a)) {
+			if (index < 0 || index >= goals.length) continue;
+			await deleteGoal(chatId, goals[index].goalId);
+			deleted.push(goals[index]);
 		}
 
-		await updateGoals(chatId, goals);
-		return deletedGoals.map(normalizeGoal);
+		return deleted.map(normalizeGoal);
 	}
 
 	async completeGoal(chatId, index) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
+		const goal = goals[index];
+		const now = new Date().toISOString();
+
+		if (goal.isRecurring) {
+			await updateGoal(chatId, goal.goalId, { lastCompletedAt: now });
+		} else {
+			await updateGoal(chatId, goal.goalId, { status: 'completed', completed: true, completedAt: now });
 		}
 
-		goals[index].completed = true;
-		goals[index].completedAt = new Date().toISOString();
-		await updateGoals(chatId, goals);
-
-		// Return the completed goal and ticket info
 		return {
-			goal: normalizeGoal(goals[index]),
-			ticketAwarded: !goals[index].isHoney // Don't award tickets for honey-do tasks
+			goal: normalizeGoal({ ...goal, completed: true, completedAt: now }),
+			ticketAwarded: !goal.isHoney
 		};
 	}
 
 	async completeMultipleGoals(chatId, indices) {
 		const goals = await getGoals(chatId);
-		const completedGoals = [];
+		const completed = [];
 		let ticketsAwarded = 0;
+		const now = new Date().toISOString();
 
 		for (const index of indices) {
-			if (index >= 0 && index < goals.length) {
-				goals[index].completed = true;
-				goals[index].completedAt = new Date().toISOString();
-				completedGoals.push(goals[index]);
+			if (index < 0 || index >= goals.length) continue;
+			const goal = goals[index];
 
-				if (!goals[index].isHoney) {
-					ticketsAwarded++;
-				}
+			if (goal.isRecurring) {
+				await updateGoal(chatId, goal.goalId, { lastCompletedAt: now });
+			} else {
+				await updateGoal(chatId, goal.goalId, { status: 'completed', completed: true, completedAt: now });
 			}
+
+			completed.push(goal);
+			if (!goal.isHoney) ticketsAwarded++;
 		}
 
-		await updateGoals(chatId, goals);
-		return { completedGoals: completedGoals.map(normalizeGoal), ticketsAwarded };
+		return { completedGoals: completed.map(normalizeGoal), ticketsAwarded };
 	}
 
 	async uncompleteGoal(chatId, index) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
+		const goal = goals[index];
+		const wasCompleted = goal.completed;
+
+		if (goal.isRecurring) {
+			await updateGoal(chatId, goal.goalId, { lastCompletedAt: null });
+		} else {
+			await updateGoal(chatId, goal.goalId, { status: 'active', completed: false, completedAt: null });
 		}
 
-		const wasCompleted = goals[index].completed;
-		goals[index].completed = false;
-		delete goals[index].completedAt;
-		await updateGoals(chatId, goals);
-
 		return {
-			goal: normalizeGoal(goals[index]),
-			ticketDeducted: wasCompleted && !goals[index].isHoney
+			goal: normalizeGoal({ ...goal, completed: false }),
+			ticketDeducted: wasCompleted && !goal.isHoney
 		};
 	}
 
 	async uncompleteMultipleGoals(chatId, indices) {
 		const goals = await getGoals(chatId);
-		const uncompletedGoals = [];
+		const uncompleted = [];
 		let ticketsDeducted = 0;
 
 		for (const index of indices) {
-			if (index >= 0 && index < goals.length && goals[index].completed) {
-				goals[index].completed = false;
-				delete goals[index].completedAt;
-				uncompletedGoals.push(goals[index]);
+			if (index < 0 || index >= goals.length || !goals[index].completed) continue;
+			const goal = goals[index];
 
-				if (!goals[index].isHoney) {
-					ticketsDeducted++;
-				}
+			if (goal.isRecurring) {
+				await updateGoal(chatId, goal.goalId, { lastCompletedAt: null });
+			} else {
+				await updateGoal(chatId, goal.goalId, { status: 'active', completed: false, completedAt: null });
 			}
+
+			uncompleted.push(goal);
+			if (!goal.isHoney) ticketsDeducted++;
 		}
 
-		await updateGoals(chatId, goals);
-		return { uncompletedGoals: uncompletedGoals.map(normalizeGoal), ticketsDeducted };
+		return { uncompletedGoals: uncompleted.map(normalizeGoal), ticketsDeducted };
 	}
 
 	async moveGoal(chatId, fromIndex, toIndex) {
 		const goals = await getGoals(chatId);
+		if (fromIndex < 0 || fromIndex >= goals.length) throw new Error(`Invalid source index: ${fromIndex}`);
+		if (toIndex < 0 || toIndex >= goals.length) throw new Error(`Invalid destination index: ${toIndex}`);
 
-		if (fromIndex < 0 || fromIndex >= goals.length) {
-			throw new Error(`Invalid source index: ${fromIndex}`);
-		}
-		if (toIndex < 0 || toIndex >= goals.length) {
-			throw new Error(`Invalid destination index: ${toIndex}`);
-		}
+		const reordered = [...goals];
+		const [moved] = reordered.splice(fromIndex, 1);
+		reordered.splice(toIndex, 0, moved);
 
-		const [movedGoal] = goals.splice(fromIndex, 1);
-		goals.splice(toIndex, 0, movedGoal);
-		await updateGoals(chatId, goals);
+		await Promise.all(reordered.map((g, i) => updateGoal(chatId, g.goalId, { displayOrder: i + 1 })));
 
-		return { movedGoal: normalizeGoal(movedGoal), newPosition: toIndex };
+		return { movedGoal: normalizeGoal(moved), newPosition: toIndex };
 	}
 
 	async swapGoals(chatId, index1, index2) {
 		const goals = await getGoals(chatId);
+		if (index1 < 0 || index1 >= goals.length) throw new Error(`Invalid index: ${index1}`);
+		if (index2 < 0 || index2 >= goals.length) throw new Error(`Invalid index: ${index2}`);
 
-		if (index1 < 0 || index1 >= goals.length) {
-			throw new Error(`Invalid index: ${index1}`);
-		}
-		if (index2 < 0 || index2 >= goals.length) {
-			throw new Error(`Invalid index: ${index2}`);
-		}
-
-		[goals[index1], goals[index2]] = [goals[index2], goals[index1]];
-		await updateGoals(chatId, goals);
+		await Promise.all([
+			updateGoal(chatId, goals[index1].goalId, { displayOrder: goals[index2].displayOrder }),
+			updateGoal(chatId, goals[index2].goalId, { displayOrder: goals[index1].displayOrder })
+		]);
 
 		return { swapped: [normalizeGoal(goals[index1]), normalizeGoal(goals[index2])] };
 	}
 
 	async scheduleGoal(chatId, index, date) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		goals[index].scheduledDate = date;
-		await updateGoals(chatId, goals);
-		return normalizeGoal(goals[index]);
+		await updateGoal(chatId, goals[index].goalId, { scheduled: true, scheduledDate: date });
+		return normalizeGoal({ ...goals[index], scheduledDate: date });
 	}
 
 	async unscheduleGoal(chatId, index) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		delete goals[index].scheduledDate;
-		await updateGoals(chatId, goals);
-		return normalizeGoal(goals[index]);
+		await updateGoal(chatId, goals[index].goalId, { scheduled: null, scheduledDate: null });
+		return normalizeGoal({ ...goals[index], scheduledDate: null });
 	}
 
 	async setDueDate(chatId, index, dueDate) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		goals[index].dueDate = dueDate;
-		goals[index].updatedAt = new Date().toISOString();
-		await updateGoals(chatId, goals);
-		return normalizeGoal(goals[index]);
+		await updateGoal(chatId, goals[index].goalId, { dueDate, updatedAt: new Date().toISOString() });
+		return normalizeGoal({ ...goals[index], dueDate });
 	}
 
 	async clearDueDate(chatId, index) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		delete goals[index].dueDate;
-		goals[index].updatedAt = new Date().toISOString();
-		await updateGoals(chatId, goals);
-		return normalizeGoal(goals[index]);
+		await updateGoal(chatId, goals[index].goalId, { dueDate: null, updatedAt: new Date().toISOString() });
+		return normalizeGoal({ ...goals[index], dueDate: null });
 	}
 
 	async addNoteToGoal(chatId, index, note) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		if (!goals[index].notes) {
-			goals[index].notes = [];
-		}
-
-		goals[index].notes.push({
-			text: note,
-			createdAt: new Date().toISOString()
-		});
-
-		await updateGoals(chatId, goals);
-		return normalizeGoal(goals[index]);
+		const goal = goals[index];
+		const notes = [...(goal.notes || []), { text: note, createdAt: new Date().toISOString() }];
+		await updateGoal(chatId, goal.goalId, { notes });
+		return normalizeGoal({ ...goal, notes });
 	}
 
 	async makeGoalRecurring(chatId, index, cronExpression) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		goals[index].recurring = cronExpression;
-		await updateGoals(chatId, goals);
-		return normalizeGoal(goals[index]);
+		await updateGoal(chatId, goals[index].goalId, { isRecurring: true, recurrencePattern: cronExpression });
+		return normalizeGoal({ ...goals[index], isRecurring: true, recurrencePattern: cronExpression });
 	}
 
 	async removeRecurring(chatId, index) {
 		const goals = await getGoals(chatId);
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
-
-		delete goals[index].recurring;
-		await updateGoals(chatId, goals);
-		return normalizeGoal(goals[index]);
+		await updateGoal(chatId, goals[index].goalId, { isRecurring: null, recurrencePattern: null });
+		return normalizeGoal({ ...goals[index], isRecurring: false, recurrencePattern: null });
 	}
 
 	async listGoals(chatId, options = {}) {
-		const goals = await getGoals(chatId);
-		let filteredGoals = [...goals];
+		let goals = await getGoals(chatId);
 
-		// Filter by completion status
 		if (options.completed !== undefined) {
-			// Convert string to boolean for comparison
 			const completedFilter = options.completed === 'true' || options.completed === true;
-			filteredGoals = filteredGoals.filter(g => g.completed === completedFilter);
+			goals = goals.filter(g => g.completed === completedFilter);
 		}
 
-		// Filter for today's goals
 		if (options.today === 'true' || options.today === true) {
-			filteredGoals = filteredGoals.filter(goal => {
-				// Check if scheduled for future
-				if (goal.scheduledDate && isScheduledDateInTheFuture(goal.scheduledDate)) {
-					return false;
-				}
-
-				// Check recurring goals
-				if (goal.recurring && !shouldShowRecurringGoalToday(goal.recurring)) {
-					return false;
-				}
-
+			goals = goals.filter(goal => {
+				if (goal.scheduledDate && isScheduledDateInTheFuture(goal.scheduledDate)) return false;
+				if (goal.isRecurring && !shouldShowRecurringGoalToday(goal)) return false;
 				return true;
 			});
 		}
 
-		// Filter by scheduled status
 		if (options.scheduled !== undefined) {
 			const scheduledFilter = options.scheduled === 'true' || options.scheduled === true;
-			filteredGoals = filteredGoals.filter(g =>
-				scheduledFilter ? g.scheduledDate : !g.scheduledDate
-			);
+			goals = goals.filter(g => scheduledFilter ? g.scheduledDate : !g.scheduledDate);
 		}
 
-		// Filter by recurring status
 		if (options.recurring !== undefined) {
 			const recurringFilter = options.recurring === 'true' || options.recurring === true;
-			filteredGoals = filteredGoals.filter(g =>
-				recurringFilter ? g.recurring : !g.recurring
-			);
+			goals = goals.filter(g => recurringFilter ? g.isRecurring : !g.isRecurring);
 		}
 
-		// Filter by due date
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 
 		if (options.dueBefore) {
 			const beforeDate = new Date(options.dueBefore);
-			filteredGoals = filteredGoals.filter(g =>
-				g.dueDate && new Date(g.dueDate) < beforeDate
-			);
+			goals = goals.filter(g => g.dueDate && new Date(g.dueDate) < beforeDate);
 		}
 
 		if (options.dueAfter) {
 			const afterDate = new Date(options.dueAfter);
-			filteredGoals = filteredGoals.filter(g =>
-				g.dueDate && new Date(g.dueDate) > afterDate
-			);
+			goals = goals.filter(g => g.dueDate && new Date(g.dueDate) > afterDate);
 		}
 
 		if (options.overdue === 'true' || options.overdue === true) {
-			filteredGoals = filteredGoals.filter(g =>
-				g.dueDate && new Date(g.dueDate) < today && !g.completed
-			);
+			goals = goals.filter(g => g.dueDate && new Date(g.dueDate) < today && !g.completed);
 		}
 
-		// Sort by due date if any due date filters are applied
 		if (options.dueBefore || options.dueAfter || options.overdue || options.sortByDueDate) {
-			filteredGoals.sort((a, b) => {
-				// Goals without due dates go to the end
+			goals.sort((a, b) => {
 				if (!a.dueDate && !b.dueDate) return 0;
 				if (!a.dueDate) return 1;
 				if (!b.dueDate) return -1;
-
-				// Sort by due date ascending
 				return new Date(a.dueDate) - new Date(b.dueDate);
 			});
 		}
 
-		// Normalize goals to ensure consistent API response format
-		return filteredGoals.map(normalizeGoal);
+		return goals.map(normalizeGoal);
 	}
 
 	async listPartnerGoals(chatId) {
 		const user = await getUser(chatId);
+		if (!user.Partner) throw new Error('No partner linked');
 
-		if (!user.Partner) {
-			throw new Error('No partner linked');
-		}
-
-		const partnerGoals = await getGoals(user.Partner);
-		return partnerGoals.filter(g => !g.completed).map(normalizeGoal);
+		const goals = await getGoals(user.Partner);
+		return goals.filter(g => !g.completed).map(normalizeGoal);
 	}
 
 	async getGoalDetails(chatId, index) {
 		const goals = await getGoals(chatId);
-
-		if (index < 0 || index >= goals.length) {
-			throw new Error(`Invalid goal index: ${index}`);
-		}
+		if (index < 0 || index >= goals.length) throw new Error(`Invalid goal index: ${index}`);
 
 		return normalizeGoal(goals[index]);
-	}
-
-	async getAllUsersGoals() {
-		return await getAllGoals();
 	}
 }
 

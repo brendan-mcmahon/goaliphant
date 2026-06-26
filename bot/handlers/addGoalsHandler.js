@@ -1,66 +1,26 @@
-const { getGoals, updateGoals } = require('../common/goalRepository.js');
+const { addGoal: repoAddGoal, getGoals } = require('../common/goalRepository.js');
 const { getUser } = require('../common/userRepository.js');
 const { listGoals } = require('./listHandler.js');
 const { sendMessage, sendError } = require('../bot.js');
 
-async function addGoal(goalText, chatId, options = {}) {
-	try {
-		const user = await getUser(chatId);
-		const partnerId = user.PartnerId;
-
-		const newGoal = {
-			text: goalText,
-			completed: false,
-			createdAt: new Date().toISOString()
-		};
-
-		if (options.schedule) {
-			newGoal.scheduled = options.schedule;
-		}
-
-		if (options.isRecurring) {
-			newGoal.isRecurring = true;
-			newGoal.recurrencePattern = options.recurrencePattern;
-		}
-
-		await saveGoalsAndList(newGoal, chatId, partnerId);
-	} catch (error) {
-		console.error('Error adding goal:', error);
-		await sendError(chatId, error);
-	}
-}
-exports.addGoal = addGoal;
-
 async function addGoals(goalsText, chatId) {
+	if (!goalsText || goalsText.trim() === '') {
+		await sendMessage(chatId, '⚠️ Please provide at least one goal text.');
+		return;
+	}
+
 	try {
-		if (!goalsText || goalsText.trim() === '') {
-			await sendMessage(chatId, '⚠️ Please provide at least one goal text.');
-			return;
+		const texts = goalsText.split('\n').filter(t => t.trim() !== '');
+
+		for (const text of texts) {
+			await repoAddGoal(chatId, { text: text.trim() });
 		}
 
-		let goals = await getGoals(chatId);
-
-		if (!goals) {
-			goals = [];
-		}
-
-		const now = new Date().toISOString();
-
-		const newGoals = goalsText.split('\n')
-			.filter(text => text.trim() !== '')
-			.map(text => ({
-				text: text.trim(),
-				completed: false,
-				createdAt: now
-			}));
-
-		goals = [...goals, ...newGoals];
-
-		await updateGoals(chatId, goals);
-
+		const goals = await getGoals(chatId);
 		let message = '✅ Added:';
-		newGoals.forEach((goal, i) => {
-			message += `\n${goals.length - newGoals.length + i + 1}. ${goal.text}`;
+		const start = goals.length - texts.length + 1;
+		texts.forEach((text, i) => {
+			message += `\n${start + i}. ${text.trim()}`;
 		});
 
 		await sendMessage(chatId, message);
@@ -71,42 +31,19 @@ async function addGoals(goalsText, chatId) {
 }
 exports.addGoals = addGoals;
 
-async function saveGoalsAndList(newGoal, chatId, fromPartner = false) {
-	try {
-		const existingGoals = await getGoals(chatId);
-		const updatedGoals = [...existingGoals, { text: newGoal, completed: false, fromPartner }];
-		await updateGoals(chatId, updatedGoals);
-		if (!fromPartner) {
-			await sendMessage(chatId, 'Goals added successfully!');
-			await listGoals(chatId);
-		}
-	} catch (error) {
-		console.error('Error adding goals:', error);
-		await sendError(chatId, error);
-	}
-}
-exports.saveGoalsAndList = saveGoalsAndList;
-
 async function addHoney(chatId, honeyText) {
 	try {
 		const user = await getUser(chatId);
 		const partner = await getUser(user.PartnerId);
-		const goalsText = honeyText.replace('/honey', '').trim();
-		const newGoal = `🐝 ${goalsText.trim()}`;
-		const now = new Date().toISOString();
+		const goalText = `🐝 ${honeyText.replace('/honey', '').trim()}`;
 
-		// Create new honey-do goal with timestamp and any special properties
-		const newHoneyGoal = {
-			text: newGoal,
-			completed: false,
-			isHoney: true,  // Assuming you mark honey-do tasks somehow
-			createdAt: now, // Add creation timestamp
-			from: chatId    // Assuming you track who sent the honey-do
-		};
+		await repoAddGoal(partner.ChatId, {
+			text: goalText,
+			isHoney: true,
+			fromPartner: chatId.toString()
+		});
 
-		const updatedGoals = [...await getGoals(partner.ChatId), newHoneyGoal];
-		await updateGoals(partner.ChatId, updatedGoals);
-		await sendMessage(partner.ChatId, `Your partner added the following honey-do item: ${newGoal}`);
+		await sendMessage(partner.ChatId, `Your partner added the following honey-do item: ${goalText}`);
 		await listGoals(partner.ChatId);
 		await sendMessage(chatId, 'Honey-do items added successfully!');
 	} catch (error) {

@@ -122,14 +122,15 @@ describe('API Integration Tests - Core Functionality', () => {
       expect(data.ticketAwarded).toBe(true);
     });
 
-    test('should show completed goal in list', async () => {
+    test('completed goal is removed from the active list', async () => {
+      // Completed non-recurring goals move to status=completed and no longer appear in getGoals
       const event = createEvent('GET', '/api/v1/goals', { chatId: testChatId });
 
       const response = await handler(event);
       const { statusCode, data } = parseResponse(response);
 
       expect(statusCode).toBe(200);
-      expect(data.goals[0].completed).toBe(true);
+      expect(data.goals.length).toBe(0);
     });
 
     test('should add another goal for deletion test', async () => {
@@ -147,10 +148,10 @@ describe('API Integration Tests - Core Functionality', () => {
     });
 
     test('should delete a goal', async () => {
-      // Delete the second goal (index 1)
-      const goalIndex = 1;
-      const event = createEvent('DELETE', `/api/v1/goals/${goalIndex}`, { 
-        chatId: testChatId 
+      // Only one active goal now (the completed one was removed from the active list)
+      const goalIndex = 0;
+      const event = createEvent('DELETE', `/api/v1/goals/${goalIndex}`, {
+        chatId: testChatId
       });
 
       const response = await handler(event);
@@ -168,8 +169,7 @@ describe('API Integration Tests - Core Functionality', () => {
       const { statusCode, data } = parseResponse(response);
 
       expect(statusCode).toBe(200);
-      expect(data.goals.length).toBe(1); // Should only have the first goal left
-      expect(data.goals[0].text).toBe('Test goal for integration test');
+      expect(data.goals.length).toBe(0);
     });
 
     test('should handle invalid goal index for completion', async () => {

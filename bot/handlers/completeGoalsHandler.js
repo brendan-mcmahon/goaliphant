@@ -1,19 +1,17 @@
-const { getGoals, updateGoals } = require('../common/goalRepository.js');
+const { getGoals, updateGoal } = require('../common/goalRepository.js');
 const { addTicket, getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 
 async function completeGoals(text, chatId, ticketRecipientId) {
-	console.log("text:", text);
 	const indexText = text.replace('/complete', '').trim();
-	console.log('indexText:', indexText);
 	if (!indexText) {
 		await sendMessage(chatId, 'You must send the goal numbers to mark as complete (separated by spaces).');
-	} else {
-		const indexes = indexText.split(' ').map(n => parseInt(n.trim()) - 1);
-		await markGoalsAsComplete(indexes, chatId, ticketRecipientId);
+		return;
 	}
+	const indexes = indexText.split(' ').map(n => parseInt(n.trim()) - 1);
+	await markGoalsAsComplete(indexes, chatId, ticketRecipientId);
 }
 exports.completeGoals = completeGoals;
 
@@ -23,18 +21,33 @@ async function markGoalsAsComplete(indexes, chatId, ticketRecipientId) {
 		const partnerId = user.PartnerId;
 		const goals = (await getGoals(chatId))
 			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate));
+
 		let updated = false;
-		indexes.forEach(index => {
-			if (index >= 0 && index < goals.length && !goals[index].completed) {
-				goals[index].completed = true;
-				if (partnerId && goals[index].text && goals[index].text[0] === "🐝") {
-					sendMessage(partnerId, `Your partner has completed a 🐝 task: ${goals[index].text}`);
-				}
-				updated = true;
+		const now = new Date().toISOString();
+
+		for (const index of indexes) {
+			if (index < 0 || index >= goals.length || goals[index].completed) continue;
+
+			const goal = goals[index];
+
+			if (goal.isRecurring) {
+				await updateGoal(chatId, goal.goalId, { lastCompletedAt: now });
+			} else {
+				await updateGoal(chatId, goal.goalId, {
+					status: 'completed',
+					completed: true,
+					completedAt: now
+				});
 			}
-		});
+
+			if (partnerId && goal.text && goal.text[0] === '🐝') {
+				sendMessage(partnerId, `Your partner has completed a 🐝 task: ${goal.text}`);
+			}
+
+			updated = true;
+		}
+
 		if (updated) {
-			await updateGoals(chatId, goals);
 			await addTicket(ticketRecipientId);
 			await sendMessage(chatId, 'Goals marked as completed.');
 			await listGoals(chatId);
@@ -46,3 +59,4 @@ async function markGoalsAsComplete(indexes, chatId, ticketRecipientId) {
 		await sendError(chatId, error);
 	}
 }
+exports.markGoalsAsComplete = markGoalsAsComplete;

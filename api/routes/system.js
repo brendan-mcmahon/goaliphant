@@ -1,4 +1,3 @@
-const rolloverService = require('../services/rolloverService');
 const notificationService = require('../services/notificationService');
 const { createResponse, extractPathParam, validateRequired } = require('./utils');
 const fs = require('fs');
@@ -7,27 +6,6 @@ const yaml = require('js-yaml');
 
 // System route handlers
 const systemRoutes = {
-	// Perform rollover - POST /api/v1/system/rollover
-	async performRollover(event) {
-		const results = await rolloverService.performDailyRollover();
-		return createResponse(200, results);
-	},
-
-	// Get rollover status - GET /api/v1/system/rollover/status
-	async getRolloverStatus(event) {
-		const status = await rolloverService.getRolloverStatus();
-		return createResponse(200, status);
-	},
-
-	// Simulate rollover for a user - GET /api/v1/system/rollover/simulate
-	async simulateRollover(event) {
-		const { chatId } = event.queryStringParameters || {};
-		validateRequired({ chatId }, ['chatId']);
-		
-		const simulation = await rolloverService.simulateRollover(chatId);
-		return createResponse(200, simulation);
-	},
-
 	// Get pending notifications - GET /api/v1/system/notifications/pending
 	async getPendingNotifications(event) {
 		const { recipientId } = event.queryStringParameters || {};
@@ -158,10 +136,6 @@ const matchSystemRoute = (method, path) => {
 	if (method === 'GET' && path === '/api/v1/docs/openapi.json') return systemRoutes.getOpenApiSpec;
 	if (method === 'GET' && path === '/docs') return systemRoutes.getDocsRoot;
 	
-	// System routes
-	if (method === 'POST' && path === '/api/v1/system/rollover') return systemRoutes.performRollover;
-	if (method === 'GET' && path === '/api/v1/system/rollover/status') return systemRoutes.getRolloverStatus;
-	if (method === 'GET' && path === '/api/v1/system/rollover/simulate') return systemRoutes.simulateRollover;
 	if (method === 'GET' && path === '/api/v1/system/notifications/pending') return systemRoutes.getPendingNotifications;
 	if (method === 'POST' && path === '/api/v1/system/notifications') return systemRoutes.queueNotification;
 	if (method === 'GET' && path === '/api/v1/system/notifications/reminder-users') return systemRoutes.getUsersForDailyReminder;

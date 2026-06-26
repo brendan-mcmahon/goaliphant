@@ -1,4 +1,4 @@
-const { getGoals, updateGoals } = require('../common/goalRepository.js');
+const { getGoals, updateGoal } = require('../common/goalRepository.js');
 const { addTicket } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
@@ -10,16 +10,31 @@ async function uncompleteGoals(text, chatId) {
 	try {
 		const goals = (await getGoals(chatId))
 			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate));
+
 		let updated = false;
-		indexes.forEach(index => {
-			if (index >= 0 && index < goals.length && goals[index].completed) {
-				goals[index].completed = false;
-				updated = true;
+		let deductCount = 0;
+
+		for (const index of indexes) {
+			if (index < 0 || index >= goals.length || !goals[index].completed) continue;
+
+			const goal = goals[index];
+
+			if (goal.isRecurring) {
+				await updateGoal(chatId, goal.goalId, { lastCompletedAt: null });
+			} else {
+				await updateGoal(chatId, goal.goalId, {
+					status: 'active',
+					completed: false,
+					completedAt: null
+				});
 			}
-		});
+
+			updated = true;
+			deductCount++;
+		}
+
 		if (updated) {
-			await updateGoals(chatId, goals);
-			await addTicket(chatId, -1 * indexes.length);
+			await addTicket(chatId, -1 * deductCount);
 			await sendMessage(chatId, 'Goals marked as incomplete.');
 			await listGoals(chatId);
 		} else {

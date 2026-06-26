@@ -1,23 +1,20 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const { getChatIds } = require('./common/userRepository');
-const { getGoals } = require('./common/goalRepository');
+const { getGoals, getGoalsCompletedToday } = require('./common/goalRepository');
 const userRepo = require('./common/userRepository');
 
 const bot = new TelegramBot(process.env.BOT_TOKEN);
 
 async function sendNightlyPrompt(chatId) {
 	try {
-		const goals = await getGoals(chatId);
-		let goalsList = goals.filter(g => g.completed);
-		if (goalsList.length > 0) {
-			goalsList = goalsList.map((g, i) => `${i + 1}. ✅${g.text}`).join('\n');
-			const message = `Good evening! Here's what you accomplished today:\n${goalsList}`;
-			await bot.sendMessage(chatId, message);
+		const completed = await getGoalsCompletedToday(chatId);
+		if (completed.length > 0) {
+			const goalsList = completed.map((g, i) => `${i + 1}. ✅${g.text}`).join('\n');
+			await bot.sendMessage(chatId, `Good evening! Here's what you accomplished today:\n${goalsList}`);
 		}
 
-		// Here's where we check to see if they have 3 or more completed goals. If so, we add a bonus ticket.
-		if (goals.filter(g => g.completed).length >= 3) {
+		if (completed.length >= 3) {
 			await bot.sendMessage(chatId, 'You got a bonus ticket for completing 3 or more goals today!');
 			await userRepo.addTicket(chatId, 1);
 		}
@@ -40,13 +37,11 @@ async function sendMorningReminder(chatId) {
 exports.handler = async (event) => {
 	console.log('Received event:', event);
 	const type = event.type;
-	console.log('Event type:', type);
 	const chatIds = event.chatIds ?? await getChatIds();
 
 	const filteredChatIds = chatIds.filter(chatId => chatId !== '-4711773993');
 
 	for (const chatId of filteredChatIds) {
-
 		if (type === 'morning') {
 			await sendMorningReminder(chatId);
 		} else if (type === 'nightly') {
