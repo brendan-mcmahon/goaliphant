@@ -72,6 +72,8 @@ async function handleAIMessage(chatId, userMessage) {
 		});
 
 		const responseMessage = response.choices[0].message;
+		const existingHistory = user.chatHistory || [];
+		const newTurnMessages = [{ role: "user", content: userMessage }, responseMessage];
 
 		let sendSecondMessage = false;
 
@@ -96,12 +98,14 @@ async function handleAIMessage(chatId, userMessage) {
 					const functionResponse = await functionToCall(chatId, functionArgs);
 					sendSecondMessage = functionResponse.sendMessage;
 
-					secondMessages.push({
+					const toolMsg = {
 						role: "tool",
 						tool_call_id: toolCall.id,
 						name: functionName,
 						content: functionResponse.message
-					});
+					};
+					secondMessages.push(toolMsg);
+					newTurnMessages.push(toolMsg);
 				}
 			}
 
@@ -113,12 +117,15 @@ async function handleAIMessage(chatId, userMessage) {
 				});
 
 				const finalResponseMsg = secondResponse.choices[0].message;
+				newTurnMessages.push(finalResponseMsg);
 				await sendMessage(chatId, finalResponseMsg.content);
 			}
 		} else {
 			console.log("No tool calls");
 			await sendMessage(chatId, responseMessage.content);
 		}
+
+		await userRepo.saveChatHistory(chatId, [...existingHistory, ...newTurnMessages]);
 	} catch (error) {
 		console.error('Error in AI handler:', error);
 		console.error(error.stack);

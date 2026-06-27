@@ -200,8 +200,14 @@ async function updateUserField(chatId, fieldName, fieldValue) {
 }
 exports.updateUserField = updateUserField;
 
+async function saveChatHistory(chatId, history) {
+	await updateUserField(chatId, 'chatHistory', history.slice(-20));
+}
+exports.saveChatHistory = saveChatHistory;
+
 async function clearChat(chatId) {
 	await setChatState(chatId, 'chat', []);
+	await updateUserField(chatId, 'chatHistory', []);
 }
 exports.clearChat = clearChat;
-	
+
