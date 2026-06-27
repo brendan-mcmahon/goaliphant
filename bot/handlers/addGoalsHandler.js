@@ -32,6 +32,11 @@ async function addGoals(goalsText, chatId) {
 exports.addGoals = addGoals;
 
 async function addHoney(chatId, honeyText) {
+	if (!honeyText || honeyText.replace('/honey', '').trim() === '') {
+		await sendMessage(chatId, '⚠️ Please provide a honey-do item text.');
+		return;
+	}
+
 	try {
 		const user = await getUser(chatId);
 		const partner = await getUser(user.PartnerId);
