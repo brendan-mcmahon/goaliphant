@@ -1,4 +1,4 @@
-const { getGoals, updateGoal } = require('../common/goalRepository.js');
+const { getGoals, updateGoal, getGoalBySharedId } = require('../common/goalRepository.js');
 const { addTicket, getUser } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { listGoals } = require('./listHandler.js');
@@ -18,7 +18,7 @@ exports.completeGoals = completeGoals;
 async function markGoalsAsComplete(indexes, chatId, ticketRecipientId) {
 	try {
 		const user = await getUser(chatId);
-		const partnerId = user.PartnerId;
+		const partnerId = user?.PartnerId;
 		const goals = (await getGoals(chatId))
 			.filter(g => !g.scheduled || !isScheduledDateInTheFuture(g.scheduledDate));
 
@@ -42,6 +42,18 @@ async function markGoalsAsComplete(indexes, chatId, ticketRecipientId) {
 
 			if (partnerId && goal.text && goal.text[0] === '🐝') {
 				sendMessage(partnerId, `Your partner has completed a 🐝 task: ${goal.text}`);
+			}
+
+			if (goal.sharedGoalId && partnerId) {
+				const partnerGoal = await getGoalBySharedId(partnerId, goal.sharedGoalId);
+				if (partnerGoal && !partnerGoal.completed) {
+					await updateGoal(partnerId, partnerGoal.goalId, {
+						status: 'completed',
+						completed: true,
+						completedAt: now
+					});
+					sendMessage(partnerId, `🤝 Your partner completed a shared goal: ${goal.text}`);
+				}
 			}
 
 			updated = true;

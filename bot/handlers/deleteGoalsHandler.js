@@ -1,5 +1,6 @@
 const { sendMessage, sendError } = require('../bot.js');
-const { getGoals, deleteGoal } = require('../common/goalRepository.js');
+const { getGoals, deleteGoal, getGoalBySharedId } = require('../common/goalRepository.js');
+const { getUser } = require('../common/userRepository.js');
 const { listGoals } = require('./listHandler.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 
@@ -29,7 +30,19 @@ async function removeGoals(indexes, chatId) {
 			return;
 		}
 
-		await Promise.all(toDelete.map(g => deleteGoal(chatId, g.goalId)));
+		const user = await getUser(chatId);
+		const partnerId = user?.PartnerId;
+
+		await Promise.all(toDelete.map(async g => {
+			await deleteGoal(chatId, g.goalId);
+			if (g.sharedGoalId && partnerId) {
+				const partnerGoal = await getGoalBySharedId(partnerId, g.sharedGoalId);
+				if (partnerGoal) {
+					await deleteGoal(partnerId, partnerGoal.goalId);
+					sendMessage(partnerId, `🤝 A shared goal was removed: ${g.text}`);
+				}
+			}
+		}));
 		await sendMessage(chatId, 'Goals deleted successfully.');
 		await listGoals(chatId);
 	} catch (error) {

@@ -68,7 +68,8 @@ async function deleteMessage(chatId, messageId) {
 }
 
 async function sendError(chatId, error) {
-	await bot.sendMessage(chatId, `❌ ${JSON.stringify(error)}`);
+	const message = error?.message || String(error);
+	await bot.sendMessage(chatId, `❌ ${message}`);
 }
 
 async function getUserProfilePhoto(userId) {

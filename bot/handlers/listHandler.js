@@ -1,5 +1,5 @@
 const { getGoals } = require('../common/goalRepository.js');
-const { getUser } = require('../common/userRepository.js');
+const { getUser, getStreak } = require('../common/userRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 const { shouldShowRecurringGoalToday } = require('../common/cronUtils.js');
@@ -131,11 +131,23 @@ async function listGoals(chatId, args) {
 				goalText = `${goalText} 🔄`;
 			}
 
+			if (g.sharedGoalId) {
+				goalText = `${goalText} 🤝`;
+			}
+
 			return `${i + 1}. ${goalText} ${g.text}`;
 		}).join('\n');
 		console.log("goalsList:", goalsList);
 
-		await sendMessage(chatId, `${messagePrefix}\n${goalsList || 'No goals found.'}`);
+		let footer = '';
+		if (filter === 'today') {
+			const { currentStreak } = await getStreak(chatId);
+			if (currentStreak > 0) {
+				footer = `\n\n🔥 ${currentStreak} day streak`;
+			}
+		}
+
+		await sendMessage(chatId, `${messagePrefix}\n${goalsList || 'No goals found.'}${footer}`);
 	} catch (error) {
 		console.error('Error listing goals:', error);
 		await sendError(chatId, error);

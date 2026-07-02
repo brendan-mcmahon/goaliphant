@@ -9,9 +9,17 @@ const bot = new TelegramBot(process.env.BOT_TOKEN);
 async function sendNightlyPrompt(chatId) {
 	try {
 		const completed = await getGoalsCompletedToday(chatId);
+		const newStreak = await userRepo.updateStreak(chatId, completed.length);
+
 		if (completed.length > 0) {
 			const goalsList = completed.map((g, i) => `${i + 1}. ✅${g.text}`).join('\n');
-			await bot.sendMessage(chatId, `Good evening! Here's what you accomplished today:\n${goalsList}`);
+			let message = `Good evening! Here's what you accomplished today:\n${goalsList}`;
+			if (newStreak === 1) {
+				message += '\n\n🔥 Streak started! Come back tomorrow to keep it going.';
+			} else if (newStreak > 1) {
+				message += `\n\n🔥 ${newStreak} day streak!`;
+			}
+			await bot.sendMessage(chatId, message);
 		}
 
 		if (completed.length >= 3) {
@@ -27,7 +35,9 @@ async function sendMorningReminder(chatId) {
 	try {
 		const goals = await getGoals(chatId);
 		const goalsList = goals.map((g, i) => `${i + 1}. ${g.completed ? '✅' : '⬜'} ${g.text}`).join('\n');
-		const message = `Good morning! Here are your goals for today:\n${goalsList || 'No goals set for today.'}`;
+		const { currentStreak } = await userRepo.getStreak(chatId);
+		const streakLine = currentStreak > 0 ? `\n\n🔥 ${currentStreak} day streak — keep it going!` : '';
+		const message = `Good morning! Here are your goals for today:\n${goalsList || 'No goals set for today.'}${streakLine}`;
 		await bot.sendMessage(chatId, message);
 	} catch (error) {
 		console.error('Error sending morning reminder:', error);

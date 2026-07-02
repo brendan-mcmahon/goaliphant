@@ -1,5 +1,6 @@
 require('dotenv').config();
 const AWS = require('aws-sdk');
+const { getLocalDate } = require('./utilities.js');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'GoaliphantUsers';
@@ -210,4 +211,33 @@ async function clearChat(chatId) {
 	await updateUserField(chatId, 'chatHistory', []);
 }
 exports.clearChat = clearChat;
+
+async function getStreak(chatId) {
+	const user = await getUser(chatId);
+	return {
+		currentStreak: user?.CurrentStreak || 0,
+		lastStreakDate: user?.LastStreakDate || null,
+	};
+}
+exports.getStreak = getStreak;
+
+async function updateStreak(chatId, completedCount) {
+	const today = getLocalDate();
+	const yesterday = getLocalDate(-1);
+	const { currentStreak, lastStreakDate } = await getStreak(chatId);
+
+	if (completedCount > 0) {
+		if (lastStreakDate === today) {
+			return currentStreak;
+		}
+		const newStreak = lastStreakDate === yesterday ? currentStreak + 1 : 1;
+		await updateUserField(chatId, 'CurrentStreak', newStreak);
+		await updateUserField(chatId, 'LastStreakDate', today);
+		return newStreak;
+	} else {
+		await updateUserField(chatId, 'CurrentStreak', 0);
+		return 0;
+	}
+}
+exports.updateStreak = updateStreak;
 

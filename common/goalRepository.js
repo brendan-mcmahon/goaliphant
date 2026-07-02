@@ -13,6 +13,21 @@ function toLocalDateString(isoString) {
 	return new Date(local).toISOString().split('T')[0];
 }
 
+async function getGoal(chatId, goalId) {
+	const params = {
+		TableName: goalsTable,
+		Key: { chatId: chatId.toString(), goalId }
+	};
+	try {
+		const result = await dynamoDb.get(params).promise();
+		return result.Item || null;
+	} catch (err) {
+		console.error('Error fetching goal:', err);
+		throw err;
+	}
+}
+exports.getGoal = getGoal;
+
 async function getGoals(chatId) {
 	const params = {
 		TableName: goalsTable,
@@ -184,3 +199,35 @@ async function getGoalsCompletedToday(chatId) {
 	}
 }
 exports.getGoalsCompletedToday = getGoalsCompletedToday;
+
+async function getGoalBySharedId(chatId, sharedGoalId) {
+	const params = {
+		TableName: goalsTable,
+		KeyConditionExpression: 'chatId = :chatId',
+		ExpressionAttributeValues: { ':chatId': chatId.toString() }
+	};
+	try {
+		const result = await dynamoDb.query(params).promise();
+		return result.Items.find(g => g.sharedGoalId === sharedGoalId) || null;
+	} catch (err) {
+		console.error('Error fetching goal by sharedGoalId:', err);
+		throw err;
+	}
+}
+exports.getGoalBySharedId = getGoalBySharedId;
+
+async function shareGoal(chatId, goalId, partnerId) {
+	const goal = await getGoal(chatId, goalId);
+	if (!goal) throw new Error('Goal not found');
+	const sharedGoalId = randomUUID();
+	await updateGoal(chatId, goalId, { sharedGoalId });
+	await addGoal(partnerId, { text: goal.text, sharedGoalId });
+}
+exports.shareGoal = shareGoal;
+
+async function addSharedGoal(chatId, partnerId, text) {
+	const sharedGoalId = randomUUID();
+	await addGoal(chatId, { text, sharedGoalId });
+	await addGoal(partnerId, { text, sharedGoalId });
+}
+exports.addSharedGoal = addSharedGoal;
