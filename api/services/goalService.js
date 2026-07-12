@@ -102,7 +102,7 @@ class GoalService {
 		const now = new Date().toISOString();
 
 		for (const index of indices) {
-			if (index < 0 || index >= goals.length) continue;
+			if (!Number.isInteger(index) || index < 0 || index >= goals.length) continue;
 			const goal = goals[index];
 
 			if (goal.isRecurring) {
@@ -143,7 +143,8 @@ class GoalService {
 		let ticketsDeducted = 0;
 
 		for (const index of indices) {
-			if (index < 0 || index >= goals.length || !goals[index].completed) continue;
+			if (!Number.isInteger(index) || index < 0 || index >= goals.length) continue;
+			if (!goals[index].completed) continue;
 			const goal = goals[index];
 
 			if (goal.isRecurring) {

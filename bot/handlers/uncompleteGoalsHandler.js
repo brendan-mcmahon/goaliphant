@@ -15,7 +15,8 @@ async function uncompleteGoals(text, chatId) {
 		let deductCount = 0;
 
 		for (const index of indexes) {
-			if (index < 0 || index >= goals.length || !goals[index].completed) continue;
+			if (!Number.isInteger(index) || index < 0 || index >= goals.length) continue;
+			if (!goals[index].completed) continue;
 
 			const goal = goals[index];
 
