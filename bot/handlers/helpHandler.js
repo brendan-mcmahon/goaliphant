@@ -12,6 +12,12 @@ const commands = {
     example: '/list todo',
     details: 'Optional filters: all, todo, done, scheduled, today (default).'
   },
+  'continue': {
+    description: 'Show the next page of a long list',
+    syntax: '/continue',
+    example: '/continue',
+    details: 'Long lists are split into pages. Say "continue" (or "more") within an hour to see the next one.'
+  },
   'delete': {
     description: 'Delete a goal',
     syntax: '/delete <number>',

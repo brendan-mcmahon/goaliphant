@@ -1,5 +1,6 @@
 const { getGoals } = require('../common/goalRepository.js');
 const { getUser, getStreak } = require('../common/userRepository.js');
+const { getListCursor, saveListCursor, clearListCursor } = require('../common/listCursorRepository.js');
 const { sendMessage, sendError } = require('../bot.js');
 const { isScheduledDateInTheFuture } = require('../common/utilities.js');
 const { shouldShowRecurringGoalToday } = require('../common/cronUtils.js');
@@ -30,9 +31,24 @@ function formatDueDateIndicator(dueDate) {
 	}
 }
 
-async function listGoals(chatId, args) {
+// Keep each page comfortably under Telegram's 4096 character limit, leaving room for the header and footer
+const PAGE_CHARACTER_BUDGET = 3500;
+
+// Returns how many lines, starting at offset, fit on one page (always at least one)
+function getPageLength(lines, offset) {
+	let length = 0;
+	let count = 0;
+	for (let i = offset; i < lines.length; i++) {
+		length += lines[i].length + 1;
+		if (count > 0 && length > PAGE_CHARACTER_BUDGET) break;
+		count++;
+	}
+	return count;
+}
+
+async function listGoals(chatId, args, offset = 0) {
 	try {
-		console.log("listing goals for ...", chatId, args);
+		console.log("listing goals for ...", chatId, args, "offset:", offset);
 		const goals = await getGoals(chatId);
 		console.log("goals:", goals);
 
@@ -136,24 +152,64 @@ async function listGoals(chatId, args) {
 			}
 
 			return `${i + 1}. ${goalText} ${g.text}`;
-		}).join('\n');
-		console.log("goalsList:", goalsList);
+		});
+
+		if (offset >= goalsList.length) {
+			offset = 0;
+		}
+		const pageLength = getPageLength(goalsList, offset);
+		const nextOffset = offset + pageLength;
+		const hasMore = nextOffset < goalsList.length;
+
+		const pageText = goalsList.slice(offset, nextOffset).join('\n');
+		console.log("goalsList page:", pageText);
 
 		let footer = '';
-		if (filter === 'today') {
-			const { currentStreak } = await getStreak(chatId);
-			if (currentStreak > 0) {
-				footer = `\n\n🔥 ${currentStreak} day streak`;
+		if (hasMore) {
+			footer = `\n\n📄 Showing ${offset + 1}–${nextOffset} of ${goalsList.length}`;
+			try {
+				await saveListCursor(chatId, filter, nextOffset);
+				footer += ' · say "continue" for more';
+			} catch (error) {
+				// The page still goes out; "continue" just won't be offered
+			}
+		} else {
+			try {
+				await clearListCursor(chatId);
+			} catch (error) {
+				// Nothing to do; the cursor expires on its own
+			}
+			if (filter === 'today') {
+				const { currentStreak } = await getStreak(chatId);
+				if (currentStreak > 0) {
+					footer = `\n\n🔥 ${currentStreak} day streak`;
+				}
 			}
 		}
 
-		await sendMessage(chatId, `${messagePrefix}\n${goalsList || 'No goals found.'}${footer}`);
+		const prefix = offset > 0 ? `${messagePrefix} (continued)` : messagePrefix;
+		await sendMessage(chatId, `${prefix}\n${pageText || 'No goals found.'}${footer}`);
 	} catch (error) {
 		console.error('Error listing goals:', error);
 		await sendError(chatId, error);
 	}
 }
 exports.listGoals = listGoals;
+
+async function continueList(chatId) {
+	try {
+		const cursor = await getListCursor(chatId);
+		if (!cursor) {
+			await sendMessage(chatId, 'Nothing to continue. Send "list" to see your goals.');
+			return;
+		}
+		await listGoals(chatId, cursor.filter, cursor.offset);
+	} catch (error) {
+		console.error('Error continuing list:', error);
+		await sendError(chatId, error);
+	}
+}
+exports.continueList = continueList;
 
 async function listPartner(chatId) {
 	try {

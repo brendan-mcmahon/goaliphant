@@ -3,7 +3,7 @@
 const { sendMessage, sendThinkingMessage, getUserProfilePhoto } = require('./bot.js');
 const { deleteGoals } = require('./handlers/deleteGoalsHandler.js');
 const { addGoals, addHoney } = require('./handlers/addGoalsHandler.js');
-const { listGoals, listPartner } = require('./handlers/listHandler.js');
+const { listGoals, listPartner, continueList } = require('./handlers/listHandler.js');
 const { handleChatState } = require('./handlers/chatStateHandler.js');
 const { completeGoals } = require('./handlers/completeGoalsHandler.js');
 const { uncompleteGoals } = require('./handlers/uncompleteGoalsHandler.js');
@@ -86,6 +86,11 @@ exports.handler = async (event) => {
 				// DEFINITION: /list
 				case 'list':
 					await listGoals(chatId, args);
+					break;
+				// DEFINITION: /continue
+				case 'continue':
+				case 'more':
+					await continueList(chatId);
 					break;
 				// DEFINITION: /delete {index: number}
 				case 'delete':

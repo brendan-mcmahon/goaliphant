@@ -8,6 +8,29 @@ const bot = new TelegramBot(token);
 
 let thinkingMessageId = null;
 
+// Telegram rejects messages over 4096 characters; leave some headroom
+const MAX_MESSAGE_LENGTH = 4000;
+
+// Telegram errors include the request URL, which contains the bot token, so only log the useful bits
+function describeError(error) {
+	return error?.response?.body?.description || error?.message || String(error);
+}
+
+// Split on line breaks where possible so list items aren't cut in half
+function splitMessage(message) {
+	const chunks = [];
+	let remaining = message;
+
+	while (remaining.length > MAX_MESSAGE_LENGTH) {
+		let splitAt = remaining.lastIndexOf('\n', MAX_MESSAGE_LENGTH);
+		if (splitAt <= 0) splitAt = MAX_MESSAGE_LENGTH;
+		chunks.push(remaining.substring(0, splitAt));
+		remaining = remaining.substring(splitAt).replace(/^\n/, '');
+	}
+	chunks.push(remaining);
+
+	return chunks;
+}
 
 async function sendThinkingMessage(chatId) {
 	const thinkingMessage = await bot.sendMessage(chatId, 'Thinking... 🤔');
@@ -16,11 +39,25 @@ async function sendThinkingMessage(chatId) {
 
 async function sendMessage(chatId, message, options) {
 	try {
+		const chunks = splitMessage(message);
+
 		if (thinkingMessageId) {
-			await editMessage(chatId, thinkingMessageId, message, options);
+			const messageId = thinkingMessageId;
 			thinkingMessageId = null;
+
+			const edited = await editMessage(chatId, messageId, chunks[0], options);
+			if (!edited) {
+				// Don't leave "Thinking..." hanging; replace it with a fresh message instead
+				await deleteMessage(chatId, messageId);
+				await bot.sendMessage(chatId, chunks[0], options);
+			}
+			for (const chunk of chunks.slice(1)) {
+				await bot.sendMessage(chatId, chunk, options);
+			}
 		} else {
-			await bot.sendMessage(chatId, message, { parse_mode: 'Markdown', ...options });
+			for (const chunk of chunks) {
+				await bot.sendMessage(chatId, chunk, { parse_mode: 'Markdown', ...options });
+			}
 		}
 
 		const user = await userRepo.getUser(chatId);	
@@ -42,10 +79,11 @@ async function sendMessage(chatId, message, options) {
 		}
 		
 	} catch (error) {
-		console.error("Error in sendMessage:", error);
+		console.error("Error in sendMessage:", describeError(error));
 	}
 }
 
+// Returns true if the edit went through, false otherwise
 async function editMessage(chatId, messageId, newText, options = {}) {
 	try {
 		await bot.editMessageText(newText, {
@@ -53,9 +91,10 @@ async function editMessage(chatId, messageId, newText, options = {}) {
 			message_id: messageId,
 			...options,
 		});
-		
+		return true;
 	} catch (error) {
-		console.error("Failed to edit message:", error);
+		console.error("Failed to edit message:", describeError(error));
+		return false;
 	}
 }
 
@@ -63,7 +102,7 @@ async function deleteMessage(chatId, messageId) {
 	try {
 		await bot.deleteMessage(chatId, messageId);
 	} catch (error) {
-		console.error("Failed to delete message:", error);
+		console.error("Failed to delete message:", describeError(error));
 	}
 }
 
